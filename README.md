@@ -1,0 +1,132 @@
+# PHANTOM REPOSITORY server
+
+> PHANTOM REPOSITORY server interface between different PHANTOM tools, storing files and the metadata related to them. 
+
+
+## Introduction
+The PHANTOM REPOSITORY server is composed of two components: a web server and a data storage system. 
+The web server provides various functionalities for data query and data analysis via RESTful APIs with documents in JSON format. 
+The server's URL are "localhost:8000" by default.
+
+
+## Prerequisites
+The server is implemented using Node.js, and connects to Elasticsearch to store and access Metadata. 
+Before you start installing the required components, please note that the installation and setup steps mentioned below assume that you are running a current Linux as operating system. 
+The installation was tested with Ubuntu 16.04 LTS.
+Before you can proceed, please clone the repository:
+
+```bash
+git clone https://github.com/PHANTOM-Platform/Repository.git
+```
+
+
+### Dependencies
+This project requires the following dependencies to be installed:
+
+| Component         | Homepage                                           | Version   |
+|------------------ |--------------------------------------------------  |---------  |
+| Elasticsearch     | https://www.elastic.co/products/elasticsearch      | = 2.4.0  |
+| Node.js           | https://apr.apache.org/                            | >= 4.5    |
+| npm               | https://www.npmjs.com/                             | >= 1.3.6  |
+
+
+#### Installation of npm
+When using Ubuntu, for example, please install npm as follows:
+
+```bash
+sudo apt-get install npm
+```
+
+Alternativelly, you can install it using your operating system's software installer.
+
+
+## Installation of other components
+This section assumes that you've successfully installed all required dependencies as described in the previous paragraphs.  
+
+To ease the installation and preparation process, there is one shell script provided, which downloads and installs all the dependencies and packages. 
+Installs Nodejs 9.4.0. Please choose the appropiate shell scripts depending on your Operating System :
+
+
+Shell script for 32bits:
+
+```bash
+bash setup-server-32.sh
+```
+
+or the Shell script for 64bits:
+
+```bash
+bash setup-server-64.sh
+```
+
+The default port is 8000, which can be modified at the file app.js.
+
+
+#### Websockets plugin
+
+Pending to be implemented.
+
+
+## Start/Stop the server
+Start a PHANTOM REPOSITORY by executing, it is important to not do as root:
+For security reasons, the services may not start if they are requested from root.
+
+```bash
+bash start.sh
+```
+
+You can use the following command to verify if the database and the server are running
+
+Test of the Nodejs Front-end running service:
+
+```bash
+curl localhost:8000
+```
+
+After the usage, the server can be stopped by:
+```bash
+./stop.sh
+```
+
+
+## Example of use
+
+The folders [DEMO_CURL][demo_curl] and [DEMO_SCRIPTS][demo_scripts] shows examples of using the PHANTOM REPOSITORY.
+
+Please access to those folders to get more details.
+
+
+## Acknowledgment
+This project is realized through [PHANTOM][phantom]. 
+The PHANTOM project receives funding under the European Union's Horizon 2020 Research and Innovation Programme under grant agreement number 688146.
+
+
+## Contributing
+Find a bug? Have a feature request?
+Please [create](https://github.com/jmmontanana/phantom_repository/issues) an issue.
+
+
+## Main Contributors
+
+**Montanana, Jose Miguel, HLRS**
++ [github/hpcfapix](https://github.com/jmmontanana)
+
+**Cheptsov, Alexey, HLRS**
++ [github/hpcfapix](https://github.com/alexey-cheptsov)
+
+
+
+## Release History
+| Date        | Version | Comment          |
+| ----------- | ------- | ---------------- |
+| 2018-03-22  | 1.0     | First prototype  |
+
+## License
+Copyright (C) 2018 University of Stuttgart
+
+[Apache License v2](LICENSE).
+
+
+[demo_scripts]: https://github.com/PHANTOM-Platform/Repository/tree/master/demo_scripts
+[demo_curl]: https://github.com/PHANTOM-Platform/Repository/tree/master/demo_curl 
+[phantom]: http://www.phantom-project.org 
