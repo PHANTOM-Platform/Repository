@@ -21,115 +21,115 @@ Please, replace the values of the parameters for the appropiate values in your c
 ####  1. CHECK if Respository server is running   
 
 ```bash
-verify_reponse ${server} ${repository_port};
+verify_reponse localhost 8000;
 ```
 
-# 2.    CHECK if Elasticsearch is running  
+#### 2.    CHECK if Elasticsearch is running  
 
 ```bash
-curl -s http://${server}:${repository_port}/verify_es_connection;
+curl -s http://localhost:8000/verify_es_connection;
 ```	
 
-# 3.    DELETE DATABASE   
+#### 3.    DELETE DATABASE   
 
 ```bash
 read -p $'Do you wish to \033[1;37mDELETE\033[1;34m the Repository \033[1;37mDB\033[1;34m? (y/n)' confirm; echo -ne "${NO_COLOUR}";
 if [[ ! ${confirm} = "" ]]; then
 if [ ${confirm} == 'y' ] || [ ${confirm} == 'Y' ];then
-curl -s -XGET http://${server}:${repository_port}/drop_db ; 
+curl -s -XGET http://localhost:8000/drop_db ; 
 fi;
 fi;
 ```
 
-# 4.    CREATE A NEW DATABASE   
+#### 4.    CREATE A NEW DATABASE   
 
 
 ```bash
-curl -s -XGET http://${server}:${repository_port}/new_db;
+curl -s -XGET http://localhost:8000/new_db;
 
-# 5.    REGISTER A NEW USER  
+#### 5.    REGISTER A NEW USER  
 
 ```bash
-curl -s -H "Content-Type: application/json" -XPOST http://${server}:${repository_port}/signup?email="montana@abc.com"\&pw="new";
+curl -s -H "Content-Type: application/json" -XPOST http://localhost:8000/signup?email="montana@abc.com"\&pw="new";
 ```
 
 
-# 6.    GET A NEW TOKEN FOR A REGISTERED USER  
+#### 6.    GET A NEW TOKEN FOR A REGISTERED USER  
 
 ```bash
-curl -s -H "Content-Type: text/plain" -XGET http://${server}:${repository_port}/login?email="montana@abc.com"\&pw="new" --output token.txt;
+curl -s -H "Content-Type: text/plain" -XGET http://localhost:8000/login?email="montana@abc.com"\&pw="new" --output token.txt;
 ```
 
-# 7. REQUEST FLUSH UPDATES IN THE DATABASE
+#### 7. REQUEST FLUSH UPDATES IN THE DATABASE
 
 ```bash
-curl -s -XGET ${server}:${repository_port}/_flush > /dev/null;
+curl -s -XGET localhost:8000/_flush > /dev/null;
 ```
 
-# 8.    TEST IF A TOKEN IS VALID OR NOT, this is useful when we not know if the token expired   
+#### 8.    TEST IF A TOKEN IS VALID OR NOT, this is useful when we not know if the token expired   
 
 ```bash
-curl -s -H "Authorization: OAuth ${mytoken}" -XGET ${server}:${repository_port}/verifytoken;
+curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -XGET localhost:8000/verifytoken;
 ```
 
-# 9.    TEST ACCESS WITH A NOT VALID TOKEN, access must be rejected UNAUTHORIZED:401  
+#### 9.    TEST ACCESS WITH A NOT VALID TOKEN, access must be rejected UNAUTHORIZED:401  
 ```bash
-curl -s -H "Authorization: OAuth 12345678" -XGET ${server}:${repository_port}/verifytoken;
+curl -s -H "Authorization: OAuth 12345678" -XGET localhost:8000/verifytoken;
 ```
 
-# 10.    TEST ACCESS WITHOUT A TOKEN, access must be rejected UNAUTHORIZED:401  
+#### 10.    TEST ACCESS WITHOUT A TOKEN, access must be rejected UNAUTHORIZED:401  
 
 
 ```bash
-curl -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web/example.c" -F "UploadJSON=@../web/examplec.json" http://${server}:${repository_port}/upload?DestFileName=main.c\&'Path=mypath/';
+curl -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web/example.c" -F "UploadJSON=@../web/examplec.json" http://localhost:8000/upload?DestFileName=main.c\&'Path=mypath/';
 ```
 
-# 11.    TEST OF UPLOADING A FILE WITH A NOT VALID TOKEN, access must be rejected UNAUTHORIZED:401   
+#### 11.    TEST OF UPLOADING A FILE WITH A NOT VALID TOKEN, access must be rejected UNAUTHORIZED:401   
 
 ```bash
-curl -s -H "Authorization: OAuth 12345678" -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web/example.c" -F "UploadJSON=@../web/examplec.json" http://${server}:${repository_port}/upload?DestFileName=main.c\&'Path=mypath/';
+curl -s -H "Authorization: OAuth 12345678" -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web/example.c" -F "UploadJSON=@../web/examplec.json" http://localhost:8000/upload?DestFileName=main.c\&'Path=mypath/';
 ```
 
-# 12.    TEST OF UPLOADING A FILE WITH A NOT VALID TOKEN, access must be rejected UNAUTHORIZED:401    
+#### 12.    TEST OF UPLOADING A FILE WITH A NOT VALID TOKEN, access must be rejected UNAUTHORIZED:401    
 
 ```bash
-curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web/example.c" -F "UploadJSON=@../web/examplec.json" http://${server}:${repository_port}/upload?DestFileName=main.c\&'Path=mypath/';
+curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web/example.c" -F "UploadJSON=@../web/examplec.json" http://localhost:8000/upload?DestFileName=main.c\&'Path=mypath/';
 ```
 
-# 13.    TEST OF UPLOADING A FILE WITH A VALID TOKEN, access must be accepted 
+#### 13.    TEST OF UPLOADING A FILE WITH A VALID TOKEN, access must be accepted 
 
 ```bash
-curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web/example.h" -F "UploadJSON=@../web/exampleh.json" http://${server}:${repository_port}/upload?DestFileName=main.h\&'Path=mypath/';
+curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web/example.h" -F "UploadJSON=@../web/exampleh.json" http://localhost:8000/upload?DestFileName=main.h\&'Path=mypath/';
 ```	
 
-# 14.    TEST OF DOWNLOADING A FILE WITH A VALID TOKEN, access must be accepted   
+#### 14.    TEST OF DOWNLOADING A FILE WITH A VALID TOKEN, access must be accepted   
 
 ```bash
-curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XGET http://${server}:${repository_port}/download?filepath=mypath\&filename=main.c ;
+curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/download?filepath=mypath\&filename=main.c ;
 ```
 
-# 15.    TEST OF DOWNLOADING A FILE WITH A VALID TOKEN into a FILE, access must be accepted    
+#### 15.    TEST OF DOWNLOADING A FILE WITH A VALID TOKEN into a FILE, access must be accepted    
 
 ```bash
-curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XGET http://${server}:${repository_port}/download?filepath=mypath\&filename=main.c --output main.c ;
+curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/download?filepath=mypath\&filename=main.c --output main.c ;
 ```
 
-# 16.    TEST OF DOWNLOADING METADATA WITH A VALID TOKEN for a path and a filename, access must be accepted  
+#### 16.    TEST OF DOWNLOADING METADATA WITH A VALID TOKEN for a path and a filename, access must be accepted  
 
 ```bash
-curl -s -H "Authorization: OAuth ${mytoken}" -XGET http://${server}:${repository_port}/query_metadata?Path=mypath%2F\&filename=main.c; 
+curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -XGET http://localhost:8000/query_metadata?Path=mypath%2F\&filename=main.c; 
 ```
 
-# 17.     TEST OF DOWNLOADING METADATA WITH A VALID TOKEN for files in a path, access must be accepted 
+#### 17.     TEST OF DOWNLOADING METADATA WITH A VALID TOKEN for files in a path, access must be accepted 
 
 ```bash
-curl -s -H "Authorization: OAuth ${mytoken}" -XGET http://${server}:${repository_port}/query_metadata?Path=mypath%2F ;
+curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -XGET http://localhost:8000/query_metadata?Path=mypath%2F ;
 ```
 
-# 18.     TEST OF DOWNLOADING METADATA WITH A VALID TOKEN and USER DEFINED QUERY  
+#### 18.     TEST OF DOWNLOADING METADATA WITH A VALID TOKEN and USER DEFINED QUERY  
 
 ```bash
-curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XGET http://${server}:${repository_port}/es_query_metadata?QueryBody="\{\"query\":\{\"bool\":\{\"must\":\[\{\"match\":\{\"path\":\"mypath/\"\}\}\]\}\}\}";
+curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/es_query_metadata?QueryBody="\{\"query\":\{\"bool\":\{\"must\":\[\{\"match\":\{\"path\":\"mypath/\"\}\}\]\}\}\}";
 ```
 
 
