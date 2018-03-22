@@ -109,10 +109,10 @@ Please [create](https://github.com/jmmontanana/phantom_repository/issues) an iss
 ## Main Contributors
 
 **Montanana, Jose Miguel, HLRS**
-+ [github/hpcfapix](https://github.com/jmmontanana)
++ [github/jmmontanana](https://github.com/jmmontanana)
 
 **Cheptsov, Alexey, HLRS**
-+ [github/hpcfapix](https://github.com/alexey-cheptsov)
++ [github/cheptsov](https://github.com/alexey-cheptsov)
 
 
 
