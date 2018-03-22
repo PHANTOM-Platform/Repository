@@ -18,14 +18,14 @@ Please, replace the values of the parameters for the appropiate values in your c
 
 
 
-#### SCRIPT FOR DELETE DATABASE
+#### 1. SCRIPT FOR DELETE DATABASE
 Script for deleting ALL the uploaded files and drop the Metadata stored in the database. It requires confirmation:
 
 ```bash
 bash delete_db.sh -s localhost -port 8000 ;
 ```
 
-#### SCRIPT FOR THE CREATION OF A NEW DATABASE
+#### 2. SCRIPT FOR THE CREATION OF A NEW DATABASE
 This script prepares the system for running the other scripts described below.
 This script creates the required structure at the database for storing the Metadata:
 
@@ -33,7 +33,7 @@ This script creates the required structure at the database for storing the Metad
 bash create_db.sh -s localhost -port 8000 ;
 ```
 
-#### SCRIPT FOR REGISTERING A NEW USER 
+#### 3. SCRIPT FOR REGISTERING A NEW USER 
 This script registers a new user and its password:
 
 ```bash
@@ -41,7 +41,7 @@ bash register_user.sh -e bob@example.com -pw 1234 -s localhost -port 8000 ;
 ```
 
 
-#### SCRIPT FOR THE GENERATION OF A NEW AUTHORIZATION TOKEN 
+#### 4. SCRIPT FOR THE GENERATION OF A NEW AUTHORIZATION TOKEN 
 This script takes as autentication inputs the user_id and the user_password, and generates an authorization token with a limited life.
 As default value, the generated tokens experire after 1 month.
 
@@ -50,7 +50,7 @@ bash get_token.sh -e bob@example.com -pw 1234 -s localhost -port 8000 ;
 ```
 
 
-#### SCRIPT FOR TEST IF A TOKEN HAS EXPIRED ITS TIMELIFE 
+#### 5. SCRIPT FOR TEST IF A TOKEN HAS EXPIRED ITS TIMELIFE 
 
 This script takes a token and returns if it has expired or not, this script does NOT provide any other information such which user genereated it.
 
@@ -60,7 +60,7 @@ It is useful only when we don't know if the token has expired.
 bash get_token.sh verify_token.sh -t 141r2342135412351.321351235 -s localhost -port 8000 ;
 ```
 
-#### SCRIPT FOR UPLOADING A FILE AND ITS METADATA
+#### 6. SCRIPT FOR UPLOADING A FILE AND ITS METADATA
 
 This script takes a token and returns if it has expired or not, this script does NOT provide any other information such which user genereated it.
 
@@ -71,35 +71,35 @@ bash get_token.sh verify_token.sh -t 141r2342135412351.321351235 -s localhost -p
 ```
 
 
-#### SCRIPT FOR DOWNLOADING A FILE  
+#### 7. SCRIPT FOR DOWNLOADING A FILE  
 
 This script takes a token and returns if it has expired or not, this script does NOT provide any other information such which user genereated it.
 
 It is useful only when we don't know if the token has expired.
  
 ```bash
-bash repo_put.sh -t ${newtoken} -sfp "../web/example.h" -sjp "../web/exampleh.json" -dp "main.h" -df "mypath/" -s localhost -port 8000 ;
+bash repo_put.sh -t 141r2342135412351.321351235 -sfp "../web/example.h" -sjp "../web/exampleh.json" -dp "main.h" -df "mypath/" -s localhost -port 8000 ;
 ```
 
-#### SCRIPT FOR DOWNLOADING METADATA OF A SINGLE FILE 
+#### 8. SCRIPT FOR DOWNLOADING METADATA OF A SINGLE FILE 
 
 This script takes a token and returns if it has expired or not, this script does NOT provide any other information such which user genereated it.
 
 It is useful only when we don't know if the token has expired.
  
 ```bash
-bash repo_get_file.sh -t ${newtoken} -file "main.h" -path "mypath/" -s localhost -port 8000 ;
+bash repo_get_file.sh -t 141r2342135412351.321351235 -file "main.h" -path "mypath/" -s localhost -port 8000 ;
 ```
 
 
-#### SCRIPT FOR DOWNLOADING METADATA OF THE FILES IN A SINGLE FOLDER 
+#### 9. SCRIPT FOR DOWNLOADING METADATA OF THE FILES IN A SINGLE FOLDER 
 
 This script takes a token and returns if it has expired or not, this script does NOT provide any other information such which user genereated it.
 
 It is useful only when we don't know if the token has expired.
  
 ```bash
-bash repo_get_file.sh -t ${newtoken} -path "mypath/" -s localhost -port 8000 ;
+bash repo_get_file.sh -t 141r2342135412351.321351235 -path "mypath/" -s localhost -port 8000 ;
 ```
 
 
