@@ -2,12 +2,10 @@
 
 > PHANTOM REPOSITORY server interface between different PHANTOM tools, storing files and the metadata related to them. 
 
-
 ## Introduction
 The purpose of the scripts in this folder is to facilitate the use of the Repository, both to upload files and metadata, and to access the information stored there.
 
 These scripts also aim to serve as an example of the authentication and authorization process based on tokens.
-
 
 ## List and description the scripts
 
@@ -15,8 +13,6 @@ Here is shown the differente available scripts.
 The parameters are filled with some values such the access path to the REPOSITORY as localhost:8000.
 
 Please, replace the values of the parameters for the appropiate values in your case.
-
-
 
 #### 1. SCRIPT FOR DELETE DATABASE
 Script for deleting ALL the uploaded files and drop the Metadata stored in the database. It requires confirmation:
@@ -116,10 +112,10 @@ Please [create](https://github.com/jmmontanana/phantom_repository/issues) an iss
 ## Main Contributors
 
 **Montanana, Jose Miguel, HLRS**
-+ [github/hpcfapix](https://github.com/jmmontanana)
++ [github/jmmontanana](https://github.com/jmmontanana)
 
 **Cheptsov, Alexey, HLRS**
-+ [github/hpcfapix](https://github.com/alexey-cheptsov)
++ [github/cheptsov](https://github.com/alexey-cheptsov)
 
 
 
