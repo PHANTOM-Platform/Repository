@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>PHANTOM REPOSITORY</title>
+	<!-- link rel="stylesheet" type="text/css" href="style.css"-->
+	<style>
+		ul.menuphantom {
+			list-style-type: none;
+			margin: 0;
+			padding: 0;
+			overflow: hidden;
+			background-color: #333;
+		}
+
+		li.menuphantom {
+			float: left;
+		}
+
+		li a {
+			display: block;
+			color: white;
+			text-align: center;
+			padding: 14px 16px;
+			text-decoration: none;
+		}
+
+		li a:hover {
+			background-color: #111;
+		}
+	</style>
+  </head>
+
+<body>
+<div id="menu_phantom">
+<ul class="menuphantom">
+        <li class="menuphantom"><a href="upload_file.html">Upload File</a></li>
+		<li class="menuphantom"><a href="example.json">Download example.json</a></li>
+        <li class="menuphantom"><a href="download_file.html">Download File</a></li>
+		<li class="menuphantom"><a class="active" href="query_metadata.html">Query metadata</a></li>		
+</ul></div>
+
+<h1><b>QUERY METADATA FROM THE REPOSITORY</b></h1>
+
+<hr> 
+<h2><b> Online formular: Retrieve Metadata</b></h2>
+    <form ref='queryForm'
+      id='queryForm'
+      action='http://localhost:8000/query_metadata'
+      method='get'
+      encType="multipart/form-data">
+        Destination Path (optional): <input type="text" name="Path" value="mypath/"> leave empty if not wish to filter by path<br>
+        Destination Filename (optional):<input type="text" name="filename" value="main.c"> leave empty if not wish to filter by file-name<br>       
+        <input type="hidden" name="pretty" value="true">
+    <!-- upload button-->
+    <center> <input type='submit' value='Perform query!' /> </center>
+    </form>
+
+<hr>
+<h2><b> CAUTION:<b></h2>
+<ul style="list-style-type:disc"> 
+	<li> Field names in the json must be lower-case </li><br>
+	<li> The path and the fileName are case sensitive (put the correct uper or lower case) </li><br> 
+</ul>
+
+<hr> 
+<b>Tested command line example with curl:</b>
+<p style="color:DodgerBlue;">
+curl -XGET 'http://localhost:8000/query_metadata?Path=mypath%2F&filename=main.c'<br>
+
+curl -XGET 'http://localhost:8000/query_metadata?filename=main.c'<br>
+
+curl -XGET 'http://localhost:8000/query_metadata?Path=mypath%2F'
+</p>
+
+
+<hr>
+<h1><b>FOR MORE COMPLEX "ELASTICSEARCH" QUERIES ON METADATA FROM THE REPOSITORY</b></h1>
+
+<hr>
+<h2><b> Online formular: </b></h2>
+
+    <form ref='esqueryForm'
+      id='esqueryForm'
+      action='http://localhost:8000/es_query_metadata'
+      method='get'
+      encType="multipart/form-data">
+      <!--     enctype='application/json'-->
+        ES Query (MANDATORY): 
+        <!-- <textarea name="QueryBody" cols="80" rows="4">'{ query: { bool: { must: [ { match: { "path": "mypath\" } } , { match: { "filename" : "main.c" } } ] } } }'</textarea>
+		single quote &#39; -->
+        <input type="text" name="QueryBody" value='{ "query": { "bool": { "must": [ { "match": { "path": "mypath/" }}, { "match": { "filename" : "main.c" } } ] }}}' style="font-size:11pt;height:20px;width:800px;">
+        <input type="hidden" name="pretty" value="true">
+        <br>        
+    <!-- upload button-->
+    <center> <input type='submit' value='Perform query!' /> </center>
+    </form>
+
+<hr>
+<b>Tested command line example with curl (warning: not put empty spaces in the query):</b>
+<p style="color:DodgerBlue;">
+curl -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/es_query_metadata?QueryBody="\{\"query\":\{\"bool\":\{\"must\":\[\{\"match\":\{\"path\":\"mypath/\"\}\},\{\"match\":\{\"filename\":\"main.c\"\}\}\]\}\}\}"
+<br>
+curl -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/es_query_metadata?QueryBody="\{\"query\":\{\"bool\":\{\"must\":\[\{\"match\":\{\"filename\":\"main.c\"\}\}\]\}\}\}"
+<br>
+curl -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/es_query_metadata?QueryBody="\{\"query\":\{\"bool\":\{\"must\":\[\{\"match\":\{\"path\":\"mypath/\"\}\}\]\}\}\}"
+
+<!-- <br> -->
+<!-- curl -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/es_query_metadata?QueryBody="\{\"query\":\{\"bool\":\{\"must\":\[\{\"match\":\{\"path\":\"/phantom/usecases/hpc/serial/\"\}\},\{\"match\":\{\"filename\":\"HPC_serial.tgz\"\}\}\]\}\}\}" -->
+</p>
+
+<!-- curl -H "Content-Type: multipart/form-data" -XGET http://localhost:9400/repository_db/metadata/_search -d '{ "query": { "bool": { "must": [ { "match": { "path": "mypath/" }}, { "match": { "filename" : "main.c" } } ] }}}'  -->
+
+<hr> 
+<p><font size="2">PHANTOM project: 2018</font></p>
+  </body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>PHANTOM REPOSITORY</title>
+	<!-- link rel="stylesheet" type="text/css" href="style.css"-->
+	<style>
+		ul.menuphantom {
+			list-style-type: none;
+			margin: 0;
+			padding: 0;
+			overflow: hidden;
+			background-color: #333;
+		}
+
+		li.menuphantom {
+			float: left;
+		}
+
+		li a {
+			display: block;
+			color: white;
+			text-align: center;
+			padding: 14px 16px;
+			text-decoration: none;
+		}
+
+		li a:hover {
+			background-color: #111;
+		}
+	</style>
+  </head>
+
+<body>
+
+<div id="menu_phantom">
+<ul class="menuphantom">
+        <li class="menuphantom"><a class="active" href="upload_file.html">Upload File</a></li>
+		<li class="menuphantom"><a href="example.json">Download example.json</a></li>
+		<li class="menuphantom"><a href="download_file.html">Download File</a></li>
+		<li class="menuphantom"><a href="query_metadata.html">Query metadata</a></li>
+</ul></div>
+
+<h1><b>UPLOAD FILE TO THE REPOSITORY</b></h1>
+
+<hr> <br>
+<h2><b> Online formular: </b></h2>
+
+    <form ref='uploadForm'
+      id='uploadForm'
+      action='http://localhost:8000/upload'
+      method='post'
+      encType="multipart/form-data">
+      
+      
+    <!--<fieldset><legend></legend>  -->
+        Destination Path:  <input type="text" name="Path" value="mypath/"> try a single folder<br>
+        Destination Filename:     <input type="text" name="DestFileName" value="main.c"><br>
+        &emsp; Metadata in JSON format:   <input type="text" name="RawJSON" value='{ "path":"mypath/", "filename":"main.c", "data_type":"Usercase", "name":"NeuralNet", "content":"src22" }' 
+style="font-size:11pt;height:20px;width:800px;">
+<br>
+        <b>OR</b><br>
+        &emsp; Json File <input type="file" name="UploadJSON" /><br>
+        File to upload (REQUIRED) <input type="file" name="UploadFile" /><br>
+        
+    <!-- upload button-->
+    <br><center> <input type='submit' value='Upload File!' /> </center>
+    <!--</fieldset>-->
+    </form>
+
+<hr> <br>
+<h2><b> CAUTION:<b></h2>
+<ul style="list-style-type:disc">
+	<li> A new upload will delete the previous metadata with the new one !!</li><br>
+	<li> Field names in the json must be lower-case </li><br>
+	<li> The path and the fileName are case sensitive (put the correct uper or lower case) </li><br>
+	<li> Current version is MANDATORY that the json specifies the path and the filename </li><br>
+	<!-- #if not provided any json, then it is registered only the path and the filename-->
+</ul>
+
+<hr> <br>
+<b>Tested command line example with curl:</b>
+<p style="color:DodgerBlue;">
+curl -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@/home/jmontana/test.c" -F "RawJSON={ \"path\":\"mypath/\", \"filename\":\"main.c\", \"data_type\":\"Usercase\", \"name\":\"NeuralNet\", \"content\":\"src\" }" http://localhost:8000/upload?DestFileName=main.c\&'Path=mypath/' 
+</p>
+
+<br>
+<b>OR</b>
+<br>
+
+<p style="color:DodgerBlue;">
+curl -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@/home/jmontana/test.c" -F "UploadJSON=@/home/jmontana/example.json" http://localhost:8000/upload?DestFileName=main.c\&'Path=mypath/'
+</p>
+
+<hr> <br>
+<p><font size="2">PHANTOM project: 2018</font></p>
+
+  </body>
+</html>
+

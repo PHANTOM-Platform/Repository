@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>PHANTOM REPOSITORY</title>
+	<!-- link rel="stylesheet" type="text/css" href="style.css"-->
+	<style>
+		ul.menuphantom {
+			list-style-type: none;
+			margin: 0;
+			padding: 0;
+			overflow: hidden;
+			background-color: #333;
+		}
+
+		li.menuphantom {
+			float: left;
+		}
+
+		li a {
+			display: block;
+			color: white;
+			text-align: center;
+			padding: 14px 16px;
+			text-decoration: none;
+		}
+
+		li a:hover {
+			background-color: #111;
+		}
+	</style>
+  </head>
+
+<body>
+<div id="menu_phantom">
+<ul class="menuphantom">
+        <li class="menuphantom"><a href="upload_file.html">Upload File</a></li>
+		<li class="menuphantom"><a href="example.json">Download example.json</a></li>
+        <li class="menuphantom"><a href="download_file.html">Download File</a></li>
+		<li class="menuphantom"><a href="query_metadata.html">Query metadata</a></li>
+		
+		<li class="menuphantom"><a class="active" href="signup.html">Signup</a></li>		
+</ul></div>
+
+<h1><b>Singup</b></h1>
+
+<hr> 
+<h2><b> Online formular: </b></h2>
+
+    <form ref='queryForm'
+      id='queryForm'
+      action='http://localhost:8000/signup'
+      method='get'
+      encType="multipart/form-data">
+        Email (MANDATORY): <input type="text" name="email" value="bob"> <br>
+        Password (MANDATORY):<input type="text" name="pw" value="1234abc">  <br>        
+    <!-- upload button-->
+    <center> <input type='submit' value='Singup' /> </center>
+    </form>
+<hr>
+
+<p><font size="2">PHANTOM project: 2018</font></p>
+  </body>
+</html>
