@@ -10,15 +10,7 @@
 repo_port=8000
 
 cd server_code
-bash ../stop.sh
-
-#run this script to start the repository server
-if [ ! -e ~/phantom_servers/ ]; then
-	mkdir ~/phantom_servers/
-fi;
-if [ ! -e ~/phantom_servers/phantom_repository ]; then
-	mkdir ~/phantom_servers/phantom_repository;
-fi;
+bash ../stop-repo.sh
 
 ../dist/nodejs/bin/node app.js &
 pid=$!;
