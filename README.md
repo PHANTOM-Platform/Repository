@@ -77,8 +77,7 @@ bash start-es.sh
 ```
 
 
-
-## 3.- Start/Stop the server
+## 4.- Start/Stop the server
 
 
 Start a PHANTOM REPOSITORY by executing, it is important to not do as root:
@@ -111,7 +110,15 @@ bash stop-repo.sh
 ```
 
 
-## 4.- Example of use
+## 5.- Configuration of USERS' accounts
+
+After the installation, and before users can use the repository, it is needed to register the users.
+
+The script setup-new-server.sh provides an automatic method for register multiple users.
+In particular, the script registers the list of users_ids and passwords from the file list_of_users.ini.
+
+
+## 6.- Example of use
 
 The folders [DEMO_CURL][demo_curl] and [DEMO_SCRIPTS][demo_scripts] shows examples of using the PHANTOM REPOSITORY
 
