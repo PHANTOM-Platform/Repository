@@ -96,6 +96,12 @@ Test of the Nodejs Front-end running service:
 curl localhost:8000
 ```
 
+Test if the Front-end has access to the Elasticsearch DataBase Server.
+
+```bash
+curl -s http://localhost:8000/verify_es_connection;
+```
+
 For more details on setup the server, please look into the examples of Admin-use at [DEMO_CURL][demo_curl] or [DEMO_SCRIPTS][demo_scripts].
 
 
