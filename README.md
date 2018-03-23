@@ -1,108 +1,99 @@
-# Scripts for accessing the PHANTOM REPOSITORY server
+# PHANTOM REPOSITORY server
 
 > PHANTOM REPOSITORY server interface between different PHANTOM tools, storing files and the metadata related to them. 
 
+
 ## Introduction
-The purpose of the scripts in this folder is to facilitate the use of the Repository, both to upload Files and Metadata and to access the information stored there.
-
-These scripts also aim to serve as an example of the authentication and authorization process based on tokens.
-
-## List and description the USERS' scripts
-
-Here is shown the different available scripts.
-The parameters are filled with some values such the access path to the REPOSITORY as localhost:8000.
-
-Please, replace the values of the parameters for the appropriate values in your case.
-
-A video demonstration of this scripts is available at [YOUTUBE Scripts DEMO][video_scripts].
+The PHANTOM REPOSITORY server is composed of two components: a web server and a data storage system. 
+The web server provides various functionalities for data query and data analysis via RESTful APIs with documents in JSON format. 
+The server's URL are "localhost:8000" by default.
 
 
-
-####   SCRIPT FOR THE GENERATION OF A NEW AUTHORIZATION TOKEN 
-This script takes as authentication inputs the user_id and the user_password and generates an authorization token with a limited life.
-As the default value, the generated tokens expire after 1 month.
+## Prerequisites
+The server is implemented using Node.js, and connects to Elasticsearch to store and access Metadata. 
+Before you start installing the required components, please note that the installation and setup steps mentioned below assume that you are running a current Linux as operating system. 
+The installation was tested with Ubuntu 16.04 LTS.
+Before you can proceed, please clone the repository:
 
 ```bash
-bash get_token.sh -e bob@example.com -pw 1234 -s localhost -port 8000 ;
+git clone https://github.com/PHANTOM-Platform/Repository.git
 ```
 
 
-####  SCRIPT FOR TEST IF A TOKEN HAS EXPIRED ITS TIMELIFE 
+### Dependencies
+This project requires the following dependencies to be installed:
 
-This script takes a token and returns if it has expired or not, this script does NOT provide any other information such which user generated it.
-
-It is useful only when we don't know if the token has expired.
- 
-```bash
-bash get_token.sh verify_token.sh -t 141r2342135412351.321351235 -s localhost -port 8000 ;
-```
-
-####   SCRIPT FOR UPLOADING A FILE AND ITS METADATA
-
-This script takes a token and returns if it has expired or not, this script does NOT provide any other information such which user generated it.
-
-It is useful only when we don't know if the token has expired.
- 
-```bash
-bash get_token.sh verify_token.sh -t 141r2342135412351.321351235 -s localhost -port 8000 ;
-```
+| Component         | Homepage                                           | Version   |
+|------------------ |--------------------------------------------------  |---------  |
+| Elasticsearch     | https://www.elastic.co/products/elasticsearch      | = 2.4.0  |
+| Node.js           | https://apr.apache.org/                            | >= 4.5    |
+| npm               | https://www.npmjs.com/                             | >= 1.3.6  |
 
 
-#### SCRIPT FOR DOWNLOADING A FILE  
-
-This script takes as inputs the token and the path and filename of the file and returns the FILE in that folder.
- 
-```bash
-bash repo_put.sh -t 141r2342135412351.321351235 -sfp "../web/example.h" -sjp "../web/exampleh.json" -dp "main.h" -df "mypath/" -s localhost -port 8000 ;
-```
-
-####   SCRIPT FOR DOWNLOADING METADATA 
-
-This script takes as inputs the token and the path and filename of the file and returns the METADATA of that SINGLE FILE in that folder.
-
- 
-```bash
-bash repo_get_file.sh -t 141r2342135412351.321351235 -file "main.h" -path "mypath/" -s localhost -port 8000 ;
-```
-
-Alternativelly, we can query for the METADATA for ALL THE FILES IN THE SAME FOLDER with:
- 
-```bash
-bash repo_get_file.sh -t 141r2342135412351.321351235 -path "mypath/" -s localhost -port 8000 ;
-```
-
-
-
-## List and description the ADMIN's scripts
-
-Here is shown the different available scripts.
-The parameters are filled with some values such the access path to the REPOSITORY as localhost:8000.
-
-Please, replace the values of the parameters for the appropriate values in your case.
-
-
-####   SCRIPT FOR DELETE DATABASE
-Script for deleting ALL the uploaded files and drop the Metadata stored in the database. It requires confirmation:
+#### Installation of npm
+When using Ubuntu, for example, please install npm as follows:
 
 ```bash
-bash delete_db.sh -s localhost -port 8000 ;
+sudo apt-get install npm
 ```
 
-####   SCRIPT FOR THE CREATION OF A NEW DATABASE
-This script prepares the system for running the users' scripts described below.
-This script creates the required structure at the database for storing the Metadata:
+Alternativelly, you can install it using your operating system's software installer.
+
+
+## Installation of other components
+This section assumes that you've successfully installed all required dependencies as described in the previous paragraphs.  
+
+To ease the installation and preparation process, there is one shell script provided, which downloads and installs all the dependencies and packages. 
+Installs Nodejs 9.4.0. Please choose the appropiate shell scripts depending on your Operating System :
+
+
+Shell script for 32bits:
 
 ```bash
-bash create_db.sh -s localhost -port 8000 ;
+bash setup-server-32.sh
 ```
 
-####  SCRIPT FOR REGISTERING A NEW USER 
-This script registers a new user and its password:
+or the Shell script for 64bits:
 
 ```bash
-bash register_user.sh -e bob@example.com -pw 1234 -s localhost -port 8000 ;
+bash setup-server-64.sh
 ```
 
+The default port is 8000, which can be modified at the file app.js.
+
+
+#### Websockets plugin
+
+Pending to be implemented.
+
+
+## Start/Stop the server
+Start a PHANTOM REPOSITORY by executing, it is important to not do as root:
+For security reasons, the services may not start if they are requested from root.
+
+```bash
+bash start.sh
+```
+
+You can use the following command to verify if the database and the server are running
+
+Test of the Nodejs Front-end running service:
+
+```bash
+curl localhost:8000
+```
+
+After the usage, the server can be stopped by:
+```bash
+./stop.sh
+```
+
+
+## Example of use
+
+The folders [DEMO_CURL][demo_curl] and [DEMO_SCRIPTS][demo_scripts] shows examples of using the PHANTOM REPOSITORY.
+
+Please access to those folders to get more details.
 
 
 ## Acknowledgment
@@ -135,8 +126,7 @@ Copyright (C) 2018 University of Stuttgart
 
 [Apache License v2](LICENSE).
 
-[video_curl]: https://youtu.be/3W8a3HV-30g
-[video_scripts]: https://youtu.be/-mqxA1l2K7A
+
 [demo_scripts]: https://github.com/PHANTOM-Platform/Repository/tree/master/demo_scripts
 [demo_curl]: https://github.com/PHANTOM-Platform/Repository/tree/master/demo_curl 
 [phantom]: http://www.phantom-project.org 
