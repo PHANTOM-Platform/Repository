@@ -101,7 +101,7 @@ For more details on setup the server, please look into the examples of Admin-use
 
 After the usage, the server can be stopped by:
 ```bash
-./stop-repo.sh
+bash stop-repo.sh
 ```
 
 
