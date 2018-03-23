@@ -1,11 +1,30 @@
 #!/usr/bin/env node
+// Author: J.M.Montañana HLRS 2018
+//   If you find any bug, please notify to hpcjmont@hlrs.de
+
+// Copyright (C) 2018 University of Stuttgart
+// 
+//     Licensed under the Apache License, Version 2.0 (the "License");
+//     you may not use this file except in compliance with the License.
+//     You may obtain a copy of the License at
+//  
+//       http://www.apache.org/licenses/LICENSE-2.0
+//  
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
+
 const colours = require('./colours');
 const MetadataModule = require('./support-metadata'); 
 const UsersModule = require('./support-usersaccounts');
 
 const supportmkdir = require('./mkdirfullpath'); 
 	//privides the function register_json;
-const express = require('express');
+const express = require('express'),
+    ipfilter = require('express-ipfilter').IpFilter;
+const ips = ['::ffff:127.0.0.1','127.0.0.1'];
 const app = express();
 const fileUpload = require('express-fileupload');
 var fs = require('fs'); 
@@ -946,7 +965,7 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 //**********************************************************
 //example:
 // curl -H "Content-Type: text/plain" -XPOST http://localhost:8000/signup?email="bob"\&pw="1234"
-app.post('/signup', function(req, res) {
+app.post('/signup',ipfilter(ips, {mode: 'allow'}), function(req, res) {
 	"use strict"; //Current password does not match
 	var email= find_param_email(req);
 	var pw=find_param_pw(req);
