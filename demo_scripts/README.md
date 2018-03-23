@@ -2,12 +2,12 @@
 
 > PHANTOM REPOSITORY server interface between different PHANTOM tools, storing files and the metadata related to them. 
 
-## Introduction
+## 1.- Introduction
 The purpose of the scripts in this folder is to facilitate the use of the Repository, both to upload Files and Metadata and to access the information stored there.
 
 These scripts also aim to serve as an example of the authentication and authorization process based on tokens.
 
-## List and description the USERS' scripts
+## 2.- List and description the USERS' scripts
 
 Here is shown the different available scripts.
 The parameters are filled with some values such the access path to the REPOSITORY as localhost:8000.
@@ -73,7 +73,7 @@ bash repo_get_file.sh -t 141r2342135412351.321351235 -path "mypath/" -s localhos
 
 
 
-## List and description the ADMIN's scripts
+## 3.- List and description the ADMIN's scripts
 
 Here is shown the different available scripts.
 The parameters are filled with some values such the access path to the REPOSITORY as localhost:8000.
