@@ -117,6 +117,12 @@ After the installation, and before users can use the repository, it is needed to
 The script setup-new-server.sh provides an automatic method for register multiple users.
 In particular, the script registers the list of users_ids and passwords from the file list_of_users.ini.
 
+```bash
+bash setup-new-server.sh
+```
+
+NOTICE: For securoity reasons, users' accounts can be ONLY registered on the server. Requests from different IPs will be rejected.
+        
 
 ## 6.- Example of use
 
