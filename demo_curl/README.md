@@ -86,7 +86,7 @@ Please, replace the values of the parameters for the appropriate values in your 
 ####  CHECK if the Repository server is running   
 
 ```bash
-verify_reponse localhost 8000;
+curl http://localhost:8000;
 ```
 
 #### CHECK if Elasticsearch is running  
