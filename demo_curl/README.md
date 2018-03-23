@@ -117,9 +117,11 @@ This command creates the required structure in the database for storing the Meta
 
 ```bash
 curl -s -XGET http://localhost:8000/new_db;
+```
 
 #### REGISTER A NEW USER
 This command registers a new user and its password:
+
 
 ```bash
 curl -s -H "Content-Type: application/json" -XPOST http://localhost:8000/signup?email="montana@abc.com"\&pw="new";
