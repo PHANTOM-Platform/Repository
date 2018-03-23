@@ -3,13 +3,13 @@
 > PHANTOM REPOSITORY server interface between different PHANTOM tools, storing files and the metadata related to them. 
 
 
-## Introduction
+## 1.- Introduction
 The purpose of the examples in this folder is to facilitate a low-level access to the Repository, both to upload Files and Metadata and to access the information stored there.
 
 The examples here also aim to serve as an example of the authentication and authorization process based on tokens.
 
 
-## List and description the USERS' commands with CURL
+## 2.- List and description the USERS' commands with CURL
 
 Here is shown the different available scripts.
 The parameters are filled with some values such the access path to the REPOSITORY as localhost:8000.
@@ -73,7 +73,7 @@ curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -XGET http://localhost:8000/
 ```
   
 
-## List and description the ADMIN's commands with CURL
+## 3.- List and description the ADMIN's commands with CURL
 
 Here is shown the different available scripts.
 The parameters are filled with some values such the access path to the REPOSITORY as localhost:8000.
