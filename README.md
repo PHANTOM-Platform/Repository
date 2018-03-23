@@ -25,7 +25,7 @@ This project requires the following dependencies to be installed:
 
 | Component         | Homepage                                           | Version   |
 |------------------ |--------------------------------------------------  |---------  |
-| Elasticsearch     | https://www.elastic.co/products/elasticsearch      | = 2.4.0  |
+| Elasticsearch     | https://www.elastic.co/products/elasticsearch      | = 2.4.X  |
 | Node.js           | https://apr.apache.org/                            | >= 4.5    |
 | npm               | https://www.npmjs.com/                             | >= 1.3.6  |
 
