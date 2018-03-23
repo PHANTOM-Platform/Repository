@@ -53,7 +53,7 @@ bash get_token.sh verify_token.sh -t 141r2342135412351.321351235 -s localhost -p
 This script takes as inputs the token and the path and filename of the file and returns the FILE in that folder.
  
 ```bash
-bash repo_put.sh -t 141r2342135412351.321351235 -sfp "../web/example.h" -sjp "../web/exampleh.json" -dp "main.h" -df "mypath/" -s localhost -port 8000 ;
+bash repo_put.sh -t 141r2342135412351.321351235 -sfp "../web/example.h" -sjp "../web/exampleh.json" -df "mypath/" -dp "main.h" -s localhost -port 8000 ;
 ```
 
 ####   SCRIPT FOR DOWNLOADING METADATA 
@@ -62,7 +62,7 @@ This script takes as inputs the token and the path and filename of the file and 
 
  
 ```bash
-bash repo_get_file.sh -t 141r2342135412351.321351235 -file "main.h" -path "mypath/" -s localhost -port 8000 ;
+bash repo_get_file.sh -t 141r2342135412351.321351235 -path "mypath/" -file "main.h" -s localhost -port 8000 ;
 ```
 
 Alternativelly, we can query for the METADATA for ALL THE FILES IN THE SAME FOLDER with:
