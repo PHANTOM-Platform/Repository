@@ -7,37 +7,18 @@ The purpose of the scripts in this folder is to facilitate the use of the Reposi
 
 These scripts also aim to serve as an example of the authentication and authorization process based on tokens.
 
-## List and description the scripts
+## List and description the USERS' scripts
 
 Here is shown the differente available scripts.
 The parameters are filled with some values such the access path to the REPOSITORY as localhost:8000.
 
 Please, replace the values of the parameters for the appropiate values in your case.
 
-#### 1. SCRIPT FOR DELETE DATABASE
-Script for deleting ALL the uploaded files and drop the Metadata stored in the database. It requires confirmation:
-
-```bash
-bash delete_db.sh -s localhost -port 8000 ;
-```
-
-#### 2. SCRIPT FOR THE CREATION OF A NEW DATABASE
-This script prepares the system for running the other scripts described below.
-This script creates the required structure at the database for storing the Metadata:
-
-```bash
-bash create_db.sh -s localhost -port 8000 ;
-```
-
-#### 3. SCRIPT FOR REGISTERING A NEW USER 
-This script registers a new user and its password:
-
-```bash
-bash register_user.sh -e bob@example.com -pw 1234 -s localhost -port 8000 ;
-```
+A video demostration of this scripts is available at [YOUTUBE Scripts DEMO][video_scripts].
 
 
-#### 4. SCRIPT FOR THE GENERATION OF A NEW AUTHORIZATION TOKEN 
+
+####   SCRIPT FOR THE GENERATION OF A NEW AUTHORIZATION TOKEN 
 This script takes as autentication inputs the user_id and the user_password, and generates an authorization token with a limited life.
 As default value, the generated tokens experire after 1 month.
 
@@ -46,7 +27,7 @@ bash get_token.sh -e bob@example.com -pw 1234 -s localhost -port 8000 ;
 ```
 
 
-#### 5. SCRIPT FOR TEST IF A TOKEN HAS EXPIRED ITS TIMELIFE 
+####  SCRIPT FOR TEST IF A TOKEN HAS EXPIRED ITS TIMELIFE 
 
 This script takes a token and returns if it has expired or not, this script does NOT provide any other information such which user genereated it.
 
@@ -56,7 +37,7 @@ It is useful only when we don't know if the token has expired.
 bash get_token.sh verify_token.sh -t 141r2342135412351.321351235 -s localhost -port 8000 ;
 ```
 
-#### 6. SCRIPT FOR UPLOADING A FILE AND ITS METADATA
+####   SCRIPT FOR UPLOADING A FILE AND ITS METADATA
 
 This script takes a token and returns if it has expired or not, this script does NOT provide any other information such which user genereated it.
 
@@ -67,36 +48,61 @@ bash get_token.sh verify_token.sh -t 141r2342135412351.321351235 -s localhost -p
 ```
 
 
-#### 7. SCRIPT FOR DOWNLOADING A FILE  
+#### SCRIPT FOR DOWNLOADING A FILE  
 
-This script takes a token and returns if it has expired or not, this script does NOT provide any other information such which user genereated it.
-
-It is useful only when we don't know if the token has expired.
+This script takes as inputs the token and the path and filename of the file, and returns the FILE in that folder.
  
 ```bash
 bash repo_put.sh -t 141r2342135412351.321351235 -sfp "../web/example.h" -sjp "../web/exampleh.json" -dp "main.h" -df "mypath/" -s localhost -port 8000 ;
 ```
 
-#### 8. SCRIPT FOR DOWNLOADING METADATA OF A SINGLE FILE 
+####   SCRIPT FOR DOWNLOADING METADATA 
 
-This script takes a token and returns if it has expired or not, this script does NOT provide any other information such which user genereated it.
+This script takes as inputs the token and the path and filename of the file, and returns the METADATA of that SINGLE FILE in that folder.
 
-It is useful only when we don't know if the token has expired.
  
 ```bash
 bash repo_get_file.sh -t 141r2342135412351.321351235 -file "main.h" -path "mypath/" -s localhost -port 8000 ;
 ```
 
-
-#### 9. SCRIPT FOR DOWNLOADING METADATA OF THE FILES IN A SINGLE FOLDER 
-
-This script takes a token and returns if it has expired or not, this script does NOT provide any other information such which user genereated it.
-
-It is useful only when we don't know if the token has expired.
+Alternativelly, we can query for the METADATA for ALL THE FILES IN THE SAME FOLDER with:
  
 ```bash
 bash repo_get_file.sh -t 141r2342135412351.321351235 -path "mypath/" -s localhost -port 8000 ;
 ```
+
+
+
+## List and description the ADMIN's scripts
+
+Here is shown the differente available scripts.
+The parameters are filled with some values such the access path to the REPOSITORY as localhost:8000.
+
+Please, replace the values of the parameters for the appropiate values in your case.
+
+
+####   SCRIPT FOR DELETE DATABASE
+Script for deleting ALL the uploaded files and drop the Metadata stored in the database. It requires confirmation:
+
+```bash
+bash delete_db.sh -s localhost -port 8000 ;
+```
+
+####   SCRIPT FOR THE CREATION OF A NEW DATABASE
+This script prepares the system for running the other scripts described below.
+This script creates the required structure at the database for storing the Metadata:
+
+```bash
+bash create_db.sh -s localhost -port 8000 ;
+```
+
+####  SCRIPT FOR REGISTERING A NEW USER 
+This script registers a new user and its password:
+
+```bash
+bash register_user.sh -e bob@example.com -pw 1234 -s localhost -port 8000 ;
+```
+
 
 
 ## Acknowledgment
@@ -129,7 +135,8 @@ Copyright (C) 2018 University of Stuttgart
 
 [Apache License v2](LICENSE).
 
-
+[video_curl]: https://youtu.be/3W8a3HV-30g
+[video_scripts]: https://youtu.be/-mqxA1l2K7A
 [demo_scripts]: https://github.com/PHANTOM-Platform/Repository/tree/master/demo_scripts
 [demo_curl]: https://github.com/PHANTOM-Platform/Repository/tree/master/demo_curl 
 [phantom]: http://www.phantom-project.org 
