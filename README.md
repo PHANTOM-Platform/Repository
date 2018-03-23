@@ -3,15 +3,15 @@
 > PHANTOM REPOSITORY server interface between different PHANTOM tools, storing files and the metadata related to them. 
 
 
-## Introduction
+## 1.- Introduction
 The PHANTOM REPOSITORY server is composed of two components: a web server and a data storage system. 
 The web server provides various functionalities for data query and data analysis via RESTful APIs with documents in JSON format. 
-The server's URL are "localhost:8000" by default.
+The server's URL is "localhost:8000" by default.
 
 
-## Prerequisites
+## 2.- Prerequisites
 The server is implemented using Node.js, and connects to Elasticsearch to store and access Metadata. 
-Before you start installing the required components, please note that the installation and setup steps mentioned below assume that you are running a current Linux as operating system. 
+Before you start installing the required components, please note that the installation and setup steps mentioned below assume that you are running a current Linux as the operating system. 
 The installation was tested with Ubuntu 16.04 LTS.
 Before you can proceed, please clone the repository:
 
@@ -37,14 +37,14 @@ When using Ubuntu, for example, please install npm as follows:
 sudo apt-get install npm
 ```
 
-Alternativelly, you can install it using your operating system's software installer.
+Alternatively, you can install it using your operating system's software installer.
 
 
 ## Installation of other components
 This section assumes that you've successfully installed all required dependencies as described in the previous paragraphs.  
 
 To ease the installation and preparation process, there is one shell script provided, which downloads and installs all the dependencies and packages. 
-Installs Nodejs 9.4.0. Please choose the appropiate shell scripts depending on your Operating System :
+Installs Nodejs 9.4.0. Please choose the appropriate shell scripts depending on your Operating System :
 
 
 Shell script for 32bits:
@@ -62,12 +62,25 @@ bash setup-server-64.sh
 The default port is 8000, which can be modified at the file app.js.
 
 
-#### Websockets plugin
+The PHANTOM Repository relies on the Elasticsearch installed by the PHANTOM Monitoring Server.
+In case, that you wish to test the PHANTOM Repository without running or installing the PHANTOM Monitoring Server THEN you will need to set up an installation ElasticSearch.
+For such case we provide two additional scripts:
 
-Pending to be implemented.
+```bash
+bash setup-es.sh
+```
+
+and 
+
+```bash
+bash start-es.sh
+```
 
 
-## Start/Stop the server
+
+## 3.- Start/Stop the server
+
+
 Start a PHANTOM REPOSITORY by executing, it is important to not do as root:
 For security reasons, the services may not start if they are requested from root.
 
@@ -83,15 +96,18 @@ Test of the Nodejs Front-end running service:
 curl localhost:8000
 ```
 
+For more details on setup the server, please look into the examples of Admin-use at [DEMO_CURL][demo_curl] or [DEMO_SCRIPTS][demo_scripts].
+
+
 After the usage, the server can be stopped by:
 ```bash
 ./stop.sh
 ```
 
 
-## Example of use
+## 4.- Example of use
 
-The folders [DEMO_CURL][demo_curl] and [DEMO_SCRIPTS][demo_scripts] shows examples of using the PHANTOM REPOSITORY.
+The folders [DEMO_CURL][demo_curl] and [DEMO_SCRIPTS][demo_scripts] shows examples of using the PHANTOM REPOSITORY
 
 Please access to those folders to get more details.
 
@@ -104,6 +120,7 @@ The PHANTOM project receives funding under the European Union's Horizon 2020 Res
 ## Contributing
 Find a bug? Have a feature request?
 Please [create](https://github.com/jmmontanana/phantom_repository/issues) an issue.
+
 
 
 ## Main Contributors
