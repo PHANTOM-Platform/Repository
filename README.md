@@ -85,7 +85,7 @@ Start a PHANTOM REPOSITORY by executing, it is important to not do as root:
 For security reasons, the services may not start if they are requested from root.
 
 ```bash
-bash start.sh
+bash start-repo.sh
 ```
 
 You can use the following command to verify if the database and the server are running
@@ -101,7 +101,7 @@ For more details on setup the server, please look into the examples of Admin-use
 
 After the usage, the server can be stopped by:
 ```bash
-./stop.sh
+./stop-repo.sh
 ```
 
 
