@@ -19,7 +19,7 @@ exports.createToken = function(user_id) {
 	},(resultReject)=> {
 	//		console.log ("Could not register an existing token, please try again."); 
 	// 		console.log("Error registrando token en DB");
-			console.log("log: Bad Request: " + resultReject); 
+// 			console.log("log: Bad Request: " + resultReject); 
 			return("\n400: Bad Request "+resultReject+"\n"); 			
 	} );
 };

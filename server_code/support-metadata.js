@@ -1,3 +1,20 @@
+// Author: J.M.Montañana HLRS 2018
+//   If you find any bug, please notify to hpcjmont@hlrs.de
+// 
+// Copyright (C) 2018 University of Stuttgart
+// 
+//     Licensed under the Apache License, Version 2.0 (the "License");
+//     you may not use this file except in compliance with the License.
+//     You may obtain a copy of the License at
+//  
+//      http://www.apache.org/licenses/LICENSE-2.0
+//  
+//     Unless required by applicable law or agreed to in writing, software
+//     distributed under the License is distributed on an "AS IS" BASIS,
+//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//     See the License for the specific language governing permissions and
+//     limitations under the License.
+
 var express = require('express'); 
 
 function is_defined(variable) {
@@ -37,7 +54,7 @@ module.exports = {
 			host: mf_server,
 			log: 'error'
 		}); 
-		console.log("body" + body);
+// 		console.log("body" + body);
 		client.update({
 			index: my_index,
 			type: my_type, 
@@ -214,7 +231,7 @@ module.exports = {
 			});  
 			var result="";
 			var item = "";
-			console.log("query is "+JSON.stringify(bodyquery));
+// 			console.log("query is "+JSON.stringify(bodyquery));
 			client.search({
 				index: my_index,
 				type: my_type,

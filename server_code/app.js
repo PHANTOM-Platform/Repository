@@ -19,11 +19,12 @@
 const colours = require('./colours');
 const MetadataModule = require('./support-metadata'); 
 const UsersModule = require('./support-usersaccounts');
+const LogsModule = require('./support-logs');
 
 const supportmkdir = require('./mkdirfullpath'); 
 	//privides the function register_json;
-const express = require('express'),
-    ipfilter = require('express-ipfilter').IpFilter;
+const express = require('express');
+//     ipfilter = require('express-ipfilter').IpFilter;
 const ips = ['::ffff:127.0.0.1','127.0.0.1'];
 const app = express();
 const fileUpload = require('express-fileupload');
@@ -309,7 +310,7 @@ app.get('/examplec.json', function(req, res) {
 });
 
 //*******************************
-app.get('/query_metadata.html',middleware.ensureAuthenticated, function(req, res) {
+app.get('/query_metadata.html', function(req, res) {
 	var fs = require('fs');
 	var path = require('path');
 	var filePath = 'web/query_metadata.html';
@@ -334,7 +335,7 @@ app.get('/query_metadata.html',middleware.ensureAuthenticated, function(req, res
 	});
 });
 //**********************************************************
-app.get('/verify_es_connection', function(req, res) {
+app.get('/verify_es_connection', function(req, res) {	
 	var testhttp = require('http');
 	var contentType = 'text/plain'; 
 	testhttp.get('http://'+es_servername+':'+es_port+'/', function(rescode) {
@@ -353,45 +354,7 @@ app.get('/verify_es_connection', function(req, res) {
 	});
 
 });
-/*
-
-var bodyString =
-	'"mappings": {' +
-		'"metadata": {' +
-			'"properties": {' +
-				'"path": {' +
-					'"type": "string",' +
-					'"index": "not_analyzed"' +
-				'},' +
-				'"path_length": {' +
-					'"type": "short"' +
-				'},' +
-				'"filename": {' +
-					'"type": "string",' +
-					'"index": "not_analyzed"' +
-				'},' +
-				'"filename_length": {' +
-					'"type": "short"' +
-				'}' +
-			'}' +
-		'},' +
-		'"users": {' +
-			'"properties": {' +
-				'"email": {' +
-					'"type": "string"' +
-				''},' +
-				'"email_length": {' +
-					'"type": "short"' +
-				'},' +
-				'"password": {' +
-					'"type": "string",' +
-					'"index": "not_analyzed"' +
-				'},' +
-				'"password_length": {' +
-					'"type": "short"' +
-				'}' +
-			'}' +
-		'},' +
+/* 
 		'"tokens":{' +
 			'"properties": {' +
 				'"user_id": {' +
@@ -410,28 +373,39 @@ var bodyString =
 
 //**********************************************************
 app.get('/drop_db', function(req, res) {
-	"use strict"; 
+	"use strict";
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
 	console.log("\n[LOG]: Deleting Database"); 
 	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset);
-	console.log(""); 
+	if(( req.connection.remoteAddress!= '127.0.0.1' ) &&( req.connection.remoteAddress!='::ffff:127.0.0.1')){
+		console.log(" ACCESS DENIED from IP address: "+req.connection.remoteAddress);
+		res.writeHead(403, {"Content-Type": "text/plain"});
+		res.end("\n403: FORBIDDEN access from external IP.\n");		
+		var messagea = "Deleting Database FORBIDDEN access from external IP.";
+		LogsModule.register_log( 403,req.connection.remoteAddress,messagea,currentdate,""); 
+		return ;
+	}	
 	var resultFind=""; 
 	var searching = MetadataModule.drop_db( );
 	searching.then((resultFind) => { 
 		deleteFolderRecursive (os.homedir()+File_Server_Path) ;
 		res.writeHead(200, {"Content-Type": "application/json"});
-		res.end(resultFind+"\n");			 
+		res.end(resultFind+"\n"); 
+// 		LogsModule.register_log(200,req.connection.remoteAddress,resultFind,currentdate); //we can not register nothing after delete the DB !!!
 	},(resultReject)=> {
 		console.log("log: Bad Request: " + resultReject); 
 		res.writeHead(400, {"Content-Type": "text/plain"});
-		res.end("\n400: Bad Request "+resultReject+"\n"); 			
+		res.end("\n400: Bad Request "+resultReject+"\n"); 
+		LogsModule.register_log( 400,req.connection.remoteAddress,"Bad Request "+resultReject,currentdate,"");
 	} );
 });
 //**********************************************************
 app.get('/new_db', function(req, res) {
 	"use strict"; 
-	console.log("\n[LOG]: New Database"); 
-	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset);
-	console.log("");
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
+// 	console.log("\n[LOG]: New Database"); 
+// 	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset);
+// 	console.log("");
 	var metadatamapping = {
 			"metadata": {
 				"properties": {
@@ -477,11 +451,38 @@ app.get('/new_db', function(req, res) {
 					"user_id": {
 						"type": "string"
 					},
-					"currenttime": {
-						"type": "string"
+					"generationtime": {
+						"type": "date",
+						"store": "yes",
+						"format": "yyyy-MM-dd'T'HH:mm:ss.SSS",
+						"index": "analyzed"
 					},
 					"expirationtime": {
+						"type": "date",
+						"store": "yes",
+						"format": "yyyy-MM-dd'T'HH:mm:ss.SSS",
+						"index": "analyzed"
+					}
+				}
+			}
+		} 
+	var logsmapping = { 
+			"logs":{
+				"properties": {
+					"code": {
 						"type": "string"
+					},
+					"ip": {
+						"type": "string"
+					},
+					"message": {
+						"type": "string"
+					},
+					"date": { 
+						"type": "date",
+						"store": "yes",
+						"format": "yyyy-MM-dd'T'HH:mm:ss.SSS",
+						"index": "analyzed"
 					}
 				}
 			}
@@ -494,28 +495,41 @@ app.get('/new_db', function(req, res) {
 			var searchingc = MetadataModule.new_mapping( "users", usersmapping);
 			searching.then((resultFindc) => {
 				var searchingd = MetadataModule.new_mapping( "tokens", tokensmapping);
-				searching.then((resultFindd) => {
-					res.writeHead(200, {"Content-Type": "application/json"});
-					res.end(resultFind+"\n");
-				},(resultRejectb)=> {
-					console.log("log: Bad Request: " + resultRejectd); 
+				searching.then((resultFindd) => { 
+					var searchinge = MetadataModule.new_mapping( "logs", logsmapping);
+					searching.then((resultFinde) => {  
+						res.writeHead(200, {"Content-Type": "application/json"});
+						res.end(resultFinde+"\n"); 
+						LogsModule.register_log( 200,req.connection.remoteAddress,"DB successfully created",currentdate,""); 
+					},(resultRejecte)=> {
+// 						console.log("log: Bad Request: " + resultRejectd); 
 						res.writeHead(400, {"Content-Type": "text/plain"});
-						res.end("\n400: Bad Request "+resultRejectd+"\n"); 			
+						res.end("\n400: Bad Request "+resultRejecte+"\n");
+						LogsModule.register_log( 400,req.connection.remoteAddress,"Bad Request "+resultRejectd,currentdate,"");
+					} ); 
+				},(resultRejectd)=> {
+// 					console.log("log: Bad Request: " + resultRejectd); 
+					res.writeHead(400, {"Content-Type": "text/plain"});
+					res.end("\n400: Bad Request "+resultRejectd+"\n");
+					LogsModule.register_log( 400,req.connection.remoteAddress,"Bad Request "+resultRejectd,currentdate,"");
 				} ); 
 			},(resultRejectc)=> {
-				console.log("log: Bad Request: " + resultRejectc); 
-					res.writeHead(400, {"Content-Type": "text/plain"});
-					res.end("\n400: Bad Request "+resultRejectc+"\n"); 			
+// 				console.log("log: Bad Request: " + resultRejectc); 
+				res.writeHead(400, {"Content-Type": "text/plain"});
+				res.end("\n400: Bad Request "+resultRejectc+"\n");
+				LogsModule.register_log( 400,req.connection.remoteAddress,"Bad Request "+resultRejectc,currentdate,"");
 			} ); 
 		},(resultRejectb)=> {
-			console.log("log: Bad Request: " + resultRejectb); 
-				res.writeHead(400, {"Content-Type": "text/plain"});
-				res.end("\n400: Bad Request "+resultRejectb+"\n"); 			
+// 			console.log("log: Bad Request: " + resultRejectb); 
+			res.writeHead(400, {"Content-Type": "text/plain"});
+			res.end("\n400: Bad Request "+resultRejectb+"\n");
+			LogsModule.register_log( 400,req.connection.remoteAddress,"Bad Request "+resultRejectb,currentdate,"");
 		} );
 	},(resultReject)=> {
-		console.log("log: Bad Request: " + resultReject); 
-			res.writeHead(400, {"Content-Type": "text/plain"});
-			res.end("\n400: Bad Request "+resultReject+"\n"); 			
+// 		console.log("log: Bad Request: " + resultReject); 
+		res.writeHead(400, {"Content-Type": "text/plain"});
+		res.end("\n400: Bad Request "+resultReject+"\n");
+		LogsModule.register_log( 400,req.connection.remoteAddress,"Bad Request "+resultReject,currentdate,"");
 	} );
 });
 
@@ -523,6 +537,7 @@ app.get('/new_db', function(req, res) {
 app.get('/_flush', function(req, res) {
 	var testhttp = require('http');
 	var contentType = 'text/plain';
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
 	testhttp.get('http://'+es_servername+':'+es_port+'/repository_db/_flush', function(rescode) {
 // 		console.log("statusCode: ", rescode.statusCode); // <======= Here's the status code
 // 		console.log("headers: ", rescode.headers);
@@ -532,9 +547,10 @@ app.get('/_flush', function(req, res) {
 		res.writeHead(rescode.statusCode, { 'Content-Type': contentType });
 		res.end("200", 'utf-8');
 	}).on('error', function(e) {
-		console.error(e);
+// 		console.error(e);
 		res.writeHead(400, { 'Content-Type': contentType });
 		res.end("400", 'utf-8');
+		LogsModule.register_log( 400,req.connection.remoteAddress,"Flush error "+e,currentdate,"");
 	});
 });
 //**********************************************************
@@ -548,47 +564,50 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 	var dir = "";
 	var contentType = 'text/plain';
 	var ResponseDebug = "";
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
+	var message_no_path = "DOWNLOAD Bad Request missing filepath"; 
 	if (filepath != undefined) {
 		ResponseDebug = 'filepath is '+filepath;
-		if(filepath.charAt(0) === '"')
-		{
-		filepath = filepath.substr(1);
+		if(filepath.charAt(0) === '"') {
+			filepath = filepath.substr(1);
 		}
 		if(filepath.length>0){
-		if(filepath.charAt(filepath.length-1) === '"')
-		{
-		filepath = filepath.substring(0, filepath.length - 1); 
+		if(filepath.charAt(filepath.length-1) === '"') {
+			filepath = filepath.substring(0, filepath.length - 1); 
 		}}
 		if (filepath.length == 0){ 
 			res.writeHead(400, { 'Content-Type': contentType });
-			res.end("\n400: Bad Request, missing filepath.\n");
+			res.end("\n400: Bad Request, missing filepath.\n"); 
+			LogsModule.register_log( 400,req.connection.remoteAddress,message_no_path,currentdate,res.user); 
 			return ;
 		}
 	}else{
 		res.writeHead(400, { 'Content-Type': contentType });
 		res.end("\n400: Bad Request, missing filepath.\n");
+		LogsModule.register_log( 400,req.connection.remoteAddress,message_no_path,currentdate,res.user);
 		return ;
 	} 
 	
+	var message_no_file = "DOWNLOAD Bad Request missing filename"; 
 	if (filename != undefined){ 
 		ResponseDebug = 'Filename is '+filename;
-		if(filename.charAt(0) === '"')
-		{
+		if(filename.charAt(0) === '"') {
 		filename = filename.substr(1);
 		}
 		if(filename.length>0){
-		if(filename.charAt(filename.length-1) === '"')
-		{
-		filename = filename.substring(0, filename.length - 1); 
+		if(filename.charAt(filename.length-1) === '"') {
+			filename = filename.substring(0, filename.length - 1); 
 		}}		
 		if (filename.length == 0){ 
 			res.writeHead(400, { 'Content-Type': contentType });
 			res.end("\n400: Bad Request, missing filename.\n");
+			LogsModule.register_log( 400,req.connection.remoteAddress,message_no_file,currentdate,res.user);
 			return ;
 		}		
 	}else{
 		res.writeHead(400, { 'Content-Type': contentType });
 		res.end("\n400: Bad Request, missing filename.\n");
+		LogsModule.register_log( 400,req.connection.remoteAddress,message_no_file,currentdate,res.user); //TODO podemos poner el "user" del token !!
 		return ;
 	}
 	
@@ -597,11 +616,10 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 	}
 		
 	myPath = os.homedir()+ File_Server_Path + '/' + filepath + '/' + filename;
-	console.log("\n[LOG]: DOWNLOADING FILE");
-	console.log("   " +colours.FgYellow + colours.Bright + "Path: " + colours.Reset + filepath); 
-	console.log("   " +colours.FgYellow + colours.Bright + "  Filename: " + colours.Reset + filename );
-	console.log("   " +colours.FgYellow + colours.Bright + " requested from IP:" + req.connection.remoteAddress + colours.Reset);
-	console.log("");
+// 	console.log("\n[LOG]: DOWNLOADING FILE");
+// 	console.log("   " +colours.FgYellow + colours.Bright + "Path: " + colours.Reset + filepath); 
+// 	console.log("   " +colours.FgYellow + colours.Bright + "  Filename: " + colours.Reset + filename);
+// 	console.log("   " +colours.FgYellow + colours.Bright + " requested from IP:" + req.connection.remoteAddress + colours.Reset); 
 	var returncode=200;
 	// Check if file specified by the filePath exists 
 	fs.exists(myPath, function(exists){
@@ -623,6 +641,7 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 					"Content-Disposition": "attachment; filename=" + filename
 				}); 
 				stream.pipe(res);
+				LogsModule.register_log( 200,req.connection.remoteAddress,"DONWLOAD granted to file: "+myPath,currentdate,res.user);
 			}
 // 			if ( (mydebug.localeCompare("true")==0) || (mydebug.localeCompare("TRUE")==0) ){//strings equal, in other case returns the order of sorting
 // 				console.log(colours.FgYellow + colours.Bright + '     File Downloaded at path: '+ colours.Reset +myPath+ '\n\n');
@@ -639,6 +658,7 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 		res.writeHead(404, {"Content-Type": "text/plain"});
 		res.write("\n404: Bad Request, file not found.\n");
 		res.end("ERROR File does not exist"+filename+ " "+ filepath+" "+"\n");	
+		LogsModule.register_log(404,req.connection.remoteAddress,"DOWNLOAD error: File not found: "+filepath+filename,currentdate,res.user);
 	}
 });
 //**********************************************************
@@ -651,9 +671,7 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 //	var pretty = find_param_pretty(req);
 // 	console.log("LOG: RETRIEVE METADATA");
 // 	console.log("   " +colours.FgYellow + colours.Bright + "Path: " + colours.Reset + filepath); 
-// 	console.log("   " +colours.FgYellow + colours.Bright + " Uploaded Filename: " + colours.Reset + filename ); 
-// 	console.log("");	
-// 
+// 	console.log("   " +colours.FgYellow + colours.Bright + " Uploaded Filename: " + colours.Reset + filename );  
 // 	var resultCount="";
 // 	var resultFind=""; 
 // 	var bodyquery= componse_query(filepath, filename); 
@@ -688,36 +706,31 @@ app.get('/query_metadata',middleware.ensureAuthenticated, function(req, res) {
 	var RawJSON="";
 	var filepath =find_param_filepath(req);
 	var pretty = find_param_pretty(req);
-	
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
 	if (filepath != undefined) { 
-		if(filepath.charAt(0) === '"')
-		{
+		if(filepath.charAt(0) === '"') {
 		filepath = filepath.substr(1);
 		}
 		if(filepath.length>0){
-		if(filepath.charAt(filepath.length-1) === '"')
-		{
+		if(filepath.charAt(filepath.length-1) === '"') {
 		filepath = filepath.substring(0, filepath.length - 1); 
 		}} 
 	} 
 	
 	if (filename != undefined){  
-		if(filename.charAt(0) === '"')
-		{
-		filename = filename.substr(1);
+		if(filename.charAt(0) === '"') {
+			filename = filename.substr(1);
 		}
 		if(filename.length>0){
-		if(filename.charAt(filename.length-1) === '"')
-		{
-		filename = filename.substring(0, filename.length - 1); 
+		if(filename.charAt(filename.length-1) === '"') {
+			filename = filename.substring(0, filename.length - 1); 
 		}}	 
 	}
-	
-	console.log("\n[LOG]: QUERY METADATA");
-	console.log("   " +colours.FgYellow + colours.Bright + "Path: " + colours.Reset + filepath); 
-	console.log("   " +colours.FgYellow + colours.Bright + " Filename: " + colours.Reset + filename );
-	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset);
-	console.log("");	 
+// 	console.log("\n[LOG]: QUERY METADATA");
+// 	console.log("   " +colours.FgYellow + colours.Bright + "Path: " + colours.Reset + filepath); 
+// 	console.log("   " +colours.FgYellow + colours.Bright + " Filename: " + colours.Reset + filename );
+// 	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset);
+// 	console.log("");
 	var resultFind=""; 
 	var query= componse_query(filepath, filename);
 
@@ -727,23 +740,25 @@ app.get('/query_metadata',middleware.ensureAuthenticated, function(req, res) {
 		//console.log("searching ...:\n"+resultFind); 
 		res.writeHead(200, {"Content-Type": "application/json"});
 		res.end(resultFind+"\n");
+		LogsModule.register_log(200,req.connection.remoteAddress,"QUERY METADATA granted to query:" +JSON.stringify(query),currentdate,res.user);
 	},(resultReject)=> {
-		console.log("log: Bad Request: " + resultReject); 
+// 		console.log("log: Bad Request: " + resultReject); 
 		res.writeHead(400, {"Content-Type": "text/plain"});
-		res.end("Bad Request "+resultReject.text+"\n"); 			
+		res.end("Bad Request "+resultReject.text+"\n");
+		LogsModule.register_log(400,req.connection.remoteAddress,"QUERY METADATA BAD Request on query:" +JSON.stringify(query),currentdate,res.user); 
 	}); 
 });
-
 //**********************************************************
 app.get('/es_query_metadata', middleware.ensureAuthenticated, function(req, res) { 
-	"use strict";
+	"use strict"; 
+		var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 		
 	var QueryBody =find_param_QueryBody(req);
 	var pretty = find_param_pretty(req);
-	console.log("\n[LOG]: ES-QUERY METADATA");
+// 	console.log("\n[LOG]: ES-QUERY METADATA");
 	var mybody_obj = JSON.parse( QueryBody); 
-	console.log("   " +colours.FgYellow + colours.Bright + "Query: " + colours.Reset + JSON.stringify(mybody_obj) );
-	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset);
-	console.log("");	 
+// 	console.log("   " +colours.FgYellow + colours.Bright + "Query: " + colours.Reset + JSON.stringify(mybody_obj) );
+// 	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset);
+// 	console.log("");	 
 	var resultFind="";
 	//1.1- find id of the existing doc for such path filename JSON.stringify(
 	var searching = MetadataModule.query_metadata( mybody_obj, pretty); //.replace(/\//g, '\\/');
@@ -751,29 +766,32 @@ app.get('/es_query_metadata', middleware.ensureAuthenticated, function(req, res)
 		//console.log("searching ...:\n"+resultFind); 
 		res.writeHead(200, {"Content-Type": "application/json"});
 		res.end(resultFind+"\n");
+		LogsModule.register_log(200,req.connection.remoteAddress,"ES-QUERY METADATA granted to query:" +JSON.stringify(query),currentdate,res.user);
 	},(resultReject)=> {
-		console.log("log: Bad Request: " + resultReject); 
+// 		console.log("log: Bad Request: " + resultReject); 
 		res.writeHead(400, {"Content-Type": "text/plain"});
-		res.end("Bad Request "+resultReject.text+"\n"); 			
+		res.end("Bad Request "+resultReject.text+"\n");
+		LogsModule.register_log(400,req.connection.remoteAddress,"ES-QUERY METADATA BAD Request on query:" +JSON.stringify(query),currentdate,res.user); 
 	}); 
 }); 
 //**********************************************************
 
-//falta confirmar que los archivos existen
+//TODO: falta confirmar que los archivos existen
 app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
-	"use strict";
+	"use strict"; 
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
 	var contentType = 'text/plain';
 	var mydebug = "false";
 	if (!req.files){
 		res.writeHead(400, { 'Content-Type': contentType });
-		res.end('No files were uploaded.');
+		res.end('No files were uploaded.');  
+		LogsModule.register_log( 400,req.connection.remoteAddress,'No files were uploaded.',currentdate,res.user);
 		return;
 	}
 	var ResponseDebug = "";
 	var DestFileName ="";
 	var DestPath ="";
 	var RawJSON="";
-
 	//parameter DEBUG
 	try{
 		if (req.body.debug != undefined){
@@ -802,6 +820,7 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 		RawJSON = req.query.RawJSON; 
 	}
 
+	var message_no_path = "UPLOAD Bad Request missing Path";
 	//parameter path 
 	try{
 		if (req.body.Path != undefined){ //if defined as -F parameter
@@ -812,6 +831,7 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 				ResponseDebug = colours.FgYellow + colours.Bright + 'Error: missing Path '+Reset + '\n'; 
 				res.writeHead(400, { 'Content-Type': contentType });
 				res.end("400:Bad Request, missing Path.\n");
+				LogsModule.register_log( 400,req.connection.remoteAddress,message_no_path,currentdate,res.user); 
 				return;				
 			}
 		}
@@ -819,12 +839,14 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 		DestPath = req.query.Path;
 		if (DestPath == undefined){ //if defined as ? parameter
 			ResponseDebug = colours.FgYellow + colours.Bright + 'Error: missing Path '+Reset + '\n';
-				res.writeHead(400, { 'Content-Type': contentType });
-				res.end("400:Bad Request, missing Path.\n");
-				return;			
+			res.writeHead(400, { 'Content-Type': contentType });
+			res.end("400:Bad Request, missing Path.\n");
+			LogsModule.register_log( 400,req.connection.remoteAddress,message_no_path,currentdate,res.user); 
+			return;			
 		}
 	} 
 
+	var message_no_file = "UPLOAD Bad Request missing DestFileName";
 	//parameter DestFileName
 	try{
 		if (req.body.DestFileName != undefined){ //if defined as -F parameter
@@ -837,6 +859,7 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 			}else{
 				res.writeHead(400, { 'Content-Type': contentType });
 				res.end("400:Bad Request, missing DestFileName.\n");
+				LogsModule.register_log( 400,req.connection.remoteAddress,message_no_file,currentdate,res.user);
 				return;
 			}
 		}
@@ -845,41 +868,41 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 		if (DestFileName != undefined){ //if defined as ? parameter
 			ResponseDebug += colours.FgYellow + colours.Bright + 'Filename is: '+colours.Reset +DestFileName+ '\n';
 		}else{
-				res.writeHead(400, { 'Content-Type': contentType });
-				res.end("400:Bad Request, missing DestFileName.\n");
-				return;
+			res.writeHead(400, { 'Content-Type': contentType });
+			res.end("400:Bad Request, missing DestFileName.\n");
+			LogsModule.register_log( 400,req.connection.remoteAddress,message_no_file,currentdate,res.user);
+			return;
 		}
 	}
 
 	// The name of the input field (i.e. "UploadFile") is used to retrieve the uploaded file
 	let UploadFile = req.files.UploadFile;
 	// report LOGS on server console
-	console.log("\n[LOG]: UPLOADING FILE");
-	console.log("   " +colours.FgYellow + colours.Bright + "Path: " + colours.Reset + DestPath); 
-	console.log("   " +colours.FgYellow + colours.Bright + "  Uploaded Filename: " + colours.Reset + DestFileName );
-	console.log("   " +colours.FgYellow + colours.Bright + "     Debug: " + colours.Reset + mydebug);
-	if (RawJSON != undefined){ 
-		console.log("   " +colours.FgYellow + colours.Bright + "   RawJSON: " + colours.Reset + RawJSON);
-	}else{
-		console.log("   " +colours.FgYellow + colours.Bright + "   RawJSON: " + colours.Reset + 'Doesn\'t provided a Json as param.');
-	}
+// 	console.log("\n[LOG]: UPLOADING FILE");
+// 	console.log("   " +colours.FgYellow + colours.Bright + "Path: " + colours.Reset + DestPath); 
+// 	console.log("   " +colours.FgYellow + colours.Bright + "  Uploaded Filename: " + colours.Reset + DestFileName );
+// 	console.log("   " +colours.FgYellow + colours.Bright + "     Debug: " + colours.Reset + mydebug);
+// 	if (RawJSON != undefined){ 
+// 		console.log("   " +colours.FgYellow + colours.Bright + "   RawJSON: " + colours.Reset + RawJSON);
+// 	}else{
+// 		console.log("   " +colours.FgYellow + colours.Bright + "   RawJSON: " + colours.Reset + 'Doesn\'t provided a Json as param.');
+// 	}
 	var JSONstring="";
 	if (req.files.UploadJSON != undefined){ 
-		console.log("   " +colours.FgYellow + colours.Bright + "JSON as file: " + colours.Reset );
-		console.log(req.files.UploadJSON.data.toString('utf8'));
+// 		console.log("   " +colours.FgYellow + colours.Bright + "JSON as file: " + colours.Reset );
+// 		console.log(req.files.UploadJSON.data.toString('utf8'));
 		JSONstring=req.files.UploadJSON.data.toString('utf8');
-	}else{
-		console.log("   " +colours.FgYellow + colours.Bright + "JSON as file: " + colours.Reset + 'Doesn\'t provided a Json as file.');
+// 	}else{
+// 		console.log("   " +colours.FgYellow + colours.Bright + "JSON as file: " + colours.Reset + 'Doesn\'t provided a Json as file.');
 	}
-	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset);
-	console.log("");	
+// 	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset);
+// 	console.log("");	
 
 	var resultCount="";
 	var resultFind="";
 	var resultDelete=""; 
 	var bodyquery= componse_query(DestPath, DestFileName);
-	var countfiles= MetadataModule.count_file(bodyquery);
-	
+	var countfiles= MetadataModule.count_file(bodyquery);	
 	//1.- count files
 	countfiles.then((resultCount) => {
 		// succesMessage es lo que sea que pasamos en la función resolve(...) de arriba.
@@ -897,8 +920,7 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 				}else if (JSONstring.length > 0){
 					var result= MetadataModule.update_json(JSONstring ,resultFind);
 					console.log("Result updated json with id " + resultFind + " was: "+result);
-				}
-					
+				}	
 // 				//1.1.1- remove existing metadata
 // 				var deleting = MetadataModule.delete_json(DestPath,DestFileName,resultFind); //_id such "AWIAn8DjfLZhK4r7Ht3c"
 // 				deleting.then((resultDelete) => {
@@ -918,6 +940,7 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 			// process the RAW JSON parameter: upload the info in the ElasticSearch server.
 			if (RawJSON != undefined){
 				var result= MetadataModule.register_json(RawJSON);
+				LogsModule.register_log( 200,req.connection.remoteAddress,message_no_file,currentdate,res.user);
 // 				console.log("Result of register json of new file: "+result);
 			}else if (JSONstring.length > 0){
 				var result= MetadataModule.register_json(JSONstring);
@@ -944,13 +967,13 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 	}*/ 
 	supportmkdir.mkDirFullPathSync(os.homedir()+File_Server_Path+ '/' +DestPath);
 	var dir = DestPath + '/';
-
 	// Use the mv() method to place the file somewhere on your server
 	//Upload the file, after create the folder if not existing
 	UploadFile.mv( os.homedir()+File_Server_Path + '/' + dir + DestFileName, function(err) {
 		if (err) {
 			res.writeHead(400, { 'Content-Type': contentType });
 			res.end("500: "+err+" \n");
+			LogsModule.register_log( 500,req.connection.remoteAddress,"UPLOAD Error "+err,currentdate,res.user);
 			return;
 		}
 	});
@@ -960,35 +983,57 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 		res.end('\n' + ResponseDebug + colours.FgYellow + colours.Bright + 'File uploaded at path: '+ colours.Reset +os.homedir()+File_Server_Path+ '/' + '\n\n'); 
 	}else{
 		res.end("UPLOAD: succeed");
-	} 
+	}
+	LogsModule.register_log( 200,req.connection.remoteAddress,'File UPLOADED at path: '  +os.homedir()+File_Server_Path+ '/' + dir + DestFileName ,currentdate,res.user);
 });
 //**********************************************************
 //example:
 // curl -H "Content-Type: text/plain" -XPOST http://localhost:8000/signup?email="bob"\&pw="1234"
-app.post('/signup',ipfilter(ips, {mode: 'allow'}), function(req, res) {
-	"use strict"; //Current password does not match
+// app.post('/signup',ipfilter(ips, {mode: 'allow'}), function(req, res) {
+app.post('/signup', function(req, res) {
+	"use strict";   
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
 	var email= find_param_email(req);
 	var pw=find_param_pw(req);
 	if (pw == undefined){ 
-		return res.status(400).send("\n400: Bad Request, missing Passwd.\n");
+		res.writeHead(400, {"Content-Type": "text/plain"});
+		res.end("\n400: SINGUP Bad Request, missing Email.\n");
+		LogsModule.register_log( 400,req.connection.remoteAddress,"SINGUP Bad Request, missing Email",currentdate,""); 
+		return ;
 	}
 	if (email == undefined){
-		return res.status(400).send("\n400: Bad Request, missing Email.\n");
-	}
-	console.log("[LOG]: REGISTER USER+PW"); 
-	console.log("   " +colours.FgYellow + colours.Bright + "user: " + colours.Reset + email );
-	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset);
-	console.log("");
+		res.writeHead(400, {"Content-Type": "text/plain"});
+		res.end("\n400: Bad Request, missing Email.\n");
+		LogsModule.register_log( 400,req.connection.remoteAddress,"SINGUP Bad Request, missing Email",currentdate,""); 
+		return ;
+	} 
+	
 	var resultreg="";
-	var resultReject="";
+	var resultReject="";  	
+// 	console.log("[LOG]: REGISTER USER+PW"); 
+// 	console.log("   " +colours.FgYellow + colours.Bright + "user: " + colours.Reset + email );
+// 	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset);
+	if(( req.connection.remoteAddress!= '127.0.0.1' ) &&( req.connection.remoteAddress!='::ffff:127.0.0.1')){
+// 		console.log(" ACCESS DENIED from IP address: "+req.connection.remoteAddress);
+		var messagea =  "REGISTER USER '"+ email  + "' FORBIDDEN access from external IP";
+		LogsModule.register_log( 403,req.connection.remoteAddress,messagea,currentdate,"");
+		res.writeHead(403, {"Content-Type": "text/plain"});
+		res.end("\n403: FORBIDDEN access from external IP.\n");
+		return ;
+	}	
+// 	console.log("");
 	var result = UsersModule.register( email, pw);
-	result.then((resultreg) => { 
+	result.then((resultreg) => {		
 			res.writeHead(resultreg.code, {"Content-Type": "text/plain"});
 			res.end(resultreg.text+ "\n");
+			var messageb =  "REGISTER USER '"+ email + "' GRANTED";
+			LogsModule.register_log( resultreg.code, req.connection.remoteAddress, messageb,currentdate,"");
 	},(resultReject)=> {
-		console.log("log: Bad Request: " + resultReject); 
+// 		console.log("log: Bad Request: " + resultReject); 
 			res.writeHead(resultReject.code, {"Content-Type": "text/plain"});
-			res.end("Bad Request "+resultReject.text+"\n"); 			
+			res.end("Bad Request "+resultReject.text+"\n");
+			var messagec =  "REGISTER USER '"+ email  + "' BAD REQUEST";
+			LogsModule.register_log( resultreg.code, req.connection.remoteAddress, messagec,currentdate,"");
 	} ); 
 });
 
@@ -997,9 +1042,9 @@ var middleware = require('./token-middleware');
 // Ruta solo accesible si estás autenticado
 app.get('/verifytoken',middleware.ensureAuthenticated, function(req, res) {
 	//console.log('acceso a contenido privado');
-	console.log("\n[LOG]: Verfication of token"); 
-	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset);
-	console.log("");
+// 	console.log("\n[LOG]: Verfication of token"); 
+// 	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset);
+// 	console.log("");
 		var message = "The token is valid !!!.\n"
 			res.writeHead(200, { 'Content-Type': 'text/plain' });
 			res.end(message, 'utf-8');
@@ -1009,38 +1054,48 @@ app.get('/verifytoken',middleware.ensureAuthenticated, function(req, res) {
 //example:
 // curl -H "Content-Type: text/plain" -XGET http://localhost:8000/login?email="bob"\&pw="1234" --output token.txt
 app.get('/login', function(req, res) {
-	"use strict";
+	"use strict"; 
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
 	var email= find_param_email(req);
 	var pw=find_param_pw(req);
-	if (pw == undefined){ 
-		return res.status(400).send("\n400: Bad Request, missing Passwd.\n");
+	if (pw == undefined){
+		res.writeHead(400, {"Content-Type": "text/plain"});
+		res.end("400: Bad Request, missing Passwd\n"); 
+		LogsModule.register_log( resultreg.code, req.connection.remoteAddress, "400: Bad Request, missing Passwd",currentdate,"");
+		return ;
 	}
 	if (email == undefined){
-		return res.status(400).send("\n400: Bad Request, missing Email.\n");
+		res.writeHead(400, {"Content-Type": "text/plain"});
+		res.end("400: Bad Request, missing Email\n"); 
+		LogsModule.register_log( resultreg.code, req.connection.remoteAddress, "400: Bad Request, missing Email",currentdate,"");		
+		return  ;
 	}
 
-	console.log("\n[LOG]: LOGIN USER+PW+ GENERATION OF TOKEN");
-	console.log("   " +colours.FgYellow + colours.Bright + "user: " + colours.Reset + email );
-	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset);
-	console.log("");
+// 	console.log("\n[LOG]: LOGIN USER+PW+ GENERATION OF TOKEN");
+// 	console.log("   " +colours.FgYellow + colours.Bright + "user: " + colours.Reset + email );
+// 	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset);
+// 	console.log("");
 	var resultCount="";
 	var resultReject="";
 	var result = UsersModule.query_user_pw( email, pw); //returns the count of email-pw, if !=1 then we consider not registered.
 	result.then((resultCount) => { 
-			//console.log("counted users: " + resultCount + "\n"); 			
+			//console.log("counted users: " + resultCount + "\n");
 			if(resultCount==1){
 				var mytoken= auth.emailLogin(email);
 				//console.log("appjs "+mytoken+"\n");
 				res.writeHead(200, {"Content-Type": "text/plain"});
-				res.end(mytoken); 
+				res.end(mytoken);
+				LogsModule.register_log( 200, req.connection.remoteAddress, "New token Generated",currentdate,"");
 			}else{
 				res.writeHead(401, {"Content-Type": "text/plain"});
-				res.end("401 (Unauthorized) Autentication failed, incorrect user or passwd\n"); 
+				res.end("401 (Unauthorized) Autentication failed, incorrect user or passwd\n");
+				LogsModule.register_log( resultreg.code, req.connection.remoteAddress, "401: Bad Request of Token, incorrect user or passwd",currentdate,"");
 			}
 		},(resultReject)=> {
 // 		console.log("log: Bad Request: " + resultReject); 
 			res.writeHead(400, {"Content-Type": "text/plain"});
-			res.end("\n400: Bad Request "+resultReject+"\n"); 			
+			res.end("\n400: Bad Request "+resultReject+"\n");
+			LogsModule.register_log( resultreg.code, req.connection.remoteAddress, "400: Bad Token Request "+resultReject,currentdate,"");	
 		} );
 }); // login
 //**********************************************************
@@ -1054,7 +1109,7 @@ var tryToOpenServer = function(port)
 			// port is currently in use
 			console.log(colours.FgRed + colours.Bright + 'server error, port ' + port + ' is busy' + colours.Reset);
 		} else { 
-				console.log(err);
+			console.log(err);
 		}
 	});
 };

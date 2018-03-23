@@ -74,7 +74,7 @@ module.exports = {
 				}
 			}, function(error, response) {
 				if (error) {
-					console.log(error);
+// 					console.log(error);
 					reject (error);
 				}
 				if (response.count !== undefined) {
