@@ -21,6 +21,8 @@
 #In case that already setup, it will not perform any change just only return an error on already existing DB. 
 curl -s -XGET http://localhost:8000/new_db > /dev/null;
 
+curl -s -XGET http://localhost:8000/_flush > /dev/null;
+
 #### REGISTER NEW USERS
 while read -r -a line ;	do 
 	user=${line[0]}; 
