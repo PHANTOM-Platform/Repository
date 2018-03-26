@@ -243,7 +243,7 @@ app.get('/upload_file.html', function(req, res) {
 		if (error) {
 			if(error.code == 'ENOENT'){
 				fs.readFile('./404.html', function(error, content) {
-					res.writeHead(200, { 'Content-Type': contentType });
+					res.writeHead(404, { 'Content-Type': contentType });
 					res.end(content, 'utf-8');
 				});
 			} else {
@@ -785,6 +785,7 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 	if (!req.files){
 		res.writeHead(400, { 'Content-Type': contentType });
 		res.end('No files were uploaded.');  
+		console.log('No files were uploaded.');
 		LogsModule.register_log( 400,req.connection.remoteAddress,'No files were uploaded.',currentdate,res.user);
 		return;
 	}
@@ -969,11 +970,18 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 	var dir = DestPath + '/';
 	// Use the mv() method to place the file somewhere on your server
 	//Upload the file, after create the folder if not existing
+		if (UploadFile == undefined){  
+			res.writeHead(400, { 'Content-Type': contentType });
+			res.end("400: param UploadFile undefined \n");
+			LogsModule.register_log( 400,req.connection.remoteAddress,"UPLOAD Error ",currentdate,res.user);
+			return;				
+		}
+			
 	UploadFile.mv( os.homedir()+File_Server_Path + '/' + dir + DestFileName, function(err) {
 		if (err) {
 			res.writeHead(400, { 'Content-Type': contentType });
-			res.end("500: "+err+" \n");
-			LogsModule.register_log( 500,req.connection.remoteAddress,"UPLOAD Error "+err,currentdate,res.user);
+			res.end("400: "+err+" \n");
+			LogsModule.register_log( 400,req.connection.remoteAddress,"UPLOAD Error "+err,currentdate,res.user);
 			return;
 		}
 	});
