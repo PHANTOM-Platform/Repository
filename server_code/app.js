@@ -991,37 +991,37 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 // curl -H "Content-Type: text/plain" -XPOST http://localhost:8000/signup?email="bob"\&pw="1234"
 // app.post('/signup',ipfilter(ips, {mode: 'allow'}), function(req, res) {
 app.post('/signup', function(req, res) {
-	"use strict";   
-	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
+	"use strict";    
+var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
 	var email= find_param_email(req);
-	var pw=find_param_pw(req);
+	var pw=find_param_pw(req); 
 	if (pw == undefined){ 
 		res.writeHead(400, {"Content-Type": "text/plain"});
-		res.end("\n400: SINGUP Bad Request, missing Email.\n");
-		LogsModule.register_log( 400,req.connection.remoteAddress,"SINGUP Bad Request, missing Email",currentdate,""); 
+		res.end("\n400: SIGNUP Bad Request, missing Email.\n");
+		LogsModule.register_log( 400,req.connection.remoteAddress,"SIGNUP Bad Request, missing Email",currentdate,""); 
 		return ;
-	}
+	} 
 	if (email == undefined){
 		res.writeHead(400, {"Content-Type": "text/plain"});
 		res.end("\n400: Bad Request, missing Email.\n");
-		LogsModule.register_log( 400,req.connection.remoteAddress,"SINGUP Bad Request, missing Email",currentdate,""); 
+		LogsModule.register_log( 400,req.connection.remoteAddress,"SIGNUP Bad Request, missing Email",currentdate,""); 
 		return ;
 	} 
 	
 	var resultreg="";
 	var resultReject="";  	
-// 	console.log("[LOG]: REGISTER USER+PW"); 
-// 	console.log("   " +colours.FgYellow + colours.Bright + "user: " + colours.Reset + email );
-// 	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset);
+	console.log("[LOG]: REGISTER USER+PW"); 
+	console.log("   " +colours.FgYellow + colours.Bright + "user: " + colours.Reset + email );
+	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset);
 	if(( req.connection.remoteAddress!= '127.0.0.1' ) &&( req.connection.remoteAddress!='::ffff:127.0.0.1')){
-// 		console.log(" ACCESS DENIED from IP address: "+req.connection.remoteAddress);
+		console.log(" ACCESS DENIED from IP address: "+req.connection.remoteAddress);
 		var messagea =  "REGISTER USER '"+ email  + "' FORBIDDEN access from external IP";
 		LogsModule.register_log( 403,req.connection.remoteAddress,messagea,currentdate,"");
 		res.writeHead(403, {"Content-Type": "text/plain"});
 		res.end("\n403: FORBIDDEN access from external IP.\n");
 		return ;
 	}	
-// 	console.log("");
+	console.log("");
 	var result = UsersModule.register( email, pw);
 	result.then((resultreg) => {		
 			res.writeHead(resultreg.code, {"Content-Type": "text/plain"});
@@ -1061,13 +1061,13 @@ app.get('/login', function(req, res) {
 	if (pw == undefined){
 		res.writeHead(400, {"Content-Type": "text/plain"});
 		res.end("400: Bad Request, missing Passwd\n"); 
-		LogsModule.register_log( resultreg.code, req.connection.remoteAddress, "400: Bad Request, missing Passwd",currentdate,"");
+		LogsModule.register_log( 400, req.connection.remoteAddress, "400: Bad Request, missing Passwd",currentdate,"");
 		return ;
 	}
 	if (email == undefined){
 		res.writeHead(400, {"Content-Type": "text/plain"});
 		res.end("400: Bad Request, missing Email\n"); 
-		LogsModule.register_log( resultreg.code, req.connection.remoteAddress, "400: Bad Request, missing Email",currentdate,"");		
+		LogsModule.register_log( 400, req.connection.remoteAddress, "400: Bad Request, missing Email",currentdate,"");		
 		return  ;
 	}
 
@@ -1078,7 +1078,7 @@ app.get('/login', function(req, res) {
 	var resultCount="";
 	var resultReject="";
 	var result = UsersModule.query_user_pw( email, pw); //returns the count of email-pw, if !=1 then we consider not registered.
-	result.then((resultCount) => { 
+		result.then((resultCount) => { 
 			//console.log("counted users: " + resultCount + "\n");
 			if(resultCount==1){
 				var mytoken= auth.emailLogin(email);
@@ -1088,14 +1088,15 @@ app.get('/login', function(req, res) {
 				LogsModule.register_log( 200, req.connection.remoteAddress, "New token Generated",currentdate,"");
 			}else{
 				res.writeHead(401, {"Content-Type": "text/plain"});
-				res.end("401 (Unauthorized) Autentication failed, incorrect user or passwd\n");
-				LogsModule.register_log( resultreg.code, req.connection.remoteAddress, "401: Bad Request of Token, incorrect user or passwd",currentdate,"");
+				res.end("401 (Unauthorized) Autentication failed, incorrect user  "+email+"or passwd "+pw+"\n");
+				console.log("401 (Unauthorized) Autentication failed, incorrect user  "+email+"or passwd "+pw+"\n");
+				LogsModule.register_log( 401, req.connection.remoteAddress, "401: Bad Request of Token, incorrect user or passwd "+email+"or passwd "+pw,currentdate,"");
 			}
 		},(resultReject)=> {
 // 		console.log("log: Bad Request: " + resultReject); 
 			res.writeHead(400, {"Content-Type": "text/plain"});
 			res.end("\n400: Bad Request "+resultReject+"\n");
-			LogsModule.register_log( resultreg.code, req.connection.remoteAddress, "400: Bad Token Request "+resultReject,currentdate,"");	
+			LogsModule.register_log( 400, req.connection.remoteAddress, "400: Bad Token Request "+resultReject,currentdate,"");	
 		} );
 }); // login
 //**********************************************************
