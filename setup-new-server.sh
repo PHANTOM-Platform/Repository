@@ -24,10 +24,23 @@ curl -s -XGET http://localhost:8000/new_db > /dev/null;
 curl -s -XGET http://localhost:8000/_flush > /dev/null;
 
 #### REGISTER NEW USERS
-while read -r -a line ;	do 
-	user=${line[0]}; 
-	password=${line[1]};
-	curl -s -H "Content-Type: application/json" -XPOST http://localhost:8000/signup?email="${user}"\&pw="${password}";
-done< "list_of_users.ini";
-  
+while read -r line ;	do  
+	line=${line%%#*}  # strip comment (if any)
+	fname=${line#\"};
+	name=${fname%%\"*};
+        name=${name// /%20};
+	params=${fname#*\"}
+	params=${params#*	}
+	user=${params%%	*};
+	userpw=${params#*	};
+	userpw=${userpw%% };
+	password=${userpw%%	};	
+ 	echo "name    is: \"${name}\""; 
+ 	echo "user_id is: \"${user}\"";
+ 	echo "password is: \"${password}\"";
+ 	echo ;	
+	curl -s -H "Content-Type: application/json" -XPOST http://localhost:8000/signup?name="${name}"\&email="${user}"\&pw="${password}";
+done <"list_of_users.ini";
+
 echo -e "done\.n";
+
