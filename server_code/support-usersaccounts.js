@@ -8,8 +8,6 @@ var my_index = 'repository_db'
 var my_type = 'users'
 var mf_server = 'localhost:9400';
 
-
-
 module.exports = { 
 //**********************************************************
 		//This function is used to verify the User and Password
@@ -23,9 +21,9 @@ module.exports = {
 			});
 			client.count({
 				index: my_index,
-				type:  my_type, 
+				type: my_type, 
 				body: {
-					query: {bool:{must:[ 				
+					query: {bool:{must:[
 						{match:{"email":email}},
 						{match:{"email_length":email.length}},
 						{match:{"password":pw}}, 
@@ -35,7 +33,7 @@ module.exports = {
 			}, function(error, response) {
 				if (error) { 
 					reject (error);
-				}				
+				}
 				if (response.count !== undefined) {
 					size = response.count;
 				}else{
@@ -48,7 +46,7 @@ module.exports = {
 //**********************************************************
 	//This function is used to register new users
 	//example of use: 
-	register: function(email,pw,res) {
+	register: function(name, email,pw,res) {
 		return new Promise( (resolve,reject) => {
 			var elasticsearch = require('elasticsearch');
 			var clientb = new elasticsearch.Client({
@@ -59,11 +57,10 @@ module.exports = {
 			var resultReject="";
 			var error="";
 			var response="";
-			var myres = { code: "", text:  "" };
+			var myres = { code: "", text: "" };
 			var count_users = this.query_user(email);
-			count_users.then((resultCount) => {  
+			count_users.then((resultCount) => {
 				if(resultCount!=0){
-// 					/*resolve */("Could not register an existing user.");
 					var mres;
 					myres.code="409";
 					myres.text= "Could not register an existing user."+"\n";
@@ -73,6 +70,7 @@ module.exports = {
 						index: my_index,
 						type: my_type, 
 						body: {
+							"name":name,
 							"email":email,
 							"email_length": email.length,
 							"password":pw,
@@ -81,14 +79,14 @@ module.exports = {
 					}, function(error, response) {
 						if (error !== 'undefined') { 
 							myres.code="409";
-							myres.text=error ; 						
+							myres.text=error;
 							reject (myres); 
 						} else {
 							myres.code="409";
 							myres.text="Could not register the user/pw." ;
 							reject (myres);
 						}
-					});//end query client.index  
+					});//end query client.index
 					myres.code="200";
 					myres.text="succeed";
 					resolve(myres); 
@@ -96,7 +94,7 @@ module.exports = {
 			},(resultReject)=> {
 					myres.code="409";
 					myres.text= resultReject; 
-					reject (myres); 			
+					reject (myres);
 			});//end count_users 
 		});//end promise
 	}, //end register 	
@@ -113,7 +111,7 @@ module.exports = {
 			});
 			client.count({
 				index: my_index,
-				type:  my_type, 
+				type: my_type, 
 				body: {
 					query:{bool:{must:[
 							{match:{"email": email }},

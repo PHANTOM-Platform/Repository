@@ -25,7 +25,7 @@ const supportmkdir = require('./mkdirfullpath');
 	//privides the function register_json;
 const express = require('express');
 //     ipfilter = require('express-ipfilter').IpFilter;
-const ips = ['::ffff:127.0.0.1','127.0.0.1'];
+const ips = ['::ffff:127.0.0.1','127.0.0.1',"::1"];
 const app = express();
 const fileUpload = require('express-fileupload');
 var fs = require('fs'); 
@@ -139,6 +139,26 @@ function find_param_filename(req){
 	} 
 	return filename;
 } 
+
+function find_param_name(req){
+	var name="";		//parameter name 
+	try{
+		if (req.body.name != undefined){ //if defined as -F parameter
+			name = req.body.name ;
+		}else{
+			name = req.query.name;
+			if (name == undefined){ //if defined as ? parameter
+				name="";
+			}
+		}
+	}catch(e){
+		name = req.query.name;
+		if (name == undefined){ //if defined as ? parameter
+			name="";
+		}
+	} 
+	return name;
+}
 
 function find_param_email(req){
 	var email="";		//parameter email 
@@ -377,7 +397,7 @@ app.get('/drop_db', function(req, res) {
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
 	console.log("\n[LOG]: Deleting Database"); 
 	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset);
-	if(( req.connection.remoteAddress!= '127.0.0.1' ) &&( req.connection.remoteAddress!='::ffff:127.0.0.1')){
+	if(( req.connection.remoteAddress!= ips[0] ) &&( req.connection.remoteAddress!=ips[1])&&( req.connection.remoteAddress!=ips[2])){
 		console.log(" ACCESS DENIED from IP address: "+req.connection.remoteAddress);
 		res.writeHead(403, {"Content-Type": "text/plain"});
 		res.end("\n403: FORBIDDEN access from external IP.\n");		
@@ -996,13 +1016,15 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 });
 //**********************************************************
 //example:
-// curl -H "Content-Type: text/plain" -XPOST http://localhost:8000/signup?email="bob"\&pw="1234"
+// curl -H "Content-Type: text/plain" -XPOST http://localhost:8000/signup?name="bob"\&email="bob@abc.commm"\&pw="1234"
 // app.post('/signup',ipfilter(ips, {mode: 'allow'}), function(req, res) {
 app.post('/signup', function(req, res) {
 	"use strict";    
-var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
+	var name= find_param_name(req);
 	var email= find_param_email(req);
 	var pw=find_param_pw(req); 
+	console.log("name is "+name);
 	if (pw == undefined){ 
 		res.writeHead(400, {"Content-Type": "text/plain"});
 		res.end("\n400: SIGNUP Bad Request, missing Email.\n");
@@ -1021,7 +1043,7 @@ var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
 	console.log("[LOG]: REGISTER USER+PW"); 
 	console.log("   " +colours.FgYellow + colours.Bright + "user: " + colours.Reset + email );
 	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset);
-	if(( req.connection.remoteAddress!= '127.0.0.1' ) &&( req.connection.remoteAddress!='::ffff:127.0.0.1')){
+	if(( req.connection.remoteAddress!= ips[0] ) &&( req.connection.remoteAddress!=ips[1])&&( req.connection.remoteAddress!=ips[2])){
 		console.log(" ACCESS DENIED from IP address: "+req.connection.remoteAddress);
 		var messagea =  "REGISTER USER '"+ email  + "' FORBIDDEN access from external IP";
 		LogsModule.register_log( 403,req.connection.remoteAddress,messagea,currentdate,"");
@@ -1030,7 +1052,7 @@ var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
 		return ;
 	}	
 	console.log("");
-	var result = UsersModule.register( email, pw);
+	var result = UsersModule.register( name, email, pw);
 	result.then((resultreg) => {		
 			res.writeHead(resultreg.code, {"Content-Type": "text/plain"});
 			res.end(resultreg.text+ "\n");
