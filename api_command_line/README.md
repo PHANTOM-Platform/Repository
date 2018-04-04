@@ -44,6 +44,18 @@ curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -XGET localhost:8000/verifyt
 curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web/example.h" -F "UploadJSON=@../web/exampleh.json" http://localhost:8000/upload?DestFileName=main.h\&'Path=mypath/';
 ```
 
+Example of json file: exampleh.json
+
+```javascript
+{
+  "data_type":"Usercase",
+  "name":"HPC",
+  "content":"src_file"
+}
+```
+
+
+
 ####    DOWNLOADING A FILE 
 
 Command for downloading:
@@ -166,6 +178,7 @@ Copyright (C) 2018 University of Stuttgart
 
 [video_curl]: https://youtu.be/3W8a3HV-30g
 [video_scripts]: https://youtu.be/-mqxA1l2K7A
-[demo_scripts]: https://github.com/PHANTOM-Platform/Repository/tree/master/demo_scripts
-[demo_curl]: https://github.com/PHANTOM-Platform/Repository/tree/master/demo_curl 
+[api_bash_scripts]: https://github.com/PHANTOM-Platform/Repository/tree/master/api_bash_scripts
+[api_command_line]: https://github.com/PHANTOM-Platform/Repository/tree/master/api_command_line
+[api_java]: https://github.com/PHANTOM-Platform/Repository/tree/master/api_java
 [phantom]: http://www.phantom-project.org 
