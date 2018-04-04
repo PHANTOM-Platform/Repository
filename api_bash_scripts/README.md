@@ -39,24 +39,24 @@ bash get_token.sh verify_token.sh -t 141r2342135412351.321351235 -s localhost -p
 
 ####   SCRIPT FOR UPLOADING A FILE AND ITS METADATA
 
-This script takes a token and returns if it has expired or not, this script does NOT provide any other information such which user generated it.
-
-It is useful only when we don't know if the token has expired.
- 
-```bash
-bash get_token.sh verify_token.sh -t 141r2342135412351.321351235 -s localhost -port 8000 ;
-```
-
-
-#### SCRIPT FOR DOWNLOADING A FILE  
-
 This script takes as inputs the token and the path and filename of the file and returns the FILE in that folder.
  
 ```bash
 bash repo_put.sh -t 141r2342135412351.321351235 -sfp "../web/example.h" -sjp "../web/exampleh.json" -df "mypath/" -dp "main.h" -s localhost -port 8000 ;
 ```
 
-####   SCRIPT FOR DOWNLOADING METADATA 
+
+Example of json file: exampleh.json
+
+```javascript
+{
+  "data_type":"Usercase",
+  "name":"HPC",
+  "content":"src_file"
+}
+```
+
+#### SCRIPT FOR DOWNLOADING A FILE OR METADATA 
 
 This script takes as inputs the token and the path and filename of the file and returns the METADATA of that SINGLE FILE in that folder.
 
@@ -137,6 +137,7 @@ Copyright (C) 2018 University of Stuttgart
 
 [video_curl]: https://youtu.be/3W8a3HV-30g
 [video_scripts]: https://youtu.be/-mqxA1l2K7A
-[demo_scripts]: https://github.com/PHANTOM-Platform/Repository/tree/master/demo_scripts
-[demo_curl]: https://github.com/PHANTOM-Platform/Repository/tree/master/demo_curl 
+[api_bash_scripts]: https://github.com/PHANTOM-Platform/Repository/tree/master/api_bash_scripts
+[api_command_line]: https://github.com/PHANTOM-Platform/Repository/tree/master/api_command_line
+[api_java]: https://github.com/PHANTOM-Platform/Repository/tree/master/api_java
 [phantom]: http://www.phantom-project.org 
