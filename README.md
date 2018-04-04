@@ -136,7 +136,7 @@ NOTICE: For securoity reasons, users' accounts can be ONLY registered on the ser
 
 ## 6.- Example of use
 
-The folders [api_command_line][api_command_line] and [api_bash_scripts][api_bash_scripts] shows examples of using the PHANTOM REPOSITORY
+The folders [api_command_line][api_command_line], [api_bash_scripts][api_bash_scripts], and [api_java][api_java] shows examples of using the PHANTOM REPOSITORY
 
 Please access to those folders to get more details.
 
