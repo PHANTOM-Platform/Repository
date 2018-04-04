@@ -1,6 +1,4 @@
 {
-  "path":"mypath/",
-  "filename":"main.h",
   "data_type":"Usercase",
   "name":"HPC",
   "content":"src_file"
