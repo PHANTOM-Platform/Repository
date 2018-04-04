@@ -78,10 +78,10 @@ bash start-es.sh;
 
 Please take a look on the next suggested reference books, if you face difficulties on the setup of ElasticSearch-Database server:
 
- Markup : * Bullet list
-              * Nested bullet
-                  * Sub-nested bullet etc
-          * Bullet list item 2
+* Item 1
+* Item 2
+  * Item 2a
+  * Item 2b
 
 
 ## 4.- Start/Stop the server
