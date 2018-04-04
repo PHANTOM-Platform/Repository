@@ -109,7 +109,7 @@ Test if the Front-end has access to the Elasticsearch DataBase Server.
 curl -s http://localhost:8000/verify_es_connection;
 ```
 
-For more details on setup the server, please look into the examples of Admin-use at [DEMO_CURL][demo_curl] or [DEMO_SCRIPTS][demo_scripts].
+For more details on setup the server, please look into the examples of Admin-use at [[api_command_line][api_command_line] or [api_bash_scripts][api_bash_scripts] (not developed for api_java because we will allow only the admin access on the localhost).
 
 
 After the usage, the server can be stopped by:
