@@ -164,6 +164,7 @@ Copyright (C) 2018 University of Stuttgart
 [Apache License v2](LICENSE).
 
 
-[demo_scripts]: https://github.com/PHANTOM-Platform/Repository/tree/master/demo_scripts
-[demo_curl]: https://github.com/PHANTOM-Platform/Repository/tree/master/demo_curl 
+[api_bash_scripts]: https://github.com/PHANTOM-Platform/Repository/tree/master/api_bash_scripts
+[api_command_line]: https://github.com/PHANTOM-Platform/Repository/tree/master/api_command_line
+[api_java]: https://github.com/PHANTOM-Platform/Repository/tree/master/api_java
 [phantom]: http://www.phantom-project.org 
