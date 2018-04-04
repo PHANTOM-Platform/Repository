@@ -193,38 +193,90 @@ module.exports = {
 		});
 	},	
 //**********************************************************
-	
-	
-	
-	
-	//seems not working correctly !!!
-	delete_json: function(path,filename,id){ // for ES 2.x, for ES 5.x may need a different plugin-function
+	//This function is used to register new entries or replace existing one
+	//example of use: 	
+	delete_filename_path_json: function( filename, path) {
 		return new Promise( (resolve,reject) => {
 			var elasticsearch = require('elasticsearch');
-			var client = new elasticsearch.Client({
+			var clientb = new elasticsearch.Client({
 				host: mf_server,
-				log: 'error' 
-				//plugins: [ deleteByQuery ]
-			}); 
-			client.deleteByQuery({
-				index: my_index,
-				type: my_type, 
-				body: {
-					query: {
-						match: { _id: 'id' }
-					}
+				log: 'error'
+			});   
+			var resultCount=0; 
+			var resultReject="";
+			var error="";
+			var resultReg="";
+			var response=""; 
+			var myres = { code: "", text: "" };
+			var count_metadata = this.query_count_filename_path(filename,path);
+			count_metadata.then((resultCount) => { 
+				if(resultCount==0){ //File+path don't found, proceed to register new entry. 
+					myres.code="420";
+					myres.text="Could not DELETE an not existing register.\n";
+					reject (myres); 
+				}else{ 
+					var id_metadata = this.find_metadata_id(filename,path);
+					id_metadata.then((resultId) => { 
+						clientb.delete({
+							index: my_index,
+							type: my_type, 
+							id: resultId 
+						}, function(error, response) {
+							if (error !== 'undefined') { 
+								myres.code="409";
+								myres.text=error;
+								reject (myres); 
+							} else {
+								myres.code="409";
+								myres.text="Could not delete the filename/path.";
+								reject (myres);
+							}
+						});//end query client.index
+						myres.code="200";
+						myres.text="deleted succeed";
+						resolve(myres); 
+					},(resultReject)=> {
+						myres.code="409";	
+						myres.text= "error finding id "+resultReject; 
+						reject (myres);
+					});//end find id_metadata
 				}
-			}, function(error, response) {
-				//response ={"found":true,"_index":"repository_db","_type":"metadata","_id":"AWIAfT2KfLZhK4r7Ht3I","_version":2,"_shards":{"total":2,"successful":1,"failed":0}}
-				if (error !== 'undefined') {
-					reject("error"); 
-				} else {
-					resolve(response._shards.successful);
-				} 
-			});
-			resolve( "succeed");
-		});
-	}, //end delete_json
+			},(resultReject)=> { 
+					myres.code="409";
+					myres.text= "error counting "+ resultReject; 
+					reject (myres);
+			});//end count_metadata
+		});//end promise
+	}, //end delete_filename_path_json
+//****************************************************
+	//seems not working correctly !!!
+// 	delete_json: function(path,filename,id){ // for ES 2.x, for ES 5.x may need a different plugin-function
+// 		return new Promise( (resolve,reject) => {
+// 			var elasticsearch = require('elasticsearch');
+// 			var client = new elasticsearch.Client({
+// 				host: mf_server,
+// 				log: 'error' 
+// 				//plugins: [ deleteByQuery ]
+// 			}); 
+// 			client.deleteByQuery({
+// 				index: my_index,
+// 				type: my_type, 
+// 				body: {
+// 					query: {
+// 						match: { _id: 'id' }
+// 					}
+// 				}
+// 			}, function(error, response) {
+// 				//response ={"found":true,"_index":"repository_db","_type":"metadata","_id":"AWIAfT2KfLZhK4r7Ht3I","_version":2,"_shards":{"total":2,"successful":1,"failed":0}}
+// 				if (error !== 'undefined') {
+// 					reject("error"); 
+// 				} else {
+// 					resolve(response._shards.successful);
+// 				} 
+// 			});
+// 			resolve( "succeed");
+// 		});
+// 	}, //end delete_json
 //****************************************************
 	count_file: function(bodyquery){
 		return new Promise( (resolve,reject) => {

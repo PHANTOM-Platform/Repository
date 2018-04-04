@@ -541,23 +541,7 @@ app.get('/verify_es_connection', function(req, res) {
 		res.end("000", 'utf-8');		
 	}); 
 });
-/* 
-		'"tokens":{' +
-			'"properties": {' +
-				'"user_id": {' +
-					'"type": "string"' +
-				'},' +
-				'"currenttime": {' +
-					'"type": "string"' +
-				'},' +
-				'"expirationtime": {' +
-					'"type": "string"' +
-				'}' +
-			'}' +
-		'}' +
-'}' +
-'}';*/
-
+ 
 //**********************************************************
 app.get('/drop_db', function(req, res) {
 	"use strict";
@@ -944,6 +928,7 @@ app.get('/es_query_metadata', middleware.ensureAuthenticated, function(req, res)
 }); 
 //**********************************************************
 //TODO: falta confirmar que los archivos existen
+//si no existen en el curl parece que se queda esperando indefinidamente
 app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 	"use strict"; 
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
@@ -1099,7 +1084,8 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 			var path;			
 			//1.2- Not existing doc, just need to add
 			// process the RAW JSON parameter: upload the info in the ElasticSearch server.
-			if (RawJSON != undefined){ 
+			if (RawJSON != undefined){
+var RawJSON=fix_json(RawJSON, DestFileName, DestPath);				
 // 				filename= get_value_json(RawJSON,"filename");
 // 				path= get_value_json(RawJSON,"path");
 	// 			var jsonobj = JSON.parse(RawJSON);
@@ -1134,15 +1120,7 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 					return;
 				});//end count_users  
 			}else if (JSONstring.length > 0){
- 			
-var JSONstring=fix_json(JSONstring, DestFileName, DestPath);
-console.log(JSONstring);
- 
-// 					console.log("bodyyyyy is "+savableEvent);
-				
-// 				filename= get_value_json(JSONstring,"filename");
-// 				path= get_value_json(JSONstring,"path"); 
-// 				consolelogjson(JSONstring);	 
+var JSONstring=fix_json(JSONstring, DestFileName, DestPath); 
 				var result= MetadataModule.register_update_filename_path_json(JSONstring, DestFileName, DestPath); 
 				result.then((resultResolve) => {
 					resultlog = LogsModule.register_log( 200,req.connection.remoteAddress,resultResolve.text,currentdate,res.user); 
@@ -1173,6 +1151,80 @@ console.log(JSONstring);
 // 	}); 
 });
 
+//**********************************************************
+app.post('/delete_metadata',middleware.ensureAuthenticated, function(req, res) {
+	"use strict"; 
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
+	var contentType = 'text/plain';
+	var resultlog ;
+	var mydebug = "false"; 
+	var DestFileName ="";
+	var DestPath =""; 
+	var message_no_path = "DELETE Bad Request missing Path";
+	//parameter path 
+	try{
+		if (req.body.Path != undefined){ //if defined as -F parameter
+			DestPath = req.body.Path ;
+		}else{
+			DestPath = req.query.Path;
+			if (DestPath == undefined){ //if defined as ? parameter 
+				res.writeHead(400, { 'Content-Type': contentType });
+				res.end("400:Bad Request, missing Path.\n");
+				resultlog = LogsModule.register_log( 400,req.connection.remoteAddress,message_no_path,currentdate,res.user); 
+				return;				
+			}
+		}
+	}catch(e){
+		DestPath = req.query.Path;
+		if (DestPath == undefined){ //if defined as ? parameter 
+			res.writeHead(400, { 'Content-Type': contentType });
+			res.end("400:Bad Request, missing Path.\n");
+			resultlog = LogsModule.register_log( 400,req.connection.remoteAddress,message_no_path,currentdate,res.user); 
+			return;			
+		}
+	} 
+
+	var message_no_file = "DELETE Bad Request missing DestFileName";
+	//parameter DestFileName
+	try{
+		if (req.body.DestFileName != undefined){ //if defined as -F parameter
+			DestFileName = req.body.DestFileName ; 
+		}else{
+			DestFileName = req.query.DestFileName;
+			if (DestFileName != undefined){ //if defined as ? parameter
+				//
+			}else{
+				res.writeHead(400, { 'Content-Type': contentType });
+				res.end("400:Bad Request, missing DestFileName.\n");
+				resultlog = LogsModule.register_log( 400,req.connection.remoteAddress,message_no_file,currentdate,res.user);
+				return;
+			}
+		}
+	}catch(e){
+		DestFileName = req.query.DestFileName;
+		if (DestFileName != undefined){ //if defined as ? parameter
+			//
+		}else{
+			res.writeHead(400, { 'Content-Type': contentType });
+			res.end("400:Bad Request, missing DestFileName.\n");
+			resultlog = LogsModule.register_log( 400,req.connection.remoteAddress,message_no_file,currentdate,res.user);
+			return;
+		}
+	}       
+	var result= MetadataModule.delete_filename_path_json( DestFileName, DestPath); 
+	result.then((resultResolve) => {
+		resultlog = LogsModule.register_log( 200,req.connection.remoteAddress,resultResolve.text,currentdate,res.user);  
+		res.writeHead(resultResolve.code, {"Content-Type": contentType});
+		res.end(resultResolve.text+"\n", 'utf-8');
+		return; 				
+	},(resultReject)=> {
+		res.writeHead(resultReject.code, {"Content-Type": contentType});
+		res.end(resultReject.text+"\n", 'utf-8');
+		resultlog = LogsModule.register_log( 400,req.connection.remoteAddress,"Delete Error",currentdate,res.user); 
+		return;
+	});//end count_users  
+});
+ 
 //**********************************************************
 //example:
 // curl -H "Content-Type: text/plain" -XPOST http://localhost:8000/signup?name="bob"\&email="bob@abc.commm"\&pw="1234"
