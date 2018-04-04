@@ -76,6 +76,14 @@ and
 bash start-es.sh;
 ```
 
+Please take a look on the next suggested reference books, if you face difficulties on the setup of ElasticSearch-Database server:
+
+ Markup : * Bullet list
+              * Nested bullet
+                  * Sub-nested bullet etc
+          * Bullet list item 2
+
+
 ## 4.- Start/Stop the server
 
 
@@ -163,6 +171,11 @@ Copyright (C) 2018 University of Stuttgart
 
 [Apache License v2](LICENSE).
 
+[Elasticsearch in Action]: https://www.amazon.com/gp/product/1617291625/ref=as_li_qf_sp_asin_il_tl?ie=UTF8&tag=whatpixel-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=1617291625&linkId=382a9e9ac4076cb805d54c6d2bda0a6d
+[Elasticsearch Essentials]: https://www.amazon.com/gp/product/1784391018/ref=as_li_qf_sp_asin_il_tl?ie=UTF8&tag=whatpixel-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=1784391018&linkId=7c3689613866114e08fcb8b1360d088c
+[Elasticsearch Server]: https://www.amazon.com/gp/product/1785888811/ref=as_li_qf_sp_asin_il_tl?ie=UTF8&tag=whatpixel-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=1785888811&linkId=7b2eb09b287cb61524227c5d24c70f2f
+[Elasticsearch: The Definitive Guide]: https://www.amazon.com/gp/product/1449358543/ref=as_li_qf_sp_asin_il_tl?ie=UTF8&tag=whatpixel-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=1449358543&linkId=cb5e3196580a4c055812057c12000e4e
+[Elasticsearch Cookbook]: https://www.amazon.com/gp/product/1783554835/ref=as_li_qf_sp_asin_il_tl?ie=UTF8&tag=whatpixel-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=1783554835&linkId=8e00a4ffc8f85b4be15ee5b0f5b8c53b
 
 [api_bash_scripts]: https://github.com/PHANTOM-Platform/Repository/tree/master/api_bash_scripts
 [api_command_line]: https://github.com/PHANTOM-Platform/Repository/tree/master/api_command_line
