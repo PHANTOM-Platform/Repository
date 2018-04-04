@@ -76,12 +76,13 @@ and
 bash start-es.sh;
 ```
 
-Please take a look on the next suggested reference books, if you face difficulties on the setup of ElasticSearch-Database server:
+Please take a look on the next suggested reference books, if you face difficulties on the setup of ElasticSearch-Database server: 
 
-* Item 1
-* Item 2
-  * Item 2a
-  * Item 2b
+* [Elasticsearch in Action][Elasticsearch in Action]
+* [Elasticsearch Essentials][Elasticsearch Essentials]
+* [Elasticsearch Server][Elasticsearch Server]
+* [Elasticsearch: The Definitive Guide][Elasticsearch: The Definitive Guide]
+* [Elasticsearch Cookbook][Elasticsearch Cookbook]
 
 
 ## 4.- Start/Stop the server
