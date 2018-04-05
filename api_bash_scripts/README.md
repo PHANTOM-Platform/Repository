@@ -44,8 +44,6 @@ This script takes as inputs the token and the path and filename of the file and 
 ```bash
 bash repo_put.sh -t 141r2342135412351.321351235 -sfp "../web/example.h" -sjp "../web/exampleh.json" -df "mypath/" -dp "main.h" -s localhost -port 8000 ;
 ```
-
-
 Example of json file: exampleh.json
 
 ```javascript
@@ -72,6 +70,13 @@ bash repo_get_file.sh -t 141r2342135412351.321351235 -path "mypath/" -s localhos
 ```
 
 
+####   SCRIPT FOR DELETING A FILE AND ITS METADATA
+
+This script takes as inputs the token and the path and filename of the file and removes the FILE in that folder and its metadata.
+ 
+```bash
+bash repo_delete.sh -t 141r2342135412351.321351235 -df "mypath/" -dp "main.h" -s localhost -port 8000 ;
+```
 
 ## 3.- List and description the ADMIN's scripts
 
