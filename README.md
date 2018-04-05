@@ -8,6 +8,11 @@ The PHANTOM REPOSITORY server is composed of two components: a web server and a 
 The web server provides various functionalities for data query and data analysis via RESTful APIs with documents in JSON format. 
 The server's URL is "http://localhost:8000" by default.
 
+ <p align="center">
+<a href="https://github.com/PHANTOM-Platform/Repository/blob/master/repository.png">
+<img src="https://github.com/PHANTOM-Platform/Repository/blob/master/repository.png" align="middle" width="50%" height="50%" title="Schema" alt="Repository Schema">
+</a> </p>
+
 
 ## 2.- Prerequisites
 The server is implemented using Node.js, and connects to Elasticsearch to store and access Metadata. 
