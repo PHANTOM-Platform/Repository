@@ -75,7 +75,7 @@ if [ ! $# -eq 0 ]; then
 				echo -e "\n${yellow} Example of use:\n     ${app}  -t ${newtoken}  -sfp \"../web/example.h\"  -sjp \"../web/exampleh.json\" -dp \"main.h\" -df \"mypath/\" ${reset}\n";
 				echo -e "\n NOTICE: The \"destination_filename\" is the renamed name of the uploaded file";
 # 				echo -e "\n NOTICE: Specify only json_string or source_json_path";
-				echo -e "\n NOTICE: The \"path\" and \"filename\" in the JSON MUST much with the \"destination_path\" and \"destination_filename\"";
+				echo -e "\n NOTICE: The \"path\" and \"filename\" if defined in the JSON MUST will be REPLACED by the MANDATORY input parameters \"destination_path\" and \"destination_filename\"";
 				exit 0;
 			elif [ "$last" != "" ]; then
 				echo "error de sintaxis" $last ".";
@@ -106,8 +106,6 @@ if [ -z "${dst_path}" ]; then
     echo -e "Missing parameter Destination Path: dp\n";
     exit 1;
 fi; 
-
-
 ################### Testing connectivity with the PHANTOM Repository server: #############
 	source verify_connectivity.sh -s ${server} -port ${repository_port};
 	conectivity=$?;
