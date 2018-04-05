@@ -8,7 +8,6 @@ The purpose of the examples in this folder is to facilitate a low-level access t
 
 The examples here also aim to serve as an example of the authentication and authorization process based on tokens.
 
-
 ## 2.- List and description the USERS' commands with CURL
 
 Here is shown the different available scripts.
@@ -18,25 +17,17 @@ Please, replace the values of the parameters for the appropriate values in your 
 
 A video demonstration of this scripts is available at [YOUTUBE CURL DEMO][video_curl].
 
-
-
-
-
 ####   GET A NEW TOKEN FOR A REGISTERED USER  
 
 ```bash
 curl -s -H "Content-Type: text/plain" -XGET http://localhost:8000/login?email="montana@abc.com"\&pw="new" --output token.txt;
 ```
 
-
-
 ####   TEST IF A TOKEN IS VALID OR NOT, this is useful when we do not know if the token expired   
 
 ```bash
 curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -XGET localhost:8000/verifytoken;
 ```
-
- 
 
 ####   UPLOADING A FILE 
  
@@ -53,8 +44,6 @@ Example of json file: exampleh.json
   "content":"src_file"
 }
 ```
-
-
 
 ####    DOWNLOADING A FILE 
 
@@ -84,6 +73,13 @@ Command for downloading METADATA for files in a path:
 curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -XGET http://localhost:8000/query_metadata?Path=mypath%2F ;
 ```
   
+
+####   DELETING A FILE 
+ 
+```bash
+curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -H "Content-Type: multipart/form-data" -XPOST  http://localhost:8000/delete_metadata?DestFileName=main.h\&'Path=mypath/';
+```
+
 
 ## 3.- List and description the ADMIN's commands with CURL
 
