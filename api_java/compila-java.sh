@@ -12,6 +12,8 @@ javac -classpath org.json.jar:apache-httpcomponents-httpcore.jar:. get_token.jav
 javac -classpath org.json.jar:apache-httpcomponents-httpcore.jar:. verify_token.java ConsoleColors.java;
 javac -classpath org.json.jar:apache-httpcomponents-httpcore.jar:. repo_put.java 
 
+javac -classpath org.json.jar:apache-httpcomponents-httpcore.jar:. repo_get_file.java 
+
 mv *class demo_phantom;
 
 ###################### TESTING THE CLASSES
@@ -22,6 +24,7 @@ java -classpath org.json.jar:apache-httpcomponents-httpcore.jar:.  demo_phantom/
 
 java demo_phantom/repo_put  "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtb250YW5hQGFiYy5jb20iLCJpYXQiOjE1MjIwNjg2MTEsImV4cCI6MTUyNDY2MDYxMX0.IjXYKMQFfqU-J8O-tlicyCEr_S9q3kvJ5tusPJCpM2s" "localhost" "8000" "new.h" "otherpath" "/home/jmontana/repository/web/example.h" "/home/jmontana/repository/web/exampleh.json";
 
+java -classpath org.json.jar:apache-httpcomponents-httpcore.jar:.  demo_phantom/repo_get_file "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtb250YW5hQGFiYy5jb20iLCJpYXQiOjE1MjIwNjg2MTEsImV4cCI6MTUyNDY2MDYxMX0.IjXYKMQFfqU-J8O-tlicyCEr_S9q3kvJ5tusPJCpM2s" "localhost" "8000";
 
 
 
