@@ -1,20 +1,20 @@
 #!/usr/bin/env node
 // Author: J.M.Montañana HLRS 2018
-//   If you find any bug, please notify to hpcjmont@hlrs.de
-
-// Copyright (C) 2018 University of Stuttgart
+// 	If you find any bug, please notify to hpcjmont@hlrs.de
 // 
-//     Licensed under the Apache License, Version 2.0 (the "License");
-//     you may not use this file except in compliance with the License.
-//     You may obtain a copy of the License at
-//  
-//       http://www.apache.org/licenses/LICENSE-2.0
-//  
-//     Unless required by applicable law or agreed to in writing, software
-//     distributed under the License is distributed on an "AS IS" BASIS,
-//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//     See the License for the specific language governing permissions and
-//     limitations under the License.
+// 	Copyright (C) 2018 University of Stuttgart
+// 
+// 		Licensed under the Apache License, Version 2.0 (the "License");
+// 		you may not use this file except in compliance with the License.
+// 		You may obtain a copy of the License at
+// 	
+// 		http://www.apache.org/licenses/LICENSE-2.0
+// 	
+// 		Unless required by applicable law or agreed to in writing, software
+// 		distributed under the License is distributed on an "AS IS" BASIS,
+// 		WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// 		See the License for the specific language governing permissions and
+// 		limitations under the License.
 
 const colours = require('./colours');
 const MetadataModule = require('./support-metadata'); 
@@ -24,7 +24,7 @@ const LogsModule = require('./support-logs');
 const supportmkdir = require('./mkdirfullpath'); 
 	//privides the function register_json;
 const express = require('express');
-//     ipfilter = require('express-ipfilter').IpFilter;
+	//ipfilter = require('express-ipfilter').IpFilter;
 const ips = ['::ffff:127.0.0.1','127.0.0.1',"::1"];
 const app = express();
 const fileUpload = require('express-fileupload');
@@ -34,7 +34,7 @@ var dateFormat = require('dateformat');
 var es_servername = 'localhost';
 var es_port = '9400';
 const os = require('os'); 
-const File_Server_Path = '/phantom_servers/phantom_repository'; // this will be allocated in the home folder of the user running nodejs !! os.homedir()+File_Server_Path
+const File_Server_Path = '/phantom_servers/phantom_repository'; // This will be allocated in the home folder of the user running nodejs !! os.homedir()+File_Server_Path
 
 //const queryString = require('query-string');
 //**********************************************************
@@ -45,17 +45,17 @@ var middleware = require('./token-middleware');
 //***********************************************************
 
 var deleteFolderRecursive = function(path) {
-  if( fs.existsSync(path) ) {
-    fs.readdirSync(path).forEach(function(file,index){
-      var curPath = path + "/" + file;
-      if(fs.lstatSync(curPath).isDirectory()) { // recurse
-        deleteFolderRecursive(curPath);
-      } else { // delete file
-        fs.unlinkSync(curPath);
-      }
-    });
-    fs.rmdirSync(path);
-  }
+	if( fs.existsSync(path) ) {
+		fs.readdirSync(path).forEach(function(file,index){
+		var curPath = path + "/" + file;
+		if(fs.lstatSync(curPath).isDirectory()) { // recurse
+			deleteFolderRecursive(curPath);
+		} else { // delete file
+			fs.unlinkSync(curPath);
+		}
+		});
+		fs.rmdirSync(path);
+	}
 };
 
 //**********************************************************
@@ -73,7 +73,7 @@ function componse_query(filepath, filename){
 										{"term":{"filename_length": filename.length}} 
 										] } } };
 	}else if (filepath.length > 0){
-		query= { query: { bool: { must: [   
+		query= { query: { bool: { must: [ 
 										{"match_phrase":{"path": filepath }},
 										{"term":{"path_length": filepath.length}} 
 										] } } };
@@ -221,17 +221,17 @@ function find_param_QueryBody(req){
 }
 //****************************************************
 	//This function flush the pending operations to the DataBase.
-	function my_flush(req){  
+	function my_flush(req){
 		var testhttp = require('http');
 		var rescode="";
 		var contentType = 'text/plain';
 		var myres = { code: "", text: "" }; 
 		var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
-		return new Promise( (resolve,reject) => {  
-			testhttp.get('http://'+es_servername+':'+es_port+'/repository_db/_flush', function(rescode) {  	
+		return new Promise( (resolve,reject) => {
+			testhttp.get('http://'+es_servername+':'+es_port+'/repository_db/_flush', function(rescode) {	
 				myres.code="200";
 				myres.text="200 Succeed";
-				resolve (myres);  
+				resolve (myres);
 			}).on('error', function(e) { 
 				myres.text="400"+"Flush error "+currentdate;
 				myres.code="400";
@@ -278,11 +278,11 @@ function find_param_QueryBody(req){
 			firstname: "Pedro",
 			lastname: "Picapiedra"
 		} 
-		console.log(Employee);  
+		console.log(Employee);
 		delete Employee.firstname; //delete one property
 		var label='age';
 		Employee[label]="32";		//add one property
-		console.log(Employee);  
+		console.log(Employee);
 	}
 	
 	//report on the screen the list of fields, and values
@@ -301,40 +301,26 @@ function find_param_QueryBody(req){
 			i++;
 		}
 		return (myres);
-	}	
-	
+	}
 	//**********************************************************
 	//after succedd on the upload of themetadata, we proceed to upload the file 
-	function upload_file (UploadFile,  homedir , File_Server_Path, DestPath,DestFileName,user, ipaddress,date,mydebug) {
-		return new Promise( (resolve,reject) => {
-			// show the content of the file in the server console:
-			//fs.readFile(req.files.UploadFile, function (err, data) {
-			// if (err) throw err;
-			// // data will contain your file contents 
-			// console.log(data)
-			// delete file
-			//fs.unlink(req.files.path, function (err) {
-			// if (err) throw err;
-			// console.log('successfully deleted ' + req.files.path);
-			//});
-			//});
-			
+	function upload_file (UploadFile, homedir, File_Server_Path, DestPath,DestFileName,user, ipaddress,date,mydebug) {
+		return new Promise( (resolve,reject) => {		
 			//Folder: compose and create if not existing
 		/*	if (!fs.existsSync(File_Server_Path + '/' +DestPath)){
 				fs.mkdirSync(File_Server_Path+ '/' +DestPath);
-			}*/  
-			var myres = { code: "400", text:  "" };
+			}*/
+			var myres = { code: "400", text: "" };
 			try{
 				supportmkdir.mkDirFullPathSync(os.homedir()+File_Server_Path+ '/' +DestPath);
 			}catch(e){
 				myres.code="400";
 				myres.text="error mkdir "+e ;
 				reject (myres);
-			} 
-			var dir = DestPath + '/';
+			}
 			// Use the mv() method to place the file somewhere on your server
 			//Upload the file, after create the folder if not existing
-			if (UploadFile == undefined){   
+			if (UploadFile == undefined){ 
 				resultlog = LogsModule.register_log( 400,ipaddress,"UPLOAD Error ", date, user);
 				resultlog.then((resultreg) => {
 					myres.code="400";
@@ -345,7 +331,8 @@ function find_param_QueryBody(req){
 					myres.text="param UploadFile undefined ." ;
 					reject (myres);
 				});
-			}else{		  	
+			}else{
+				var dir = DestPath + '/';
 				UploadFile.mv( os.homedir()+File_Server_Path + '/' + dir + DestFileName, function(err) { 
 					if (err) { 
 						resultlog = LogsModule.register_log( 400,ipaddress,"UPLOAD Error "+err, date, user); 
@@ -365,7 +352,7 @@ function find_param_QueryBody(req){
 						resultlog.then((resultreg) => {
 							myres.code="200";
 							if ( (mydebug.localeCompare("true")==0) || (mydebug.localeCompare("TRUE")==0) ){//strings equal, in other case returns the order of sorting
-								myres.text='\n' + ResponseDebug + colours.FgYellow + colours.Bright + 'File uploaded at path: '+ colours.Reset +os.homedir()+File_Server_Path+ '/' + '\n\n' ;  
+								myres.text='\n' + ResponseDebug + colours.FgYellow + colours.Bright + 'File uploaded at path: '+ colours.Reset +os.homedir()+File_Server_Path+ '/' + '\n\n' ;
 							}else{
 								myres.text="UPLOAD: succeed" ; 
 							}
@@ -376,12 +363,10 @@ function find_param_QueryBody(req){
 							reject (myres);
 						});	 
 					}
-				});  
+				});
 			}
 		}); 
-	}  //end register  
-	
-
+	} //end register 
 	
 //********************************************************** 
 app.use(bodyParser.json());
@@ -678,7 +663,7 @@ app.get('/new_db', function(req, res) {
 				var searchingd = MetadataModule.new_mapping( "tokens", tokensmapping);
 				searching.then((resultFindd) => { 
 					var searchinge = MetadataModule.new_mapping( "logs", logsmapping);
-					searching.then((resultFinde) => {  
+					searching.then((resultFinde) => {
 						res.writeHead(200, {"Content-Type": "application/json"});
 						res.end(resultFinde+"\n"); 
 						resultlog = LogsModule.register_log( 200,req.connection.remoteAddress,"DB successfully created",currentdate,""); 
@@ -711,11 +696,11 @@ app.get('/new_db', function(req, res) {
 
 //**********************************************************
 app.get('/_flush', function(req, res) { 
-	var verify_flush = my_flush(req );  
-	verify_flush.then((resolve_result) => {  
+	var verify_flush = my_flush(req );
+	verify_flush.then((resolve_result) => {
 		res.writeHead(resolve_result.code, {"Content-Type": "text/plain"});
-		res.end(resolve_result.text+"\n", 'utf-8');  
-	},(reject_result)=> {  
+		res.end(resolve_result.text+"\n", 'utf-8');
+	},(reject_result)=> {
 		res.writeHead(reject_result.code, {"Content-Type": "text/plain"}); 
 		res.end(reject_result.text+"\n", 'utf-8'); 
 	});// 
@@ -808,7 +793,7 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 				resultlog = LogsModule.register_log( 200,req.connection.remoteAddress,"DONWLOAD granted to file: "+myPath,currentdate,res.user);
 			}
 // 			if ( (mydebug.localeCompare("true")==0) || (mydebug.localeCompare("TRUE")==0) ){//strings equal, in other case returns the order of sorting
-// 				console.log(colours.FgYellow + colours.Bright + '     File Downloaded at path: '+ colours.Reset +myPath+ '\n\n');
+// 				console.log(colours.FgYellow + colours.Bright + ' File Downloaded at path: '+ colours.Reset +myPath+ '\n\n');
 // 			}
 		} else {
 			returncode=404; 
@@ -835,7 +820,7 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 //	var pretty = find_param_pretty(req);
 // 	console.log("LOG: RETRIEVE METADATA");
 // 	console.log("   " +colours.FgYellow + colours.Bright + "Path: " + colours.Reset + filepath); 
-// 	console.log("   " +colours.FgYellow + colours.Bright + " Uploaded Filename: " + colours.Reset + filename );  
+// 	console.log("   " +colours.FgYellow + colours.Bright + " Uploaded Filename: " + colours.Reset + filename );
 // 	var resultCount="";
 // 	var resultFind=""; 
 // 	var bodyquery= componse_query(filepath, filename); 
@@ -848,7 +833,7 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 // 			//1.1- find id of the existing doc for such path filename 
 // 			var bodyquery= componse_query(filepath, filename);
 // 			var searching = MetadataModule.get_metadata(bodyquery,pretty);
-// 			searching.then((resultFind) => {  
+// 			searching.then((resultFind) => {
 // 				res.writeHead(400, {"Content-Type": "text/plain"});
 // 				res.end(resultFind+"\n");
 // 			});
@@ -879,7 +864,7 @@ app.get('/query_metadata',middleware.ensureAuthenticated, function(req, res) {
 		}} 
 	} 
 	
-	if (filename != undefined){  
+	if (filename != undefined){
 		if(filename.charAt(0) === '"') {
 			filename = filename.substr(1);
 		}
@@ -937,7 +922,7 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 	var mydebug = "false";
 	if (!req.files){
 		res.writeHead(400, { 'Content-Type': contentType });
-		res.end('No files were uploaded.');   
+		res.end('No files were uploaded.'); 
 		resultlog = LogsModule.register_log( 400,req.connection.remoteAddress,'No files were uploaded.',currentdate,res.user);
 		return;
 	}
@@ -1034,7 +1019,7 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 // 		console.log("   " +colours.FgYellow + colours.Bright + "JSON as file: " + colours.Reset );
 // 		console.log(req.files.UploadJSON.data.toString('utf8'));
 		JSONstring=req.files.UploadJSON.data.toString('utf8'); 
-	}  
+	}
 	var resultCount="";
 	var resultFind="";
 	var resultDelete=""; 
@@ -1057,9 +1042,9 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 					console.log("Result updated json with id " + resultFind + " was: "+result);
 				} 
 				var verify_flush = my_flush(req );
-				verify_flush.then((resolve_result) => {     
+				verify_flush.then((resolve_result) => { 
 					//nothing to do now
-				},(reject_result)=> {  
+				},(reject_result)=> {
 					res.writeHead(reject_result.code, {"Content-Type": "text/plain"});
 					res.end(reject_result.text+"\n", 'utf-8');
 					return;
@@ -1118,7 +1103,7 @@ var RawJSON=fix_json(RawJSON, DestFileName, DestPath);
 					res.end(resultReject.text+"\n", 'utf-8')
 					resultlog = LogsModule.register_log( 400,req.connection.remoteAddress,"Upload Error",currentdate,res.user); 
 					return;
-				});//end count_users  
+				});//end count_users
 			}else if (JSONstring.length > 0){
 var JSONstring=fix_json(JSONstring, DestFileName, DestPath); 
 				var result= MetadataModule.register_update_filename_path_json(JSONstring, DestFileName, DestPath); 
@@ -1210,19 +1195,35 @@ app.post('/delete_metadata',middleware.ensureAuthenticated, function(req, res) {
 			resultlog = LogsModule.register_log( 400,req.connection.remoteAddress,message_no_file,currentdate,res.user);
 			return;
 		}
-	}       
+	} 
 	var result= MetadataModule.delete_filename_path_json( DestFileName, DestPath); 
 	result.then((resultResolve) => {
-		resultlog = LogsModule.register_log( 200,req.connection.remoteAddress,resultResolve.text,currentdate,res.user);  
-		res.writeHead(resultResolve.code, {"Content-Type": contentType});
-		res.end(resultResolve.text+"\n", 'utf-8');
-		return; 				
+		resultlog = LogsModule.register_log( 200,req.connection.remoteAddress,resultResolve.text,currentdate,res.user);
+		// show the content of the file in the server console:
+		//fs.readFile(req.files.UploadFile, function (err, data) {
+		// if (err) throw err;
+		// // data will contain your file contents 
+		// console.log(data)
+		//});
+		// delete file 
+		fs.unlink(os.homedir()+ File_Server_Path + '/' + DestPath + '/' + DestFileName, function(err) {
+			if (err) {
+				res.writeHead(400, {"Content-Type": contentType});
+				res.end("Error when deleting the file: "+err+"\n", 'utf-8');
+				return;
+			}else{
+				console.log('successfully deleted ');
+				res.writeHead(resultResolve.code, {"Content-Type": contentType});
+				res.end(resultResolve.text+"\n", 'utf-8');
+				return;
+			}
+		});
 	},(resultReject)=> {
 		res.writeHead(resultReject.code, {"Content-Type": contentType});
 		res.end(resultReject.text+"\n", 'utf-8');
 		resultlog = LogsModule.register_log( 400,req.connection.remoteAddress,"Delete Error",currentdate,res.user); 
 		return;
-	});//end count_users  
+	});//end count_users
 });
  
 //**********************************************************
@@ -1230,7 +1231,7 @@ app.post('/delete_metadata',middleware.ensureAuthenticated, function(req, res) {
 // curl -H "Content-Type: text/plain" -XPOST http://localhost:8000/signup?name="bob"\&email="bob@abc.commm"\&pw="1234"
 // app.post('/signup',ipfilter(ips, {mode: 'allow'}), function(req, res) {
 app.post('/signup', function(req, res) {
-	"use strict";    
+	"use strict";
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
 	var name= find_param_name(req);
 	var email= find_param_email(req);
@@ -1258,7 +1259,7 @@ app.post('/signup', function(req, res) {
 	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset);
 	if(( req.connection.remoteAddress!= ips[0] ) &&( req.connection.remoteAddress!=ips[1])&&( req.connection.remoteAddress!=ips[2])){
 		console.log(" ACCESS DENIED from IP address: "+req.connection.remoteAddress);
-		var messagea =  "REGISTER USER '"+ email  + "' FORBIDDEN access from external IP";
+		var messagea = "REGISTER USER '"+ email + "' FORBIDDEN access from external IP";
 		resultlog = LogsModule.register_log( 403,req.connection.remoteAddress,messagea,currentdate,"");
 		res.writeHead(403, {"Content-Type": "text/plain"});
 		res.end("\n403: FORBIDDEN access from external IP.\n");
@@ -1266,13 +1267,13 @@ app.post('/signup', function(req, res) {
 	}
 	var result = UsersModule.register( name, email, pw);
 	result.then((resultreg) => {
-		var messageb =  "REGISTER USER '"+ email + "' GRANTED";
+		var messageb = "REGISTER USER '"+ email + "' GRANTED";
 		resultlog = LogsModule.register_log( resultreg.code, req.connection.remoteAddress, messageb,currentdate,""); 
 		var verify_flush = my_flush( req);
-		verify_flush.then((resolve_result) => {    
+		verify_flush.then((resolve_result) => {
 			res.writeHead(resultreg.code, {"Content-Type": "text/plain"});
 			res.end("Succeed\n");	
-		},(reject_result)=> {  
+		},(reject_result)=> {
 			res.writeHead(reject_result.code, {"Content-Type": "text/plain"});
 			res.end(reject_result.text+"ERROR FLUSH\n", 'utf-8');
 			resultlog = LogsModule.register_log( reject_result.code, req.connection.remoteAddress, reject_result.text+"ERROR FLUSH",currentdate,"");
@@ -1280,7 +1281,7 @@ app.post('/signup', function(req, res) {
 	},(resultReject)=> { 
 		res.writeHead(resultReject.code, {"Content-Type": "text/plain"});
 		res.end(resultReject.code+"Bad Request "+resultReject.text+"\n");
-		var messagec =  "REGISTER USER '"+ email  + "' BAD REQUEST";
+		var messagec = "REGISTER USER '"+ email + "' BAD REQUEST";
 		resultlog = LogsModule.register_log( resultReject.code, req.connection.remoteAddress, messagec,currentdate,"");
 	} ); 
 });
@@ -1290,11 +1291,11 @@ app.post('/signup', function(req, res) {
 // curl -H "Content-Type: text/plain" -XPOST http://localhost:8000/signup?name="bob"\&email="bob@abc.commm"\&pw="1234"
 // app.post('/signup',ipfilter(ips, {mode: 'allow'}), function(req, res) {
 app.post('/update_user', function(req, res) {
-	"use strict";    
+	"use strict";
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
 	var name= find_param_name(req);
 	var email= find_param_email(req);
-	var pw=find_param_pw(req);  
+	var pw=find_param_pw(req);
 	if (pw == undefined){ 
 		res.writeHead(400, {"Content-Type": "text/plain"});
 		res.end("\n400: SIGNUP Bad Request, missing Email.\n");
@@ -1309,9 +1310,9 @@ app.post('/update_user', function(req, res) {
 	} 
 	
 	var resultreg="";
-	var resultReject="";   
+	var resultReject=""; 
 	if(( req.connection.remoteAddress!= ips[0] ) &&( req.connection.remoteAddress!=ips[1])&&( req.connection.remoteAddress!=ips[2])){ 
-		var messagea =  "REGISTER USER '"+ email  + "' FORBIDDEN access from external IP";
+		var messagea = "REGISTER USER '"+ email + "' FORBIDDEN access from external IP";
 		resultlog = LogsModule.register_log( 403,req.connection.remoteAddress,messagea,currentdate,"");
 		res.writeHead(403, {"Content-Type": "text/plain"});
 		res.end("\n403: FORBIDDEN access from external IP.\n");
@@ -1319,20 +1320,20 @@ app.post('/update_user', function(req, res) {
 	}	 
 	var result = UsersModule.update_user( name, email, pw);
 	result.then((resultreg) => { 
-		var messageb =  "UPDATE USER '"+ email + "' GRANTED";
+		var messageb = "UPDATE USER '"+ email + "' GRANTED";
 		resultlog = LogsModule.register_log( resultreg.code, req.connection.remoteAddress, messageb,currentdate,""); 
 		var verify_flush = my_flush( req);
-		verify_flush.then((resolve_result) => {    
+		verify_flush.then((resolve_result) => {
 			res.writeHead(resultreg.code, {"Content-Type": "text/plain"});
 			res.end( "Succceed\n");
-		},(reject_result)=> {  
+		},(reject_result)=> {
 			res.writeHead(reject_result.code, {"Content-Type": "text/plain"});
 			res.end(reject_result.text+"\n", 'utf-8');
 		});//
 	},(resultReject)=> { 
 		res.writeHead(resultReject.code, {"Content-Type": "text/plain"});
 		res.end("Bad Request "+resultReject.text+"\n");
-		var messagec =  "UPDATE USER '"+ email  + "' BAD REQUEST";
+		var messagec = "UPDATE USER '"+ email + "' BAD REQUEST";
 		resultlog = LogsModule.register_log( resultreg.code, req.connection.remoteAddress, messagec,currentdate,"");
 	} ); 
 });
@@ -1362,13 +1363,13 @@ app.get('/login', function(req, res) {
 		res.writeHead(400, {"Content-Type": "text/plain"});
 		res.end("400: Bad Request, missing Passwd\n"); 
 		resultlog = LogsModule.register_log( 400, req.connection.remoteAddress, "400: Bad Request, missing Passwd",currentdate,"");
-		return ;
+		return;
 	}
 	if (email == undefined){
 		res.writeHead(400, {"Content-Type": "text/plain"});
 		res.end("400: Bad Request, missing Email\n"); 
-		  resultlog = LogsModule.register_log( 400, req.connection.remoteAddress, "400: Bad Request, missing Email",currentdate,"");		
-		return  ;
+		resultlog = LogsModule.register_log( 400, req.connection.remoteAddress, "400: Bad Request, missing Email",currentdate,"");		
+		return;
 	}
 
 // 	console.log("\n[LOG]: LOGIN USER+PW+ GENERATION OF TOKEN");
@@ -1377,21 +1378,21 @@ app.get('/login', function(req, res) {
 	var resultCount="";
 	var resultReject="";
 	var result = UsersModule.query_count_user_pw( email, pw); //returns the count of email-pw, if !=1 then we consider not registered.
-		result.then((resultCount) => {  
+		result.then((resultCount) => {
 			if(resultCount==1){
 				var mytoken= auth.emailLogin(email); 
 				res.writeHead(200, {"Content-Type": "text/plain"});
 				res.end(mytoken);
-				  resultlog = LogsModule.register_log( 200, req.connection.remoteAddress, "New token Generated",currentdate,"");
+				resultlog = LogsModule.register_log( 200, req.connection.remoteAddress, "New token Generated",currentdate,"");
 			}else{
 				res.writeHead(401, {"Content-Type": "text/plain"});
-				res.end("401 (Unauthorized) Autentication failed, incorrect user  "+ email +" or passwd "+ pw +"\n"); 
-				  resultlog = LogsModule.register_log( 401, req.connection.remoteAddress, "401: Bad Request of Token, incorrect user or passwd "+email+"or passwd "+pw,currentdate,"");
+				res.end("401 (Unauthorized) Autentication failed, incorrect user "+ email +" or passwd "+ pw +"\n"); 
+				resultlog = LogsModule.register_log( 401, req.connection.remoteAddress, "401: Bad Request of Token, incorrect user or passwd "+email+"or passwd "+pw,currentdate,"");
 			}
 		},(resultReject)=> { 
 			res.writeHead(400, {"Content-Type": "text/plain"});
 			res.end("\n400: Bad Request "+resultReject+"\n");
-			  resultlog = LogsModule.register_log( 400, req.connection.remoteAddress, "400: Bad Token Request "+resultReject,currentdate,"");	
+			resultlog = LogsModule.register_log( 400, req.connection.remoteAddress, "400: Bad Token Request "+resultReject,currentdate,"");	
 		} );
 }); // login
 //**********************************************************
