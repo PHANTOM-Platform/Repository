@@ -30,9 +30,11 @@ This project requires the following dependencies to be installed:
 
 | Component         | Homepage                                           | Version   |
 |------------------ |--------------------------------------------------  |---------  |
-| Elasticsearch     | https://www.elastic.co/products/elasticsearch      | = 2.4.X   |
+| Elasticsearch     | https://www.elastic.co/products/elasticsearch      | = 2.4.0*   | 
 | Node.js           | https://apr.apache.org/                            | >= 4.5    |
 | npm               | https://www.npmjs.com/                             | >= 1.3.6  |
+
+We use the version 2.4.0 instead of the last one 2.4.6, because there is not support yet for WebSockets in the 2.4.6.
 
 
 #### Installation of npm
