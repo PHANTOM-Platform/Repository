@@ -59,7 +59,7 @@ public class repo_get_file {
 			String token=args[0];
 			String mfserveraddress= args[1];
 			String mfserverport= args[2];
-			String responsestring = request_repository_server("/download?filepath=mypath&filename=main.c", token, mfserveraddress, mfserverport);
+			String responsestring = request_repository_server("/download?project=phantom_tools_on_HPC&source=user&filepath=mypath&filename=main.c", token, mfserveraddress, mfserverport);
 			System.out.println(responsestring); //it returns the string token.
 		}else{
 			System.err.println("Missing arguments, please try: \n repo_get_file token filepath filename\n");
