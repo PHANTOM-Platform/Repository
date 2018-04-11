@@ -165,7 +165,7 @@ module.exports = {
 	}, //end register_update_filename_path_json
 //****************************************************
 	//This function is used to confirm that an user exists or not in the DataBase.
-	find_metadata_id: function(filename,path){ 
+	find_metadata_id: function(project,source,filename,path){ 
 		return new Promise( (resolve,reject) => {
 			var size =0;
 			var elasticsearch = require('elasticsearch');
@@ -178,10 +178,14 @@ module.exports = {
 				type: my_type, 
 				body: {
 					"query":{"bool":{"must":[
+							{"match_phrase":{"project": project }},
+							{"term":{"project_length": project.length}},
+							{"match_phrase":{"source": source }},
+							{"term":{"source_length": source.length}},
+							{"match_phrase":{"path": path }},
+							{"term":{"path_length": path.length}},
 							{"match_phrase":{"filename": filename }},
 							{"term":{"filename_length": filename.length}},
-							{"match_phrase":{"path": path }},
-							{"term":{"path_length": path.length}}
 					]}}
 				}
 			}, function(error, response) {
@@ -391,7 +395,7 @@ module.exports = {
 				}
 			});
 		});
-	},//end new_db	
+	},//end drop_db	
 //**************************************************
 	new_db: function( ) {
 		return new Promise( (resolve,reject) => {
