@@ -19,11 +19,8 @@
  
 #0. ########## GLOBAL VARIABLES ###################################
 	BASE_DIR=`pwd`;
-	server="141.58.0.8"; #"localhost"; 
-	repository_port=2777;#"8000";
-
-        server="localhost";
-        repository_port="8000";
+	server="localhost"; 
+	repository_port="8000";
 
 			BLUE="\033[0;34m";
 		LIGHT_GRAY="\033[0;37m";
@@ -119,30 +116,16 @@ cd `dirname $0`;
 	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web/example.h" -F "UploadJSON=@../web/exampleh.json" http://${server}:${repository_port}/upload?DestFileName=main.h\&'Path=mypath/';
 	#We sync, because it may start the next command before this operation completes.
 	curl -s -XGET ${server}:${repository_port}/_flush > /dev/null;
-if [ 1 == 2 ]; then # This is working correctly, I just comment because nobody requested the DELETE operation 
-	#query_metadata;
-	curl -XGET 'localhost:9400/repository_db/metadata/_search?size=100&sort=filename:asc&requestTimeout:Infinity&pretty="true"' ;
-	# XX. ##################  TEST OF DELETING A FILE WITH A VALID TOKEN, access must be accepted : 200 ########## 
-	echo -e "\n${LIGHT_BLUE}";
-	echo "We DELETE metadata of a file ...";
-	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XPOST http://${server}:${repository_port}/delete_metadata?DestFileName=main.h\&Path=mypath/";
-	read -p $'Press [Enter] key to \033[1;37mDELETE\033[1;34m the \033[1;37mMETADATA\033[1;34m with a \033[1;37mVALID TOKEN\033[1;34m'; echo -e "${NO_COLOUR}";
- 	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST http://${server}:${repository_port}/delete_metadata?DestFileName=main.h\&'Path=mypath/';
-	#We sync, because it may start the next command before this operation completes.
-	curl -s -XGET ${server}:${repository_port}/_flush > /dev/null;	
-	#we query_metadata again to see if the entry was effectively deleted;
-	curl -XGET 'localhost:9400/repository_db/metadata/_search?size=100&sort=filename:asc&requestTimeout:Infinity&pretty="true"' ;
-fi;
 # 14. ##################  TEST OF DOWNLOADING A FILE WITH A VALID TOKEN, access must be accepted : 200 ###### 
 	echo -e "\n${LIGHT_BLUE}";
-	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XGET http://${server}:${repository_port}/download?filepath=mypath\&filename=main.c";
+	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XGET http://${server}:${repository_port}/download?project=phantom_tools_on_HPC\&source=user\&filepath=mypath\&filename=main.c";
 	read -p $'Press [Enter] key to \033[1;37mDOWNLOAD\033[1;34m a \033[1;37mFILE\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -ne "${NO_COLOUR}";
-	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XGET http://${server}:${repository_port}/download?filepath=mypath\&filename=main.c ;
+	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XGET http://${server}:${repository_port}/download?project=phantom_tools_on_HPC\&source=user\&filepath=mypath\&filename=main.c ;
 # 15. ##################  TEST OF DOWNLOADING A FILE WITH A VALID TOKEN into a FILE, access must be accepted : 200####### 
 	echo -e "\n${LIGHT_BLUE}";
-	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XGET http://${server}:${repository_port}/download?filepath=mypath\&filename=main.c --output main.c";
+	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XGET http://${server}:${repository_port}/download?project=phantom_tools_on_HPC\&source=user\&filepath=mypath\&filename=main.c --output main.c";
 	read -p $'Press [Enter] key to \033[1;37mDOWNLOAD\033[1;34m a \033[1;37mFILE\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m INTO A NEW LOCAL FILE'; echo -ne "${NO_COLOUR}"
-	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XGET http://${server}:${repository_port}/download?filepath=mypath\&filename=main.c --output main.c ;
+	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XGET http://${server}:${repository_port}/download?project=phantom_tools_on_HPC\&source=user\&filepath=mypath\&filename=main.c --output main.c ;
 # 16. #########  TEST OF DOWNLOADING METADATA WITH A VALID TOKEN for a path and a filename, access must be accepted : 200 ####
 	echo -e "\n${LIGHT_BLUE}";
 	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -XGET http://${server}:${repository_port}/query_metadata?Path=mypath%2F&filename=main.c";
@@ -160,20 +143,3 @@ fi;
 	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XGET http://${server}:${repository_port}/es_query_metadata?QueryBody=\"\\{\\\"query\\\":\\{\\\"bool\\\":\\{\\\"must\\\":\\[\\{\\\"match\\\":\\{\\\"path\\\":\\\"mypath/\\\"\\}\\}\\]\\}\\}\\}\"";
 	read -p $'Press [Enter] key to \033[1;37mRETRIEVE METADATA\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -ne "${NO_COLOUR}" ;
 	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XGET http://${server}:${repository_port}/es_query_metadata?QueryBody="\{\"query\":\{\"bool\":\{\"must\":\[\{\"match\":\{\"path\":\"mypath/\"\}\}\]\}\}\}";
-
-# 19. ############### TEST OF DELETING A FILE #################################################
-	#ls ~/phantom_servers/phantom_repository/mypath/ # This lists of files before delete main.h
-	#curl -XGET 'localhost:9400/repository_db/metadata/_search?size=100&sort=filename:asc&requestTimeout:Infinity&pretty="true"' ; # this shows the metadata before delete the main.h
-	# XX. ##################  TEST OF DELETING A FILE WITH A VALID TOKEN, access must be accepted : 200 ##########
-	echo -e "\n${LIGHT_BLUE}";
-	echo "We DELETE metadata of a file ...";
-	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XPOST http://${server}:${repository_port}/delete_metadata?DestFileName=main.h\&Path=mypath/";
-	read -p $'Press [Enter] key to \033[1;37mDELETE\033[1;34m the \033[1;37mMETADATA\033[1;34m with a \033[1;37mVALID TOKEN\033[1;34m'; echo -e "${NO_COLOUR}";
-	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST http://${server}:${repository_port}/delete_metadata?DestFileName=main.h\&'Path=mypath/';
-	#We sync, because it may start the next command before this operation completes.
-	curl -s -XGET ${server}:${repository_port}/_flush > /dev/null;
-	#we query_metadata again to see if the entry was effectively deleted;
-	
-	echo -e "\nNow, we show a confirmation of the Metadata and file were deleted 
-	curl -XGET 'localhost:9400/repository_db/metadata/_search?size=100&sort=filename:asc&requestTimeout:Infinity&pretty="true"' ; # this shows the metadata after delete the main.h
-	ls ~/phantom_servers/phantom_repository/mypath/ # This lists of files after delete main.h
