@@ -15,52 +15,128 @@
 // 		WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // 		See the License for the specific language governing permissions and
 // 		limitations under the License.
+process.title = 'repository-websocket-server';
 
-const colours = require('./colours');
-const MetadataModule = require('./support-metadata'); 
-const UsersModule = require('./support-usersaccounts');
-const LogsModule = require('./support-logs');
-
-const supportmkdir = require('./mkdirfullpath'); 
-	//privides the function register_json;
-const express = require('express');
-	//ipfilter = require('express-ipfilter').IpFilter;
-const ips = ['::ffff:127.0.0.1','127.0.0.1',"::1"];
-const app = express();
-const fileUpload = require('express-fileupload');
-var fs = require('fs'); 
-var dateFormat = require('dateformat');
-
-const contentType_text_plain = 'text/plain';
-
-var es_servername = 'localhost';
-var es_port = '9400';
-const os = require('os'); 
-const File_Server_Path = '/phantom_servers/phantom_repository'; 
+//****************** VARIABLES OF THE REPOSITORY SERVER, MODIFY DEPENDING ON YOUR DEPLOYMENT *****
+	const es_servername = 'localhost';
+	const es_port = '9400';
+	const ips = ['::ffff:127.0.0.1','127.0.0.1',"::1"];
+	const File_Server_Path = '/phantom_servers/phantom_repository'; 
 	// This will be allocated in the home folder of the user running nodejs !! os.homedir()+File_Server_Path
+//******************** PACKAGES AND SOME GLOBAL VARIABLES ************
+	const express 		= require('express');
+	var app = express();
+	var expressWs 		= require('express-ws')(app); 
+	var app = expressWs.app;
+	const fileUpload 	= require('express-fileupload');
+	var fs 				= require('fs');
+	var dateFormat 		= require('dateformat');
+	const os 			= require('os'); 
+	const contentType_text_plain = 'text/plain';
+//********************* SUPPORT JS file, with variable defs *********
+	const colours 			= require('./colours');
+//********************* SUPPORT JS file, for DB functionalities *****
+	const MetadataModule 	= require('./support-metadata'); 
+	const UsersModule 		= require('./support-usersaccounts');
+	const LogsModule 		= require('./support-logs');
+	const supportmkdir 		= require('./mkdirfullpath'); 
+//*********************** SUPPORT JS file, for TOKENS SUPPORT *******
+	var bodyParser	= require('body-parser');
+	var cors		= require('cors');
+	var auth		= require('./token-auth');
+	var middleware	= require('./token-middleware');
+//*******************************************************************
+//********************  VARIABLES FOR WSockets **********************
+	//*** STORAGE OF USERS
+	const max_users=5; 
+	var totalusers=0;
+	var user_ids = new Array(max_users ); // 6 possible users id
+	var user_conn = new Array(max_users ); // the connetion of each user
+	
+//*** STORAGE OF PROJECT CONTENTS
+	const max_projects= 10;
+	const max_mensages=4;
+	var totalmensages= [max_projects];
+	for (var i = 0; i < max_projects; i++) 
+		totalmensages[i]=0;
+	var ProjectContents = new Array(max_projects,max_mensages); //10 projects,  stack of 4 contents
+	
+//*** STORAGE OF SUSCRIPTIONS 
+	const max_suscrip=6;
+	var totalsuscriptions= [max_users]; //for each user
+	for (var i = 0; i < max_users; i++) 
+		totalsuscriptions[i]=0;
+	var ProjectSubscriptions = new Array(max_users,6); // 6 possible users, stack of 4 proj suscr 
+	var clients = [ ];// list of currently connected clients (users) 
 
-//const queryString = require('query-string');
-//**********************************************************
-var bodyParser = require('body-parser');
-var cors = require('cors');
-var auth = require('./token-auth');
-var middleware = require('./token-middleware');
-//***********************************************************
-
+//****************************************************
+	//report on the screen the list of fields, and values
+	function consolelogjsonws(JSONstring ){
+		var jsonobj = JSON.parse(JSONstring);
+		var keys = Object.keys(jsonobj);
+		var userid =""; 
+		for (var i = 0; i < keys.length; i++) {
+			var labeltxt=Object.getOwnPropertyNames(jsonobj)[i];
+			if(labeltxt.toLowerCase() == 'user') {
+				userid = jsonobj[keys[i]];
+			}
+		}
+		return userid;
+	}
+//****************************************************
+	//report on the screen the list of fields, and values
+	function find_contents(JSONstring ){
+		var jsonobj = JSON.parse(JSONstring);
+		var keys = Object.keys(jsonobj);
+		var myres = { project: "", content: "", queryproject:"" , subscribeproject:""}; 
+		for (var i = 0; i < keys.length; i++) { 
+			var labeltxt=Object.getOwnPropertyNames(jsonobj)[i];
+			if(labeltxt.toLowerCase() == 'project') {
+				myres.project = parseInt(jsonobj[keys[i]],10);
+			}
+			if(labeltxt.toLowerCase() == 'content') {
+				myres.content = jsonobj[keys[i]];
+			}	 
+			if(labeltxt.toLowerCase() == 'queryproject') { 
+				myres.queryproject = parseInt(jsonobj[keys[i]],10);
+			}
+			if(labeltxt.toLowerCase() == 'subscribeproject') { 
+				myres.subscribeproject = parseInt(jsonobj[keys[i]],10);
+			}
+		}
+		if (myres.queryproject==""){//not found label 'queryproject'
+			myres.queryproject = max_projects;
+		}
+		if (myres.project==""){//not found label 'project'
+			myres.project = max_projects;
+		} 			
+		if (myres.subscribeproject==""){//not found label 'subscribeproject'
+			myres.subscribeproject = max_projects;
+		}
+		return myres;
+	}		
+//**************************************************** 
+	function originIsAllowed(origin) {
+		// put logic here to detect whether the specified origin is allowed.
+		return true;
+	}
+//***************** END OF VARÇIABLES FOR WSockets ***************	
+	
+	
+	
 var deleteFolderRecursive = function(path) {
 	if( fs.existsSync(path) ) {
 		fs.readdirSync(path).forEach(function(file,index){
-		var curPath = path + "/" + file;
-		if(fs.lstatSync(curPath).isDirectory()) { // recurse
-			deleteFolderRecursive(curPath);
-		} else { // delete file
-			fs.unlinkSync(curPath);
-		}
+			var curPath = path + "/" + file;
+			if(fs.lstatSync(curPath).isDirectory()) { // recurse
+				deleteFolderRecursive(curPath);
+			} else { // delete file
+				fs.unlinkSync(curPath);
+			}
 		});
 		fs.rmdirSync(path);
 	}
 };
-
 //**********************************************************
 // Retorna un número aleatorio entre min (incluido) y max (excluido)
 function getRandomArbitrary(min, max) {
@@ -71,58 +147,34 @@ function componse_query(project,source,filepath, filename){
 	var query="";
 	if (project.length > 0){
 		query= {"match_phrase":{"project": project }}, {"term":{"project_length": project.length}};  
-	}
-	//***********************************
+	} 
 	if (source.length > 0){
 		if(query.length >0 ){
 			query= query, {"match_phrase":{"source": source }}, {"term":{"source_length": source.length}} ;
 		}else{
 			query= {"match_phrase":{"source": source }}, {"term":{"source_length": source.length}} ;
 		} 
-	}
-	//***********************************	
+	} 	
 	if (filepath.length > 0){
 		if(query.length >0 ){
 			query = query, {"match_phrase":{"path": filepath }}, {"term":{"path_length": filepath.length}} ;
 		}else{
 			query= {"match_phrase":{"path": filepath }}, {"term":{"path_length": filepath.length}} ;
 		} 
-	}
-	//***********************************	
+	} 	
 	if (filename.length > 0){
 		if(query.length >0 ){
 			query = query, {"match_phrase":{"filename": filename }}, {"term":{"filename_length": filename.length}} ;
 		}else{
 			query = {"match_phrase":{"filename": filename }}, {"term":{"filename_length": filename.length}} ;	
 		}
-	}
-	//********************* 
+	} 
 	if(query.length >0 ){
 		query= { query: { bool: { must: [ query ] } } };
 	}else{ 
 		query= { query: { "match_all": {} }};
 			
-	} 
-// 	if ((filepath.length > 0) && (filename.length > 0)) {
-// 		query= { query: { bool: { must: [ 
-// 										{"match_phrase":{"path": filepath }},
-// 										{"term":{"path_length": filepath.length}},
-// 										{"match_phrase":{"filename": filename }},
-// 										{"term":{"filename_length": filename.length}} 
-// 										] } } };
-// 	}else if (filepath.length > 0){
-// 		query= { query: { bool: { must: [ 
-// 										{"match_phrase":{"path": filepath }},
-// 										{"term":{"path_length": filepath.length}} 
-// 										] } } };
-// 	}else if (filename.length > 0){
-// 		query= { query: { bool: { must: [
-// 										{"match_phrase":{"filename": filename }},
-// 										{"term":{"filename_length": filename.length}}
-// 										] } } };
-// 	}else {
-// 		query= { query: { "match_all": {} }};
-// 	} 
+	}  
 	return query;
 }
 
@@ -343,11 +395,11 @@ function find_param_QueryBody(req){
 			var label=Object.getOwnPropertyNames(jsonobj)[i];
 			label=label.toLowerCase();
 			if((label != 'path') && (label != 'filename') && (label != 'path_length') && (label != 'filename_length'))
-			new_json[label]=jsonobj[keys[i]];		//add one property 
+			new_json[label]=jsonobj[keys[i]];	//add one property 
 		} 
-		new_json['path']=path;
-		new_json['path_length']=path.length; //label can not contain points '.' !
-		new_json['filename']=filename;
+		new_json['path']		=path;
+		new_json['path_length']	=path.length; //label can not contain points '.' !
+		new_json['filename']	=filename;
 		new_json['filename_length']=filename.length;
 		return new_json;
 	}
@@ -362,7 +414,7 @@ function find_param_QueryBody(req){
 			if(label == 'source')
 				myres.source=jsonobj[keys[i]];		
 			if(label == 'project')
-				myres.project=jsonobj[keys[i]];						
+				myres.project=jsonobj[keys[i]];
 		} 
 		return myres;
 	}
@@ -440,7 +492,7 @@ function find_param_QueryBody(req){
 				reject (myres);
 			}
 			// Use the mv() method to place the file somewhere on your server
-			//Upload the file, after create the folder if not existing
+			// Upload the file, after create the folder if not existing
 			if (UploadFile == undefined){ 
 				resultlog = LogsModule.register_log( 400,ipaddress,"UPLOAD Error ", date, user);
 				resultlog.then((resultreg) => {
@@ -494,6 +546,95 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cors());
 app.use(fileUpload());
+
+app.ws('/', function(ws_connection, req) {  
+	console.log("calling process ws");
+
+		if (!originIsAllowed(req.origin)) {
+			// Make sure we only accept requests from an allowed origin
+			req.reject();
+			console.log((new Date()) + ' Connection rejected from origin '+ req.origin);
+			return;
+		}  
+		console.log((new Date()) + ' Connection accepted from ' + req.origin); 
+		// we need to know client index to remove them on 'close' event
+		var index = clients.push(ws_connection) - 1;
+		var userName = false;
+		var user_id = false;   
+		// user sent some message
+		ws_connection.on('message', function(message) { //received message is message 
+			// if first message sent by user is their name
+			if (userName === false) {
+				userName =consolelogjsonws( message  ); 
+				if(totalusers<max_users+1){
+					user_ids[totalusers]=userName;
+					user_conn[totalusers]=ws_connection;
+					user_id=totalusers;
+					totalusers=totalusers+1;
+				}  
+				ws_connection.send(JSON.stringify({ user: userName  }));
+				console.log((new Date()) + ' User is known as: ' + userName  );
+			} else { // log and broadcast the message
+				console.log((new Date()) + ' Received Message from ' + userName + ': ' + message );   
+				var found_contents = find_contents(message ); 
+				//*******************************************************************
+				if (found_contents.project < max_projects){
+					var project=parseInt(found_contents.project,10);//this is the project
+					var num_msg=parseInt(totalmensages[project],10);//this is the message
+					//Now we find the suscribed users and we send copy
+					for (var u = 0; u < max_users; u++) {
+						var found_sucrip=false;
+						var i=0; 
+						while(i< totalsuscriptions[u] && found_sucrip==false){
+							if(ProjectSubscriptions[u,i]==project){
+								found_sucrip=true;								
+							}else{
+								i++;
+							}
+						}
+						if(found_sucrip==true){ 
+							//we send the copy because we found the SUSCRIPTION
+							console.log("Forwarding to suscribed user: "+user_ids[u] + " Project: "+ project);
+							user_conn[u].send("{\"Forwarding to suscribed: project\":\""+found_contents.project+"\", \"content\":\""+found_contents.content+"\" }"); 
+						}
+					}  
+					//next we store the incoming message if space in the buffer:
+					if(totalmensages[ project]+1<max_mensages){
+						ProjectContents[project,num_msg]=found_contents.content;
+						var total= totalmensages[ project]; 
+						totalmensages[ project]=total+1; 
+					}
+				}  
+				//****************************************************** 
+				if (found_contents.queryproject < max_projects){ 
+					for (var i = 0; i < totalmensages[found_contents.queryproject]; i++) {  
+						ws_connection.send("{\"project\":\""+found_contents.queryproject+"\", \"content\":\""+ProjectContents[found_contents.queryproject,i]+"\" }");
+					}
+				}
+				//****************************************************** 
+				//first we need find if the user_id already suscribed in ProjectSubscriptions
+				var found_susc=false;
+				if (found_contents.subscribeproject < max_projects && user_id<max_users){ 
+					for (var i = 0; i < totalsuscriptions[user_id]; i++)  
+						if(ProjectSubscriptions[user_id,i]==found_contents.subscribeproject) 
+							found_susc=true; 
+					if(found_susc==false){
+						ProjectSubscriptions[user_id,totalsuscriptions[user_id]]=found_contents.subscribeproject;
+						totalsuscriptions[user_id]=totalsuscriptions[user_id]+1;
+					}
+				}  
+			} 
+		});
+		// user disconnected
+		ws_connection.on('close', function(reasonCode, description) {
+			console.log((new Date()) + ' Peer ' + ws_connection.remoteAddress + ' disconnected.');
+			if (userName !== false  ) {
+				console.log((new Date()) + " Peer " + ws_connection.remoteAddress + " disconnected.");
+				// remove user from the list of connected clients
+				clients.splice(index, 1); 
+			}
+		});   
+});
 //**********************************************************
 // Path only accesible when Authenticated
 app.get('/private',middleware.ensureAuthenticated, function(req, res) {
