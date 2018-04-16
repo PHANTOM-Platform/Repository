@@ -8,6 +8,12 @@ The purpose of the examples in this folder is to facilitate a low-level access t
 
 The examples here also aim to serve as an example of the authentication and authorization process based on tokens.
 
+<p align="center">
+<a href="https://github.com/PHANTOM-Platform/Repository/blob/master/api_bash_scripts/example.png">
+<img src="https://github.com/PHANTOM-Platform/Repository/blob/master/api_bash_scripts/example.png" align="middle" width="70%" height="70%" title="Schema" alt="Example of Folders and Json files at the Repository">
+</a> </p>
+
+
 ## 2.- List and description the USERS' commands with CURL
 
 Here is shown the different available scripts.
