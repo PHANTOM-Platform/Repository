@@ -130,15 +130,15 @@ cd `dirname $0`;
 	ls *.c -l;
 # 16. #########  TEST OF DOWNLOADING METADATA WITH A VALID TOKEN for a path and a filename, access must be accepted : 200 ####
 	echo -e "\n${LIGHT_BLUE}";
-	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -XGET http://${server}:${repository_port}/query_metadata?Path=mypath%2F&filename=main.c";
+	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -XGET http://${server}:${repository_port}/query_metadata?project=phantom_tools_on_HPC\&source=user\&Path=mypath%2F&filename=main.c";
 	read -p $'Press [Enter] key to \033[1;37mRETRIEVE METADATA\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -e "${NO_COLOUR}" ;
-	curl -s -H "Authorization: OAuth ${mytoken}" -XGET http://${server}:${repository_port}/query_metadata?Path=mypath%2F\&filename=main.c; 
+	curl -s -H "Authorization: OAuth ${mytoken}" -XGET http://${server}:${repository_port}/query_metadata?project=phantom_tools_on_HPC\&source=user\&Path=mypath%2F\&filename=main.c; 
 # 17. ########   TEST OF DOWNLOADING METADATA WITH A VALID TOKEN for files in a path, access must be accepted : 200 ########
 	echo -e "\n${LIGHT_BLUE}";
 	echo "Now only QUERY on the filepath";
-	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -XGET http://${server}:${repository_port}/query_metadata?Path=mypath%2F";
+	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -XGET http://${server}:${repository_port}/query_metadata?project=phantom_tools_on_HPC\&source=user\&Path=mypath%2F";
 	read -p $'Press [Enter] key to \033[1;37mRETRIEVE METADATA\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -e "${NO_COLOUR}" ;
-	curl -s -H "Authorization: OAuth ${mytoken}" -XGET http://${server}:${repository_port}/query_metadata?Path=mypath%2F ;
+	curl -s -H "Authorization: OAuth ${mytoken}" -XGET http://${server}:${repository_port}/query_metadata?project=phantom_tools_on_HPC\&source=user\&Path=mypath%2F ;
 # 18. ##################   TEST OF DOWNLOADING METADATA WITH A VALID TOKEN and USER DEFINED QUERY ##########################
 	echo -e "\n${LIGHT_BLUE}";
 	echo "Now only QUERY on the filepath, we EXPLICITLY provide the query";
