@@ -50,7 +50,7 @@ Alternatively, you can install it using your operating system's software install
 ## Installation of other components
 This section assumes that you've successfully installed all required dependencies as described in the previous paragraphs.
 
-To ease the installation and preparation process, there is one shell script provided, which downloads and installs all the dependencies and packages. 
+### 1.- To ease the installation and preparation process, there is one shell script provided, which downloads and installs all the dependencies and packages. 
 Installs Nodejs 9.4.0. Please choose the appropriate shell scripts depending on your Operating System:
 
 
@@ -69,7 +69,7 @@ bash setup-server-64.sh;
 The default port is 8000, which can be modified at the file app.js.
 
 
-The PHANTOM Repository relies on the Elasticsearch running on the SAME server. It is expected that ES is installed by the PHANTOM Monitoring Server.
+### 2.- The PHANTOM Repository relies on the Elasticsearch running on the SAME server. It is expected that ES is installed by the PHANTOM Monitoring Server.
 In case, that you wish to test the PHANTOM Repository without running or installing the PHANTOM Monitoring Server THEN you will need to set up an installation ElasticSearch.
 For such case we provide two additional scripts:
 
@@ -94,8 +94,14 @@ Please take a look on the next suggested reference books, if you face difficulti
 
 ## 4.- Start/Stop the server
 
+### 1.- The PHANTOM Repository relies on the Elasticsearch running on the SAME server. 
 
-Start a PHANTOM REPOSITORY by executing, it is important to not do as root:
+```bash
+bash start-es.sh;
+```
+
+
+### 2.- Start a PHANTOM REPOSITORY by executing, it is important to not do as root:
 For security reasons, the services may not start if they are requested from root.
 
 ```bash
