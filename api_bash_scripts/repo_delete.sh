@@ -97,7 +97,7 @@ fi;
 		exit 1;
 	fi; 
 ######## UPLOAD file and metadata ###################################################  
-	resp=$(curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" --write-out "\n%{http_code}" -XPOST http://${server}:${repository_port}/delete_metadata?Project=demo\&Source=userDestFileName=${dst_file}\&Path=${dst_path});
+	resp=$(curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" --write-out "\n%{http_code}" -XPOST http://${server}:${repository_port}/delete_metadata?project=demo\&source=userDestFileName=${dst_file}\&Path=${dst_path});
  
 	HTTP_STATUS="${resp##*$'\n'}";
 	content="${resp%$'\n'*}";
