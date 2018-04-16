@@ -15,25 +15,73 @@
 //     See the License for the specific language governing permissions and
 //     limitations under the License.
 
-var express = require('express'); 
-
-function is_defined(variable) {
-	return (typeof variable !== 'undefined');
-}
-
-var my_index = 'repository_db'
-var my_type = 'users'
-var mf_server = 'localhost:9400';
+var my_type = 'users' 
 
 module.exports = { 
+	//****************************************************
+	//This function is used to confirm that an user exists or not in the DataBase.
+	find_user_id: function(es_server, my_index, email){ 
+		return new Promise( (resolve,reject) => {
+			var elasticsearch = require('elasticsearch');
+			var client = new elasticsearch.Client({
+				host: es_server,
+				log: 'error'
+			});
+			client.search({
+				index: my_index,
+				type: my_type, 
+				body: {
+					"query":{"bool":{"must":[
+							{"match_phrase":{"email": email }},
+							{"term":{"email_length": email.length}}
+					]}}
+				}
+			}, function(error, response) {
+				if (error) { 
+					reject (error);
+				} 
+				resolve (response.hits.hits[0]._id); 
+			});
+		});
+	},
+//****************************************************
+	//This function is used to confirm that an user exists or not in the DataBase.
+	query_count_user: function(es_server, my_index, email){ 
+		return new Promise( (resolve,reject) => {
+			var elasticsearch = require('elasticsearch');
+			var client = new elasticsearch.Client({
+				host: es_server,
+				log: 'error'
+			});
+			client.count({
+				index: my_index,
+				type: my_type, 
+				body: {
+					"query":{"bool":{"must":[
+							{"match_phrase":{"email": email }},
+							{"term":{"email_length": email.length}}
+					]}}
+				}
+			}, function(error, response) {
+				if (error) { 
+					reject (error);
+				}
+				if (response.count !== undefined) {
+					resolve (response.count);//size
+				}else{
+					resolve (0);//size
+				} 
+			});
+		});
+	},//end query_count_user		
 //**********************************************************
 	//This function is used to verify the User and Password is registered
-	query_count_user_pw: function(email,pw){
+	query_count_user_pw: function(es_server, my_index, email,pw){
 		return new Promise( (resolve,reject) => {
 			var size =0;
 			var elasticsearch = require('elasticsearch');
 			var client = new elasticsearch.Client({
-				host: mf_server,
+				host: es_server,
 				log: 'error'
 			});
 			var count_query ={
@@ -63,19 +111,15 @@ module.exports = {
 //**********************************************************
 	//This function is used to register new users
 	//example of use: 
-	register: function(name, email,pw,res) {
+	register_new_user: function(es_server, my_index, name, email,pw,res) {
 		return new Promise( (resolve,reject) => {
 			var elasticsearch = require('elasticsearch');
 			var clientb = new elasticsearch.Client({
-				host: mf_server,
+				host: es_server,
 				log: 'error'
-			}); 
-			var resultCount=0;
-			var resultReject="";
-			var error="";
-			var response="";
+			});  
 			var myres = { code: "", text: "" };
-			var count_users = this.query_count_user(email);
+			var count_users = this.query_count_user(es_server, my_index, email);
 			count_users.then((resultCount) => {
 				if(resultCount!=0){
 					var mres;
@@ -118,26 +162,22 @@ module.exports = {
 //****************************************************
 	//This function is used to register new users
 	//example of use: 
-	update_user: function(name, email,pw,res) {
+	update_user: function(es_server, my_index, name, email,pw,res) {
 		return new Promise( (resolve,reject) => {
 			var elasticsearch = require('elasticsearch');
 			var clientb = new elasticsearch.Client({
-				host: mf_server,
+				host: es_server,
 				log: 'error'
-			}); 
-			var resultCount=0; 
-			var resultReject="";
-			var error="";
-			var response=""; 
+			});    
 			var myres = { code: "", text: "" };
-			var count_users = this.query_count_user(email);
+			var count_users = this.query_count_user(es_server, my_index, email);
 			count_users.then((resultCount) => { 
 				if(resultCount==0){
 					myres.code="409";
 					myres.text= "User don't found."+"\n";
 					reject(myres); 
 				}else{ 
-					var id_users = this.find_user_id(email);
+					var id_users = this.find_user_id(es_server, my_index, email);
 					id_users.then((user_id) => { 
 						clientb.index({
 							index: my_index,
@@ -175,64 +215,5 @@ module.exports = {
 					reject (myres);
 			});//end count_users
 		});//end promise
-	}, //end register 	
-//****************************************************
-	//This function is used to confirm that an user exists or not in the DataBase.
-	find_user_id: function(email){ 
-		return new Promise( (resolve,reject) => {
-			var size =0;
-			var elasticsearch = require('elasticsearch');
-			var client = new elasticsearch.Client({
-				host: mf_server,
-				log: 'error'
-			});
-			client.search({
-				index: my_index,
-				type: my_type, 
-				body: {
-					"query":{"bool":{"must":[
-							{"match_phrase":{"email": email }},
-							{"term":{"email_length": email.length}}
-					]}}
-				}
-			}, function(error, response) {
-				if (error) { 
-					reject (error);
-				} 
-				resolve (response.hits.hits[0]._id); 
-			});
-		});
-	},
-//****************************************************
-	//This function is used to confirm that an user exists or not in the DataBase.
-	query_count_user: function(email){ 
-		return new Promise( (resolve,reject) => {
-			var size =0;
-			var elasticsearch = require('elasticsearch');
-			var client = new elasticsearch.Client({
-				host: mf_server,
-				log: 'error'
-			});
-			client.count({
-				index: my_index,
-				type: my_type, 
-				body: {
-					"query":{"bool":{"must":[
-							{"match_phrase":{"email": email }},
-							{"term":{"email_length": email.length}}
-					]}}
-				}
-			}, function(error, response) {
-				if (error) { 
-					reject (error);
-				}
-				if (response.count !== undefined) {
-					size=response.count;
-				}else{
-					size=0;
-				}
-				resolve (size); 
-			});
-		});
-	}//end query_count_user	
+	} //end register 	
 }//end module.exports

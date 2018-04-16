@@ -1,23 +1,14 @@
-var express = require('express'); 
-
-function is_defined(variable) {
-	return (typeof variable !== 'undefined');
-}
-
-var my_index = 'repository_db'
-var my_type = 'logs'
-var mf_server = 'localhost:9400';
-
-module.exports = {  
-//**********************************************************
+//************************************************
+module.exports = {
+	//**********************************************************
 	//This function is used to register log in the DB
 	//example of use: 
-	register_log: function(code,ip,message,date,user) { //date
+	register_log: function(es_server,my_index,code,ip,message,date,user) { //date
 		return new Promise( (resolve,reject) => {
 			var myres = { code: "", text: "" };
 			var elasticsearch = require('elasticsearch');
 			var clientlog = new elasticsearch.Client({
-				host: mf_server,
+				host: es_server,
 				log: 'error'
 			});  
 			var error="";
@@ -25,7 +16,7 @@ module.exports = {
 			var myres = { code: "", text:  "" };
 			clientlog.index({
 				index: my_index,
-				type: my_type, 
+				type: 'logs', 
 				body: {
 					"user":user,
 					"code":code,
@@ -52,7 +43,6 @@ module.exports = {
 	}  //end register  
 }//end module.exports
  
-
 // Example of use:
 // 	var result LogsModule.register_log( 400,req.connection.remoteAddress,"MSG",currentdate,res.user);
 // 	result.then((resultreg) => {

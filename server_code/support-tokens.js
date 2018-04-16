@@ -1,30 +1,18 @@
-var express = require('express'); 
-
-function is_defined(variable) {
-	return (typeof variable !== 'undefined');
-}
-
-var my_index = 'repository_db'
-var my_type = 'tokens'
-var mf_server = 'localhost:9400';
+ 
+var my_type = 'tokens' 
 
 module.exports = {  
- 
 //**********************************************************
 	//This function is used to register new users
 	//example of use: 
-	register_token: function(user_id, currenttime, expirationtime) {
+	register_token: function(es_server, my_index, user_id, currenttime, expirationtime) {
 		return new Promise( (resolve,reject) => {
 			var elasticsearch = require('elasticsearch');
 			var clientb = new elasticsearch.Client({
-				host: mf_server,
+				host: es_server,
 				log: 'error'
-			}); 
-			var resultCount="";
-			var resultReject="";
-			var error="";
-			var response="";
-			var count_tokens = this.query_tokens(user_id, currenttime, expirationtime);
+			});     
+			var count_tokens = this.query_tokens(es_server, my_index,user_id, currenttime, expirationtime);
 			count_tokens.then((resultCount) => {  
 				if(resultCount!=0){
 					resolve ("Could not register an existing token.");
@@ -54,12 +42,12 @@ module.exports = {
 //****************************************************
 
 	//This function is used to confirm that an user exists or not in the DataBase.
-	query_tokens: function(user_id, currenttime, expirationtime){ 
+	query_tokens: function(es_server, my_index, user_id, currenttime, expirationtime){ 
 		return new Promise( (resolve,reject) => {
 			var size =0;
 			var elasticsearch = require('elasticsearch');
 			var client = new elasticsearch.Client({
-				host: mf_server,
+				host: es_server,
 				log: 'error'
 			});
 			client.count({
@@ -73,8 +61,7 @@ module.exports = {
 					]}}
 				}
 			}, function(error, response) {
-				if (error) {
-// 					console.log(error);
+				if (error) { 
 					reject (error);
 				}
 				if (response.count !== undefined) {
