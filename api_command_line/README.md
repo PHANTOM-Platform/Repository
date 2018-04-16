@@ -39,24 +39,29 @@ Example of json file: exampleh.json
 
 ```javascript
 {
+  "project": "phantom_tools_on_HPC",
+  "source": "user",
   "data_type":"Usercase",
-  "app":"HPC",
+  "name":"HPC",
   "content":"src_file"
 }
 ```
+
+NOTICE: The 'project' and the 'source' are defined in the json file. We provided them in this way instead as a parameter because these fields should remain for a tool working in a project.
+
 
 ####    DOWNLOADING A FILE 
 
 Command for downloading:
 
 ```bash
-curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/download?filepath=mypath\&filename=main.c ;
+curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/download?project=phantom_tools_on_HPC\&source=user\&filepath=mypath\&filename=main.c ;
 ```
 
 Command for downloading into a new local FILE:
 
 ```bash
-curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/download?filepath=mypath\&filename=main.c --output main.c ;
+curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/download?project=phantom_tools_on_HPC\&source=user\&filepath=mypath\&filename=main.c --output main.c ;
 ```
 
 ####  DOWNLOADING METADATA
@@ -64,20 +69,20 @@ curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -H "Content-Type: multipart/
 Command for downloading METADATA for a path and a filename:
 
 ```bash
-curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -XGET http://localhost:8000/query_metadata?Path=mypath%2F\&filename=main.c; 
+curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -XGET http://localhost:8000/query_metadata?project=phantom_tools_on_HPC\&source=user\&Path=mypath%2F\&filename=main.c; 
 ```
 
 Command for downloading METADATA for files in a path:
 
 ```bash
-curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -XGET http://localhost:8000/query_metadata?Path=mypath%2F ;
+curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -XGET http://localhost:8000/query_metadata?project=phantom_tools_on_HPC\&source=user\&Path=mypath%2F ;
 ```
   
 
 ####   DELETING A FILE 
  
 ```bash
-curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -H "Content-Type: multipart/form-data" -XPOST  http://localhost:8000/delete_metadata?Project=demo\&Source=user\&DestFileName=main.h\&'Path=mypath/';
+curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -H "Content-Type: multipart/form-data" -XPOST  http://localhost:8000/delete_metadata?project=demo\&source=user\&DestFileName=main.h\&'Path=mypath/';
 ```
 
 
