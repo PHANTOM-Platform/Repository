@@ -88,7 +88,7 @@ cd `dirname $0`;
 	curl -s -XGET http://${server}:${repository_port}/new_db;
 # 5. ##################  REGISTER A NEW USER ###################################
 	echo -e "\n${LIGHT_BLUE}";
-	echo "curl -XPOST http://${server}:${repository_port}/signup?email=\"montana@abc.com\"\&pw=\"new\"";
+	echo "curl -XPOST http://${server}:${repository_port}/signup?email=\"bob@example.com\"\&pw=\"1234\"";
 	read -p $'Press [Enter] key to \033[1;37mREGISTER\033[1;34m the example \033[1;37mUSER\033[1;34m'; echo -ne "${NO_COLOUR}";
 	curl -s -H "Content-Type: application/json" -XPOST http://${server}:${repository_port}/signup?email="montana@abc.com"\&pw="new";
 	#We sync, because it may start the next command before this operation completes.

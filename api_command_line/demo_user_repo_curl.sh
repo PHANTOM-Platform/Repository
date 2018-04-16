@@ -83,7 +83,7 @@ cd `dirname $0`;
 	mytoken=`cat token.txt;`; echo ${mytoken};
 # 8. ##################  TEST IF A TOKEN IS VALID OR NOT, this is useful when we not know if the token expired ####### 
 	echo -e "\n${LIGHT_BLUE}";
-	echo "curl -s -H "Authorization: OAuth \${mytoken}" -XGET ${server}:${repository_port}/verifytoken";
+	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -XGET ${server}:${repository_port}/verifytoken";
 	read -p $'Press [Enter] key to \033[1;37mCHECK\033[1;34m if the \033[1;37mTOKEN\033[1;34m is valid or not'; echo -ne "${NO_COLOUR}";
 	curl -s -H "Authorization: OAuth ${mytoken}" -XGET ${server}:${repository_port}/verifytoken;
 # 9. ##################  TEST ACCESS WITH A NOT VALID TOKEN, access must be rejected UNAUTHORIZED:401 #####################
@@ -122,10 +122,12 @@ cd `dirname $0`;
 	read -p $'Press [Enter] key to \033[1;37mDOWNLOAD\033[1;34m a \033[1;37mFILE\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -ne "${NO_COLOUR}";
 	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XGET http://${server}:${repository_port}/download?project=phantom_tools_on_HPC\&source=user\&filepath=mypath\&filename=main.c ;
 # 15. ##################  TEST OF DOWNLOADING A FILE WITH A VALID TOKEN into a FILE, access must be accepted : 200####### 
+	rm main.c; 
 	echo -e "\n${LIGHT_BLUE}";
 	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XGET http://${server}:${repository_port}/download?project=phantom_tools_on_HPC\&source=user\&filepath=mypath\&filename=main.c --output main.c";
 	read -p $'Press [Enter] key to \033[1;37mDOWNLOAD\033[1;34m a \033[1;37mFILE\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m INTO A NEW LOCAL FILE'; echo -ne "${NO_COLOUR}"
 	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XGET http://${server}:${repository_port}/download?project=phantom_tools_on_HPC\&source=user\&filepath=mypath\&filename=main.c --output main.c ;
+	ls *.c -l;
 # 16. #########  TEST OF DOWNLOADING METADATA WITH A VALID TOKEN for a path and a filename, access must be accepted : 200 ####
 	echo -e "\n${LIGHT_BLUE}";
 	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -XGET http://${server}:${repository_port}/query_metadata?Path=mypath%2F&filename=main.c";

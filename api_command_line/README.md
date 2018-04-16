@@ -40,7 +40,7 @@ Example of json file: exampleh.json
 ```javascript
 {
   "data_type":"Usercase",
-  "name":"HPC",
+  "app":"HPC",
   "content":"src_file"
 }
 ```
@@ -77,7 +77,7 @@ curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -XGET http://localhost:8000/
 ####   DELETING A FILE 
  
 ```bash
-curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -H "Content-Type: multipart/form-data" -XPOST  http://localhost:8000/delete_metadata?DestFileName=main.h\&'Path=mypath/';
+curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -H "Content-Type: multipart/form-data" -XPOST  http://localhost:8000/delete_metadata?Project=demo\&Source=user\&DestFileName=main.h\&'Path=mypath/';
 ```
 
 
