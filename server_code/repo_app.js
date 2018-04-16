@@ -412,18 +412,18 @@ app.post('/delete_metadata',middleware.ensureAuthenticated, function(req, res) {
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");  
 	var resultlog ;  
 	const message_missing = "DELETE Bad Request missing "; 
-	var Project= find_param(req.body.Source, req.query.Source); 
-	if ( Project == undefined){  
+	var project= find_param(req.body.project, req.query.project); 
+	if ( project == undefined){  
 		res.writeHead(400, { 'Content-Type': contentType_text_plain });
 		res.end("400:"+message_missing+" Project.\n");
 		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,message_no_path,currentdate,res.user); 
 		return;	 
 	} 
 	
-	var Source= find_param(req.body.Source, req.query.Source); 
-	if ( Source == undefined){  
+	var source= find_param(req.body.source, req.query.source); 
+	if ( source == undefined){  
 		res.writeHead(400, { 'Content-Type': contentType_text_plain });
-		res.end("400:"+message_missing+" Source.\n");
+		res.end("400:"+message_missing+" source.\n");
 		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,message_no_path,currentdate,res.user); 
 		return;	 
 	} 
@@ -441,11 +441,11 @@ app.post('/delete_metadata',middleware.ensureAuthenticated, function(req, res) {
 	if (DestFileName == undefined){  
 		res.writeHead(400, { 'Content-Type': contentType_text_plain });
 		res.end("400:"+message_missing+" DestFileName.\n");
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_no_file,currentdate,res.user);
+		resultlog = LogsModule.register_log(es_servername+":"+es_port, SERVERDB, 400,req.connection.remoteAddress,message_no_file,currentdate,res.user);
 		return;
 	} 
 	
-	var result= MetadataModule.delete_filename_path_json(es_servername+":"+es_port,SERVERDB, Project, Source, DestFileName, DestPath); 
+	var result= MetadataModule.delete_filename_path_json(es_servername+":"+es_port,SERVERDB, project, source, DestFileName, DestPath); 
 	result.then((resultResolve) => {
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,resultResolve.text,currentdate,res.user); 
 		fs.unlink(os.homedir()+ File_Server_Path + '/' + DestPath + '/' + DestFileName, function(err) {
