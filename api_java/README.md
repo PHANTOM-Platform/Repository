@@ -48,7 +48,17 @@ Example of use:
 java demo_phantom/repo_put  "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtb250YW5hQGFiYy5jb20iLCJpYXQiOjE1MjIwNjg2MTEsImV4cCI6MTUyNDY2MDYxMX0.IjXYKMQFfqU-J8O-tlicyCEr_S9q3kvJ5tusPJCpM2s" "localhost" "8000" "new.h" "otherpath" "/home/jmontana/repository/web/example.h" "/home/jmontana/repository/web/exampleh.json";
 ```
 
- 
+ Example of json file: exampleh.json
+
+```javascript
+{
+  "project": "phantom_tools_on_HPC",
+  "source": "user",
+  "type":"Usercase",
+  "name":"HPC",
+  "content":"src_file"
+}
+```
 
  
 
