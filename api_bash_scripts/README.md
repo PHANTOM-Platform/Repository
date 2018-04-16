@@ -48,11 +48,15 @@ Example of json file: exampleh.json
 
 ```javascript
 {
+  "project": "phantom_tools_on_HPC",
+  "source": "user",
   "data_type":"Usercase",
-  "app":"HPC",
+  "name":"HPC",
   "content":"src_file"
 }
 ```
+
+NOTICE: The 'project' and the 'source' are defined in the json file. We provided them in this way instead as a parameter because these fields should remain for a tool working in a project.
 
 #### SCRIPT FOR DOWNLOADING A FILE OR METADATA 
 
@@ -60,13 +64,13 @@ This script takes as inputs the token and the path and filename of the file and 
 
  
 ```bash
-bash repo_get_file.sh -t 141r2342135412351.321351235 -path "mypath/" -file "main.h" -s localhost -port 8000 ;
+bash repo_get_file.sh -t 141r2342135412351.321351235  -project "phantom_tools_on_HPC" -source "user"  -path "mypath/" -file "main.h" -s localhost -port 8000 ;
 ```
 
 Alternativelly, we can query for the METADATA for ALL THE FILES IN THE SAME FOLDER with:
  
 ```bash
-bash repo_get_file.sh -t 141r2342135412351.321351235 -path "mypath/" -s localhost -port 8000 ;
+bash repo_get_file.sh -t 141r2342135412351.321351235  -project "phantom_tools_on_HPC" -source "user"  -path "mypath/" -s localhost -port 8000 ;
 ```
 
 
@@ -75,7 +79,7 @@ bash repo_get_file.sh -t 141r2342135412351.321351235 -path "mypath/" -s localhos
 This script takes as inputs the token and the path and filename of the file and removes the FILE in that folder and its metadata.
  
 ```bash
-bash repo_delete.sh -t 141r2342135412351.321351235 -df "mypath/" -dp "main.h" -s localhost -port 8000 ;
+bash repo_delete.sh -t 141r2342135412351.321351235 -project "phantom_tools_on_HPC" -source "user" -df "mypath/" -dp "main.h" -s localhost -port 8000 ;
 ```
 
 ## 3.- List and description the ADMIN's scripts
