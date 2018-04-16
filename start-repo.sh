@@ -9,10 +9,12 @@
 #npm install http --save
 repo_port=8000
 
-cd server_code
+app=`basename $0`;
+cd `dirname $0`;
+cd server_code;
 bash ../stop-repo.sh
 
-../dist/nodejs/bin/node app.js &
+../dist/nodejs/bin/node repo_app.js &
 pid=$!;
 echo "pid if the server is ${pid}";
 echo ${pid} > node.pid
@@ -30,5 +32,6 @@ if [ ${j} -ge 30 ]; then
 fi;
 echo
 
-curl localhost:8000
+curl http://localhost:${repo_port}
 echo -e "\n\n";
+
