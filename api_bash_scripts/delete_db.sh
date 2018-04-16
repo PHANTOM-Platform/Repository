@@ -58,8 +58,8 @@ if [ $# -ne 0 ]; then
 	done; 
 fi;
 ############ Request of Confirmation #####################################################
-	echo -e "\n${LIGHT_BLUE}";  
-	read -p $'Do you wish to \033[1;37mDELETE\033[1;34m the Repository \033[1;37mDB\033[1;34m? (y/n)' confirm; echo -ne "${NO_COLOUR}";
+echo -e "\n${LIGHT_BLUE}";  
+read -p $'Do you wish to \033[1;37mDELETE\033[1;34m the Repository \033[1;37mDB\033[1;34m? (y/n)' confirm; echo -ne "${NO_COLOUR}";
 if [[ ! ${confirm} = "" ]]; then
 	if [ ${confirm} == 'y' ] || [ ${confirm} == 'Y' ];then
 ################### Testing connectivity with the PHANTOM Repository server: #############
@@ -78,11 +78,11 @@ if [[ ! ${confirm} = "" ]]; then
 ######### Deleting the DB ########################################################### 
 		HTTP_STATUS=$(curl -XGET --silent --output /dev/null --write-out "%{http_code}" http://${server}:${repository_port}/drop_db);
 		if [[ ${HTTP_STATUS} == "200" ]]; then
-				echo "[Log:] Success, DB deleted.";
+			echo "[Log:] Success, DB deleted.";
 		elif [[ ${HTTP_STATUS} == "400" ]]; then
-				echo "[Error:] Can not DELETE DB because it was not found.";
+			echo "[Error:] Can not DELETE DB because it was not found.";
 		else #this report is for the case we may get any other kind of response
-				echo "[Log:] HTTP_STATUS: ${HTTP_STATUS}";
-		fi;		
+			echo "[Log:] HTTP_STATUS: ${HTTP_STATUS}";
+		fi;
 	fi;
 fi;

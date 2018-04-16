@@ -50,7 +50,10 @@ if [ ! $# -eq 0 ]; then
 				nuevo=false;
 			elif [ "$last" = "-sjp" ] || [ "$last" = "-SJP" ]; then
 				json_file=$i;
-				nuevo=false;			
+				nuevo=false;
+
+#project and source are defined in the json file
+				
 				
 			elif [ "$last" = "-dp" ] || [ "$last" = "-DP" ]; then
 				dst_file=$i;
@@ -66,7 +69,8 @@ if [ ! $# -eq 0 ]; then
 				echo -e "${yellow}      source_file_path     [-sfp 1234] ${reset}";   # ../web/example.h      src_file
 				echo -e "${yellow}      source_json_path     [-sjp 1234] ${reset}";   # ../web/exampleh.json  json_file
 # 				echo -e "${yellow}      json_string          [-js 1234] ${reset}";	#  .....   src_json
-				echo -e "${yellow}      destination_filename [-df 1234] ${reset}\n"; # mypath/  dst_path
+
+				echo -e "${yellow}      destination_filename [-df 1234] ${reset}"; # mypath/  dst_path
 				echo -e "${yellow}      destination_path     [-dp 1234] ${reset}";   # main.h dst_file
 				echo -e "${yellow}   Optional fields:${reset}";
 				echo -e "${yellow}      Server [-s phantom.com] ${reset}";
@@ -97,15 +101,15 @@ fi;
 if [ -z "${json_file}" ]; then
     echo -e "Missing parameter Input JSON: sjp\n";
     exit 1;
-fi;
+fi; 
+if [ -z "${dst_path}" ]; then
+	echo -e "Missing parameter Destination Path: dp\n";
+    exit 1;
+fi; 
 if [ -z "${dst_file}" ]; then
     echo -e "Missing parameter Destination Filename: df\n";
     exit 1;
 fi;
-if [ -z "${dst_path}" ]; then
-    echo -e "Missing parameter Destination Path: dp\n";
-    exit 1;
-fi; 
 ################### Testing connectivity with the PHANTOM Repository server: #############
 	source verify_connectivity.sh -s ${server} -port ${repository_port};
 	conectivity=$?;

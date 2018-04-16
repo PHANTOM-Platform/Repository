@@ -75,9 +75,9 @@ fi;
 HTTP_STATUS=$(curl -XGET --silent --output /dev/null --write-out "%{http_code}" http://${server}:${repository_port}/new_db);
 ######## Screen report of the Result #####################################################
 if [[ ${HTTP_STATUS} == "200" ]]; then
-		echo "[Log:] Success.";
+	echo "[Log:] Success.";
 elif [[ ${HTTP_STATUS} == "400" ]]; then
-		echo "[Error:] Can not create DB because already exists.";
+	echo "[Error:] Can not create DB because already exists.";
 else #this report is for the case we may get any other kind of response
-		echo "[Log:] HTTP_STATUS: ${HTTP_STATUS}";
+	echo "[Log:] HTTP_STATUS: ${HTTP_STATUS}";
 fi;

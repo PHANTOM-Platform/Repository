@@ -49,7 +49,7 @@ Example of json file: exampleh.json
 ```javascript
 {
   "data_type":"Usercase",
-  "name":"HPC",
+  "app":"HPC",
   "content":"src_file"
 }
 ```
