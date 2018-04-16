@@ -28,13 +28,13 @@ import java.net.URL;
 import static org.apache.http.HttpHeaders.USER_AGENT;
 
 public class repo_get_file { 
-	public static String request_repository_server(String table_ini,String token, String mfserveraddress, String mfserverport ) throws IOException {
+	public static String request_repository_server(String table_ini,String token, String es_serveraddress, String es_serverport ) throws IOException {
 		String table=table_ini.replaceAll(" ","%20");
 		String retmonmetric = new String();		
 		String urlString = new String();
 		String responsestring = new String();
 		int cnt=0;
-		urlString = "http://"+mfserveraddress+":"+mfserverport+table;
+		urlString = "http://"+es_serveraddress+":"+es_serverport+table;
 // 		System.out.println(ConsoleColors.GREEN_BRIGHT+"\nGET request to Repository using the url: "+urlString+ConsoleColors.RESET);
 		URL httpurl = new URL(urlString);
 		HttpURLConnection c = (HttpURLConnection)httpurl.openConnection();//connecting to url
@@ -55,14 +55,18 @@ public class repo_get_file {
 
 	public static void main(String[] args) throws IOException { 
 		int firstArg;
-		if (args.length > 2) {
-			String token=args[0];
-			String mfserveraddress= args[1];
-			String mfserverport= args[2];
-			String responsestring = request_repository_server("/download?project=phantom_tools_on_HPC&source=user&filepath=mypath&filename=main.c", token, mfserveraddress, mfserverport);
+		if (args.length > 5) {
+			String token			= args[0];
+			String es_serveraddress	= args[1];
+			String es_serverport	= args[2];			
+			String project			= args[3];
+			String source			= args[4];
+			String filepath			= args[5];
+			String filename			= args[6];
+			String responsestring 	= request_repository_server("/download?project=phantom_tools_on_HPC&source=user&filepath="+filepath+"&filename="+filename, token, es_serveraddress, es_serverport);
 			System.out.println(responsestring); //it returns the string token.
 		}else{
-			System.err.println("Missing arguments, please try: \n repo_get_file token filepath filename\n");
+			System.err.println("Missing arguments, please try:\n repo_get_file token filepath filename\n");
 			System.exit(1);
 		} 
 	}

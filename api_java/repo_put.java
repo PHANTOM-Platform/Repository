@@ -40,24 +40,27 @@ public class repo_put {
 
     public static void main(String[] args)   throws IOException { 
 		int firstArg;
-		if (args.length < 6) {
+		if (args.length < 8) {
 			System.err.println("Missing arguments, please try: \n repo_put token server port destfilepath destfilename srcfile scrjson\n");
 			System.exit(1);
-		} else{
-			String token=args[0];
-			String mfserveraddress= args[1];
-			String mfserverport= args[2];
-			String DestFilePath= args[3];
-			String DestFileName= args[4];
-			String SrcFile= args[5];//"/home/jmontana/repository/web/example.h"
-			String SrcJson= args[6];//"/home/jmontana/repository/web/exampleh.json"
+		} else{  
+			String token			= args[0];
+			String es_serveraddress	= args[1];
+			String es_serverport	= args[2];			
+			String project			= args[3];
+			String source			= args[4];
+			String DestFilePath		= args[5];
+			String DestFileName		= args[6];			
+			
+			String SrcFile= args[7];//"/home/jmontana/repository/web/example.h"
+			String SrcJson= args[8];//"/home/jmontana/repository/web/exampleh.json"
 
 			String charset = "UTF-8";
 			String destfile="example.h";
 			File uploadFile1 = new File(SrcFile);  
-			File uploadFile2 = new File(SrcJson);			
+			File uploadFile2 = new File(SrcJson);
 
-			String requestURL = "http://"+mfserveraddress+":"+mfserverport+"/upload?Path="+DestFilePath + "&DestFileName="+DestFileName; 
+			String requestURL = "http://"+es_serveraddress+":"+es_serverport+"/upload?Path="+DestFilePath + "&DestFileName="+DestFileName; 
 			try {     
 				String lineEnd = "\r\n";
 				String twoHyphens = "--";
