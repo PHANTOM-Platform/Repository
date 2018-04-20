@@ -35,7 +35,7 @@ public class repo_get_file {
 		String responsestring = new String();
 		int cnt=0;
 		urlString = "http://"+es_serveraddress+":"+es_serverport+table;
-// 		System.out.println(ConsoleColors.GREEN_BRIGHT+"\nGET request to Repository using the url: "+urlString+ConsoleColors.RESET);
+ 		System.out.println( "\nGET request to Repository using the url: "+urlString );
 		URL httpurl = new URL(urlString);
 		HttpURLConnection c = (HttpURLConnection)httpurl.openConnection();//connecting to url
 		c.setRequestProperty( "Content-type", "application/x-www-form-urlencoded");
@@ -55,6 +55,7 @@ public class repo_get_file {
 
 	public static void main(String[] args) throws IOException { 
 		int firstArg;
+		
 		if (args.length > 5) {
 			String token			= args[0];
 			String es_serveraddress	= args[1];
@@ -63,7 +64,7 @@ public class repo_get_file {
 			String source			= args[4];
 			String filepath			= args[5];
 			String filename			= args[6];
-			String responsestring 	= request_repository_server("/download?project=phantom_tools_on_HPC&source=user&filepath="+filepath+"&filename="+filename, token, es_serveraddress, es_serverport);
+			String responsestring 	= request_repository_server("/download?project="+project+"&source=user&filepath="+filepath+"&filename="+filename, token, es_serveraddress, es_serverport);
 			System.out.println(responsestring); //it returns the string token.
 		}else{
 			System.err.println("Missing arguments, please try:\n repo_get_file token filepath filename\n");
