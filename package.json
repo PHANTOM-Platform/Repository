@@ -34,13 +34,16 @@
     "elasticsearch": "^14.0.0",
     "express": "^4.16.3",
     "express-fileupload": "^0.3.0",
+    "express-ws": "^3.0.0",
     "fs": "0.0.1-security",
     "http": "0.0.0",
     "https": "^1.0.0",
     "jwt-simple": "^0.5.1",
     "moment": "^2.21.0",
     "morgan": "^1.9.0",
+    "nodejs-websocket": "^1.7.1",
     "request": "^2.83.0",
-    "serve-favicon": "^2.4.5"
+    "serve-favicon": "^2.4.5",
+    "websocket": "^1.0.25"
   }
 }
