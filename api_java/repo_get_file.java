@@ -54,8 +54,7 @@ public class repo_get_file {
 	} 
 
 	public static void main(String[] args) throws IOException { 
-		int firstArg;
-		
+		int firstArg;		
 		if (args.length > 5) {
 			String token			= args[0];
 			String es_serveraddress	= args[1];
@@ -63,7 +62,7 @@ public class repo_get_file {
 			String project			= args[3];
 			String source			= args[4];
 			String filepath			= args[5];
-			String filename			= args[6];
+			String filename			= args[6]; 
 			String responsestring 	= request_repository_server("/download?project="+project+"&source=user&filepath="+filepath+"&filename="+filename, token, es_serveraddress, es_serverport);
 			System.out.println(responsestring); //it returns the string token.
 		}else{
@@ -72,3 +71,4 @@ public class repo_get_file {
 		} 
 	}
 }
+
