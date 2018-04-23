@@ -17,8 +17,11 @@
         TMP_DIR=${SERVER_DIR}/tmp;
         DIST_DIR=${SERVER_DIR}/dist;
 	repo_port=8000;
+	if [ ! -e node_modules ]; then
+		ln -s ~/phantom_servers/node_modules node_modules;
+	fi;	
 	cd server_code;
-	bash ../stop-repo.sh
+	bash ../stop-repo.sh;
 	${DIST_DIR}/nodejs/bin/node repo_app.js &
 	pid=$!;
 	echo "pid if the server is ${pid}";
