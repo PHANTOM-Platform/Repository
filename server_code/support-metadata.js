@@ -3,25 +3,26 @@
 // 
 // Copyright (C) 2018 University of Stuttgart
 // 
-//     Licensed under the Apache License, Version 2.0 (the "License");
-//     you may not use this file except in compliance with the License.
-//     You may obtain a copy of the License at
-//  
-//      http://www.apache.org/licenses/LICENSE-2.0
-//  
-//     Unless required by applicable law or agreed to in writing, software
-//     distributed under the License is distributed on an "AS IS" BASIS,
-//     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//     See the License for the specific language governing permissions and
-//     limitations under the License.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+// 	http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
  
 var my_type = 'metadata'; 
 
-function componse_query(project,source,filepath, filename){ 
+module.exports = {
+compose_query: function(project,source,filepath, filename){ 
 	var mquery=undefined;
 	if (project != undefined)
 	if (project.length > 0){
-		mquery= {"match_phrase":{"project": project }}, {"term":{"project_length": project.length}};  
+		mquery= {"match_phrase":{"project": project }}, {"term":{"project_length": project.length}};
 	} 
 	if (source != undefined)
 	if (source.length > 0){
@@ -44,20 +45,18 @@ function componse_query(project,source,filepath, filename){
 		if(mquery!=undefined ){
 			mquery = mquery, {"match_phrase":{"filename": filename }}, {"term":{"filename_length": filename.length}} ;
 		}else{
-			mquery = {"match_phrase":{"filename": filename }}, {"term":{"filename_length": filename.length}} ;	
+			mquery = {"match_phrase":{"filename": filename }}, {"term":{"filename_length": filename.length}} ;
 		}
 	} 
 	if(mquery!=undefined ){
 		mquery= { query: { bool: { must: [ mquery ] } } };
 	}else{ 
 		mquery= { query: { "match_all": {} }};
-	}    
+	}
 	return mquery;
-}
-
-module.exports = {
+},
 //**********************************************************
-register_metadata_json: function(es_server, my_index, body) {
+register_json: function(es_server, my_index, body) {
 	return new Promise( (resolve,reject) => {
 		var size =0;
 		var elasticsearch = require('elasticsearch');
@@ -110,7 +109,7 @@ find_metadata_id: function(es_server ,my_index, project,source,filename,path){
 			host: es_server,
 			log: 'error'
 		}); 
-		var search_query = componse_query(project,source, path, filename);  
+		var search_query = this.compose_query(project,source, path, filename);
 		client.search({
 			index: my_index,
 			type: my_type, 
@@ -132,22 +131,22 @@ query_count_filename_path: function(es_server, my_index,project,source, filename
 		var client = new elasticsearch.Client({
 			host: es_server,
 			log: 'error'
-		});  
-		var count_query =componse_query(project,source, path, filename); 
+		});
+		var count_query = this.compose_query(project,source, path, filename); 
 // 		console.log("query is: "+JSON.stringify(count_query)); 
 		client.count({
 			index: my_index,
 			type: my_type, 
 			body: count_query 
 		}, function(error, response) {
-			if (error) {  
+			if (error) {
 				reject (error);
 			}
 			if (response.count !== undefined) {
 				resolve(response.count); //size
 			}else{
 				resolve(0);//size
-			}    
+			}
 		});
 	});
 },//end query_count_filename_path
@@ -175,12 +174,12 @@ register_update_filename_path_json: function(es_server, my_index, body, project,
 // 				delete body.path; 
 // 			myobj = get_value_json(body,"path_length");
 // 			if(myobj.value!= undefined) 
-// 				delete body.path_length;  
+// 				delete body.path_length;
 		var myres = { code: "", text: "" };
 		var count_metadata = this.query_count_filename_path(es_server, my_index, project,source,filename,path);
 		count_metadata.then((resultCount) => { 
 			if(resultCount==0){ //File+path don't found, proceed to register new entry. 
-				var new_reg = this.register_metadata_json(es_server, my_index, body);
+				var new_reg = this.register_json(es_server, my_index, body);
 				new_reg.then((resultReg) => {
 					myres.code="200";
 					myres.text="succeed, new register";
@@ -234,7 +233,7 @@ delete_filename_path_json: function(es_server, my_index,project,source, filename
 		var clientb = new elasticsearch.Client({
 			host: es_server,
 			log: 'error'
-		});        
+		});
 		var myres = { code: "", text: "" };
 		var count_metadata = this.query_count_filename_path(es_server, my_index, project,source,filename,path);
 		count_metadata.then((resultCount) => { 
@@ -368,15 +367,15 @@ drop_db: function( es_server, my_index) {
 		var client = new elasticsearch.Client({
 			host: es_server,
 			log: 'error'
-		});  
+		});
 		client.indices.delete({
 			index: my_index 
 		},function (error, response,status) {
 			if (error){
 				reject("dropping error: "+error)
 			} else { 
-			var result =" "+(JSON.stringify(response));
-			resolve(result);
+				var result =" "+(JSON.stringify(response));
+				resolve(result);
 			}
 		});
 	});
@@ -388,7 +387,7 @@ new_db: function( es_server, my_index) {
 		var client = new elasticsearch.Client({
 			host: es_server,
 			log: 'error'
-		});  
+		});
 		client.indices.create({
 			index: my_index 
 		},function (error, response,status) {
@@ -431,7 +430,7 @@ new_mapping: function(es_server, my_index, mytype, mytypemapping ) {
 // 		log: 'error'
 // 	});
 // 	var item = "";
-// 	search_query= componse_query(project,source, path, filename); 
+// 	search_query= compose_query(project,source, path, filename); 
 // 	client.search({
 // 		index: my_index,
 // 		type: my_type,

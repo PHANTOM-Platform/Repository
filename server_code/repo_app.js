@@ -15,11 +15,11 @@
 // 		WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // 		See the License for the specific language governing permissions and
 // 		limitations under the License.
-process.title = 'repository-server';
+process.title = 'PHANTOM-repository-server';
 
 //****************** VARIABLES OF THE REPOSITORY SERVER, MODIFY DEPENDING ON YOUR DEPLOYMENT *****
 	const es_servername = 'localhost';
-	const es_port = '9400';
+	const es_port = 9400;
 	const ips = ['::ffff:127.0.0.1','127.0.0.1',"::1"];
 	const File_Server_Path = '/phantom_servers/phantom_repository'; 
 	const SERVERNAME ="PHANTOM Repository";
@@ -41,14 +41,13 @@ process.title = 'repository-server';
 	const MetadataModule 	= require('./support-metadata'); 
 	const UsersModule 		= require('./support-usersaccounts');
 	const LogsModule 		= require('./support-logs');
+	const CommonModule 		= require('./support-common');
 	const supportmkdir 		= require('./mkdirfullpath'); 
 //*********************** SUPPORT JS file, for TOKENS SUPPORT *******
 	var bodyParser	= require('body-parser');
 	var cors		= require('cors');
 	var auth		= require('./token-auth');
 	var middleware	= require('./token-middleware');
- 
-
 //**********************************************************
 //This function removes double quotation marks if present at the beginning and the end of the input string
 function remove_quotation_marks(input_string){
@@ -155,64 +154,6 @@ function get_value_json(JSONstring,label){
 	}
 	return (myres);
 }
-function componse_query(project,source,filepath, filename){ 
-	var query="";
-	if (project != undefined)
-	if (project.toString.length > 0){
-		query= {"match_phrase":{"project": project }}, {"term":{"project_length": project.length}};  
-	} 
-	if (source != undefined)
-	if (source.toString.length > 0){
-		if(query.length >0 ){
-			query= query, {"match_phrase":{"source": source }}, {"term":{"source_length": source.length}} ;
-		}else{
-			query= {"match_phrase":{"source": source }}, {"term":{"source_length": source.length}} ;
-		} 
-	} 
-	if (filepath!=undefined)	
-	if (filepath.toString.length > 0){
-		if(query.length >0 ){
-			query = query, {"match_phrase":{"path": filepath }}, {"term":{"path_length": filepath.length}} ;
-		}else{
-			query= {"match_phrase":{"path": filepath }}, {"term":{"path_length": filepath.length}} ;
-		} 
-	}
-	if (filename!=undefined) 
-	if (filename.toString.length > 0){
-		if(query.length >0 ){
-			query = query, {"match_phrase":{"filename": filename }}, {"term":{"filename_length": filename.length}} ;
-		}else{
-			query = {"match_phrase":{"filename": filename }}, {"term":{"filename_length": filename.length}} ;	
-		}
-	} 
-	if(query.toString.length >0 ){
-		query= { query: { bool: { must: [ query ] } } };
-	}else{ 
-		query= { query: { "match_all": {} }};
-			
-	}  
-	return query;
-}
-//****************************************************
-//This function flush the pending operations to the DataBase.
-function my_flush(req){
-	var testhttp = require('http');
-	var rescode=""; 
-	var myres = { code: "", text: "" }; 
-	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
-	return new Promise( (resolve,reject) => {
-		testhttp.get('http://'+es_servername+':'+es_port+'/'+SERVERDB+'/_flush', function(rescode) {	
-			myres.code="200";
-			myres.text="200 Succeed";
-			resolve (myres);
-		}).on('error', function(e) { 
-			myres.text="400"+"Flush error "+currentdate;
-			myres.code="400";
-			LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"Flush error "+e,currentdate,"");
-			reject (myres);
-		}); 
-	}); 
-};
 //**********************************************************
 function validate_parameter(parameter,label,currentdate,user,address){
 	var message_error = "DOWNLOAD Bad Request missing "+label;  
@@ -221,7 +162,7 @@ function validate_parameter(parameter,label,currentdate,user,address){
 		if (parameter.length > 0)
 			return(parameter); 
 	} 
-	resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,address,message_error,currentdate, user);
+	resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,address,message_error,currentdate, user );
 	return undefined;
 }
 
@@ -270,7 +211,7 @@ function retrieve_file(filePath,req){
 			res.writeHead(200, { 'Content-Type': contentType });
 			res.end(content, 'utf-8');
 		}
-	});	
+	});
 }
 //**********************************************************
 var middleware = require('./token-middleware');
@@ -645,7 +586,7 @@ app.get('/new_db', function(req, res) {
 
 //**********************************************************
 app.get('/_flush', function(req, res) { 
-	var verify_flush = my_flush(req );
+	var verify_flush = CommonModule.my_flush(req.connection.remoteAddress,es_servername+':'+es_port, SERVERDB );
 	verify_flush.then((resolve_result) => {
 		res.writeHead(resolve_result.code, {"Content-Type": contentType_text_plain});
 		res.end(resolve_result.text+"\n", 'utf-8');
@@ -675,7 +616,7 @@ app.get('/query_metadata',middleware.ensureAuthenticated, function(req, res) {
 	var source =find_param(req.body.source,req.query.source);
 	if (source != undefined) 
 		source=remove_quotation_marks(source); 
-	var query= componse_query(project,source,filepath, filename); 
+	var query= MetadataModule.compose_query(project,source,filepath, filename); 
 	//1.1- find id of the existing doc for such path filename
 	
 	var searching = MetadataModule.query_metadata(es_servername+":"+es_port,SERVERDB,query, pretty);
@@ -720,6 +661,7 @@ app.get('/es_query_metadata', middleware.ensureAuthenticated, function(req, res)
 app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 	"use strict"; 
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");  
+	var message_bad_request = "UPLOAD Bad Request missing ";
 	var resultlog ; 
 	if (!req.files){
 		res.writeHead(400, { 'Content-Type': contentType_text_plain });
@@ -729,26 +671,22 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 	}  
 	var RawJSON=  find_param(req.body.RawJSON, req.query.RawJSON);
  
-	var message_no_path = "UPLOAD Bad Request missing Path";
+	
 	var DestPath=find_param(req.body.Path,req.query.Path);
 	if (DestPath == undefined){ 
 		res.writeHead(400, { 'Content-Type': contentType_text_plain });
 		res.end("400:Bad Request, missing Path.\n");
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_no_path,currentdate,res.user); 
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"Path",currentdate,res.user); 
 		return;
 	} 
 
-	var message_no_file = "UPLOAD Bad Request missing DestFileName";
 	var DestFileName=find_param( req.body.DestFileName , req.query.DestFileName);
 	if (DestFileName == undefined){  
 		res.writeHead(400, { 'Content-Type': contentType_text_plain });
 		res.end("400:Bad Request, missing DestFileName.\n");
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_no_file,currentdate,res.user);
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"DestFileName",currentdate,res.user);
 		return;
-	}
-	
-	
-	
+	} 
 	// The name of the input field (i.e. "UploadFile") is used to retrieve the uploaded file
 	let UploadFile = req.files.UploadFile; 	
 	var jsontext="";
@@ -792,8 +730,7 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 //**********************************************************
 app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 	var fs = require('fs');
-	var path = require('path');
-	var myPath = "";  
+	var path = require('path'); 
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
 	//******************************************* 
 	var project= find_param(req.body.project, req.query.project);
@@ -824,11 +761,11 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 		res.end("\n400: Bad Request, missing "+"filename"+".\n");
 		return;}
 	//******************************************* 
-	myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath + '/' + filename; 
-	var returncode=200;
-	// Check if file specified by the filePath exists 
-	fs.exists(myPath, function(exists){
-		if (exists) { 
+	var myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath + '/' + filename;  
+	// Check if file specified by the filePath exists
+	fs.stat(myPath, function(err, stat) {
+		if(err == null) {
+// 			console.log('File exists');
 			// Content-type is very interesting part that guarantee that
 			// Web browser will handle response in an appropriate manner.
 			//fs.createReadStream(myPath).pipe(response);
@@ -839,28 +776,32 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 			stream.on('error', function(error) {
 				returncode=404; 
 			});
-			// File exists, stream it to user
-			if(returncode==200){
-				res.writeHead(200, {
-					"Content-Type": "application/octet-stream",
-					"Content-Disposition": "attachment; filename=" + filename
-				}); 
-				stream.pipe(res);
-				var resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,"DONWLOAD granted to file: "+myPath,currentdate,res.user);
-			}
+			// File exists, stream it to user 
+			res.writeHead(200, {
+				"Content-Type": "application/octet-stream",
+				"Content-Disposition": "attachment; filename=" + filename
+			}); 
+			stream.pipe(res);
+			var resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,"DONWLOAD granted to file: "+myPath,currentdate,res.user);
+			return; 
+		} else if(err.code == 'ENOENT') {
+			// file does not exist
+// 			console.log('file does not exist\n');
+			varresultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,404,req.connection.remoteAddress,"DOWNLOAD error: File not found: "+myPath ,currentdate,res.user);
+			//res.setHeader(name.value); //only before writeHeader 
+			res.writeHead(404, {"Content-Type": contentType_text_plain});
+			res.write("\n404: Bad Request, file not found.\n");
+			res.end("ERROR File does not exist: "+myPath+"\n");	
+			return; 
 		} else {
-			returncode=404; 
-		} 
-	});
-	if(returncode!=200){ 
-		//res.setHeader(name.value); //only before writeHeader 
-		res.writeHead(404, {"Content-Type": contentType_text_plain});
-		res.write("\n404: Bad Request, file not found.\n");
-		res.end("ERROR File does not exist: "+myPath+"\n");	
-		varresultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,404,req.connection.remoteAddress,"DOWNLOAD error: File not found: "+myPath ,currentdate,res.user);
-	}
+// 			console.log('Some other error: ', err.code);
+			res.writeHead(404, {"Content-Type": contentType_text_plain});
+			res.write("\n404: Bad Request, file not found.\n");
+			res.end("ERROR File does not exist: "+myPath+"\n");	
+			return; 			
+		}
+	});	 
 });
-
 //**********************************************************
 //example:
 // curl -H "Content-Type: text/plain" -XPOST http://localhost:8000/signup?name="bob"\&email="bob@abc.commm"\&pw="1234"
@@ -899,7 +840,7 @@ app.post('/signup', function(req, res) {
 	result.then((resultreg) => {
 		var messageb = "REGISTER USER '"+ email + "' GRANTED";
 		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,resultreg.code, req.connection.remoteAddress, messageb,currentdate,""); 
-		var verify_flush = my_flush( req);
+		var verify_flush = CommonModule.my_flush( req.connection.remoteAddress,es_servername+':'+es_port, SERVERDB);
 		verify_flush.then((resolve_result) => {
 			res.writeHead(resultreg.code, {"Content-Type": contentType_text_plain});
 			res.end("Succeed\n");	
@@ -949,7 +890,7 @@ app.post('/update_user', function(req, res) {
 	result.then((resultreg) => { 
 		var messageb = "UPDATE USER '"+ email + "' GRANTED";
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, resultreg.code, req.connection.remoteAddress, messageb,currentdate,""); 
-		var verify_flush = my_flush( req);
+		var verify_flush = CommonModule.my_flush( req.connection.remoteAddress,es_servername+':'+es_port, SERVERDB);
 		verify_flush.then((resolve_result) => {
 			res.writeHead(resultreg.code, {"Content-Type": contentType_text_plain});
 			res.end( "Succceed\n");
@@ -1010,6 +951,7 @@ app.get('/login', function(req, res) {
 var tryToOpenServer = function(port)
 {
 	console.log('trying to Open port: ' + port);
+	console.log('we will get an error IF there is other server running on the same port');
 	app.listen(port, function() {
 		console.log('HTTP listening:' + port);
 	}).on('error', function(err){
