@@ -38,7 +38,7 @@ module.exports = {
 			});//end query client.index   
 			myres.code="200";
 			myres.text="succeed";
-			resolve(myres); 			
+			resolve(myres);
 		});//end promise
 	}  //end register  
 }//end module.exports

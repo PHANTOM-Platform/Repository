@@ -47,7 +47,134 @@ process.title = 'PHANTOM-repository-server';
 	var bodyParser	= require('body-parser');
 	var cors		= require('cors');
 	var auth		= require('./token-auth');
-	var middleware	= require('./token-middleware');
+var middleware	= require('./token-middleware');
+//*************************** MAPPING OF THE TABLES **************	
+const metadatamapping = {
+	"metadata": {
+		"properties": {
+			"path": {
+				"type": "string",
+				"index": "analyzed"
+			},
+			"path_length": { 
+				"type": "short"
+			},
+			"user_owner": {//of the file, user_id is the user email
+				"type": "string",
+				"index": "analyzed"
+			},
+			"name": {//of the application
+				"type": "string",
+				"index": "analyzed"
+			},
+			"filename": {
+				"type": "string",
+				"index": "analyzed"
+			},
+			"filename_length": { 
+				"type": "short"
+			}
+		} 
+	}
+}
+const usersmapping = {			 
+	"users": {
+		"properties": {
+			"email": {
+				"type": "string",
+				"index": "not_analyzed" //for avoid hacking when using incomplete email addresses.
+			},
+			"email_length": {
+				"type": "short"
+			},
+			"password": {
+				"type": "string",
+				"index": "not_analyzed" //for avoid hacking when using incomplete pw.
+			},
+			"password_length": {
+				"type": "short"
+			}
+		}
+	}
+}
+const tokensmapping = { 
+	"tokens":{
+		"properties": {
+			"user_id": {
+				"type": "string"
+			},
+			"generationtime": {
+				"type": "date",
+				"store": "yes",
+				"format": "yyyy-MM-dd'T'HH:mm:ss.SSS",
+				"index": "analyzed"
+			},
+			"expirationtime": {
+				"type": "date",
+				"store": "yes",
+				"format": "yyyy-MM-dd'T'HH:mm:ss.SSS",
+				"index": "analyzed"
+			}
+		}
+	}
+} 
+const logsmapping = { 
+	"logs":{
+		"properties": {
+			"code": {
+				"type": "string"
+			},
+			"ip": {
+				"type": "string"
+			},
+			"message": {
+				"type": "string"
+			},
+			"date": { 
+				"type": "date",
+				"store": "yes",
+				"format": "yyyy-MM-dd'T'HH:mm:ss.SSS",
+				"index": "analyzed"
+			}
+		}
+	}
+} 
+	var expressWs 		= require('express-ws')(app); 
+	var app = expressWs.app;
+//*******************************************************************
+//********************  VARIABLES FOR WSockets **********************
+	//*** STORAGE OF USERS
+	const max_users=5; 
+	var totalusers=0;
+	var user_ids = new Array(max_users ); 
+	var user_conn = new Array(max_users ); // the connetion of each user
+	
+	var user_address = new Array(max_users ); // the connetion of each user
+	var user_index = new Array(max_users ); // the connetion of each user
+	
+//*** STORAGE OF PROJECT CONTENTS
+	const max_projects= 10;
+	const max_mensages=4;
+	var totalmensages= [max_projects];
+	for (var i = 0; i < max_projects; i++) 
+		totalmensages[i]=0;
+	var ProjectContents = new Array(max_projects,max_mensages); //10 projects,  stack of max_mensages contents
+	
+//*** STORAGE OF SUSCRIPTIONS 
+	const max_suscrip=6;
+
+	var total_project_suscriptions= [max_users]; //for each user
+	for (var i = 0; i < max_users; i++) 
+		total_project_suscriptions[i]=0;
+	var ProjectSubscriptions = new Array(max_users,max_suscrip); //stack of "max_suscrip" proj suscr for each user
+	
+	var total_source_suscriptions= [max_users]; //for each user
+	for (var i = 0; i < max_users; i++) 
+		total_source_suscriptions[i]=0;
+	var SourceSubscriptions = new Array(max_users,max_suscrip); //stack of "max_suscrip" proj suscr for each user
+
+	var clients = [ ];// list of currently connected clients (users) 
+//****************************************************
 //**********************************************************
 //This function removes double quotation marks if present at the beginning and the end of the input string
 function remove_quotation_marks(input_string){
@@ -94,7 +221,7 @@ function consolelogjson(JSONstring ){
 //*********************************************************************	
 //the purpose is to remove the fields/properties path,path_length, filename,filename_length, if present.
 //and generate thos fields/properties from the input parameters
-function update_filename_path_on_json(JSONstring,filename,path){ 
+function update_filename_path_on_json(JSONstring, filename, path){ 
 	var new_json = {  } 
 	var jsonobj = JSON.parse(JSONstring);
 	var keys = Object.keys(jsonobj); 
@@ -108,8 +235,42 @@ function update_filename_path_on_json(JSONstring,filename,path){
 	new_json['path_length']	=path.length; //label can not contain points '.' !
 	new_json['filename']	=filename;
 	new_json['filename_length']=filename.length;
+	new_json=(JSON.stringify(new_json));
 	return new_json;
 }
+
+function update_device_length_on_json(JSONstring, device){ 
+	var new_json = {  } 
+	var jsonobj = JSON.parse(JSONstring);
+	var keys = Object.keys(jsonobj); 
+	for (var i = 0; i < keys.length; i++) {
+		var label=Object.getOwnPropertyNames(jsonobj)[i];
+		label=label.toLowerCase();
+		if((label != 'device') && (label != 'device_length'))
+		new_json[label]=jsonobj[keys[i]];	//add one property 
+	} 
+	new_json['device']		=device;
+	new_json['device_length']	=device.length; 
+	new_json=(JSON.stringify(new_json));
+	return new_json;
+}
+
+function update_app_length_on_json(JSONstring, appname){ 
+	var new_json = {  } 
+	var jsonobj = JSON.parse(JSONstring);
+	var keys = Object.keys(jsonobj); 
+	for (var i = 0; i < keys.length; i++) {
+		var label=Object.getOwnPropertyNames(jsonobj)[i];
+		label=label.toLowerCase();
+		if((label != 'app') && (label != 'app_length'))
+		new_json[label]=jsonobj[keys[i]];	//add one property 
+	} 
+	new_json['app']		=appname;
+	new_json['app_length']	=appname.length; 
+	new_json=(JSON.stringify(new_json));
+	return new_json;
+}
+
 
 function get_source_project_json(JSONstring){  
 	var myres = { source: "", project: "" };
@@ -126,17 +287,17 @@ function get_source_project_json(JSONstring){
 	return myres;
 }
 //*********************************************************************	
-function generate_json_example(){ 
-	var Employee = {
-		firstname: "Pedro",
-		lastname: "Picapiedra"
-	} 
-	console.log(Employee);
-	delete Employee.firstname; //delete one property
-	var label='age';
-	Employee[label]="32";		//add one property
-	console.log(Employee);
-}
+// function generate_json_example(){ 
+// 	var Employee = {
+// 		firstname: "Pedro",
+// 		lastname: "Picapiedra"
+// 	} 
+// 	console.log(Employee);
+// 	delete Employee.firstname; //delete one property
+// 	var label='age';
+// 	Employee[label]="32";		//add one property
+// 	console.log(Employee);
+// }
 //*********************************************************************
 //report on the screen the list of fields, and values
 function get_value_json(JSONstring,label){
@@ -441,149 +602,61 @@ app.get('/drop_db', function(req, res) {
 		deleteFolderRecursive (os.homedir()+File_Server_Path) ;
 		res.writeHead(200, {"Content-Type": "application/json"});
 		res.end(resultFind+"\n"); 
-// 		 we can not register nothing after delete the DB !!! 
+		//not register log here, because we can not register nothing after delete the DB !!! 
 	},(resultReject)=> {
-		console.log("log: Bad Request: " + resultReject); 
+// 		console.log("log: Bad Request: " + resultReject); 
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("\n400: Bad Request "+resultReject+"\n"); 
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"Bad Request "+resultReject,currentdate,"");
+		//not register log here, because the error can be due not existing DB to be drop.
 	} );
 });
+//this function registers a list of mappings with a recursive set of promises
+function register_next_mapping (arr_labels, arr_mappings, es_servername, es_port){
+	return new Promise( (resolve,reject) => {
+		var create_new_map = MetadataModule.new_mapping(es_servername+":"+es_port,SERVERDB, arr_labels[0], arr_mappings[0] );
+		create_new_map.then((resultFind) => {
+			arr_labels.shift(); //removes the first element of the array
+			arr_mappings.shift(); //removes the first element of the array
+			var next_result;
+			if(arr_labels.length >0 ){
+				next_result= register_next_mapping (arr_labels, arr_mappings, es_servername, es_port );
+				next_result.then((next_resultFind) => {
+					resolve(next_resultFind);
+				},(next_resultReject)=> { 
+					reject(next_resultReject);
+				} ); 
+			}else{
+				resolve(resultFind);
+			} 
+		},(resultReject)=> { 
+			reject(resultReject);
+		} ); 
+	});//end of promise
+};
 //**********************************************************
 app.get('/new_db', function(req, res) {
 	"use strict"; 
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
-	var metadatamapping = {
-		"metadata": {
-			"properties": {
-				"path": {
-					"type": "string",
-					"index": "analyzed"
-				},
-				"path_length": { 
-					"type": "short"
-				},
-				"user_owner": {//of the file, user_id is the user email
-					"type": "string",
-					"index": "analyzed"
-				},
-				"name": {//of the application
-					"type": "string",
-					"index": "analyzed"
-				},
-				"filename": {
-					"type": "string",
-					"index": "analyzed"
-				},
-				"filename_length": { 
-					"type": "short"
-				}
-			} 
-		}
-	}
-	var usersmapping = {			 
-		"users": {
-			"properties": {
-				"email": {
-					"type": "string",
-					"index": "not_analyzed" //for avoid hacking when using incomplete email addresses.
-				},
-				"email_length": {
-					"type": "short"
-				},
-				"password": {
-					"type": "string",
-					"index": "not_analyzed" //for avoid hacking when using incomplete pw.
-				},
-				"password_length": {
-					"type": "short"
-				}
-			}
-		}
-	}
-	var tokensmapping = { 
-		"tokens":{
-			"properties": {
-				"user_id": {
-					"type": "string"
-				},
-				"generationtime": {
-					"type": "date",
-					"store": "yes",
-					"format": "yyyy-MM-dd'T'HH:mm:ss.SSS",
-					"index": "analyzed"
-				},
-				"expirationtime": {
-					"type": "date",
-					"store": "yes",
-					"format": "yyyy-MM-dd'T'HH:mm:ss.SSS",
-					"index": "analyzed"
-				}
-			}
-		}
-	} 
-	var logsmapping = { 
-		"logs":{
-			"properties": {
-				"code": {
-					"type": "string"
-				},
-				"ip": {
-					"type": "string"
-				},
-				"message": {
-					"type": "string"
-				},
-				"date": { 
-					"type": "date",
-					"store": "yes",
-					"format": "yyyy-MM-dd'T'HH:mm:ss.SSS",
-					"index": "analyzed"
-				}
-			}
-		}
-	} 
-	var resultlog ;  
-	var searching = MetadataModule.new_db(es_servername+":"+es_port,SERVERDB );
-	searching.then((resultFind) => {		
-		var searchingb = MetadataModule.new_mapping(es_servername+":"+es_port,SERVERDB, "metadata", metadatamapping);
-		searching.then((resultFindb) => {
-			var searchingc = MetadataModule.new_mapping(es_servername+":"+es_port,SERVERDB, "users", usersmapping);
-			searching.then((resultFindc) => {
-				var searchingd = MetadataModule.new_mapping(es_servername+":"+es_port,SERVERDB, "tokens", tokensmapping);
-				searching.then((resultFindd) => { 
-					var searchinge = MetadataModule.new_mapping(es_servername+":"+es_port,SERVERDB, "logs", logsmapping);
-					searching.then((resultFinde) => {
-						res.writeHead(200, {"Content-Type": "application/json"});
-						res.end(resultFinde+"\n"); 
-						resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,"DB successfully created",currentdate,""); 
-					},(resultRejecte)=> { 
-						res.writeHead(400, {"Content-Type": contentType_text_plain});
-						res.end("\n400: Bad Request "+resultRejecte+"\n");
-						resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"Bad Request "+resultRejectd,currentdate,"");
-					} ); 
-				},(resultRejectd)=> { 
-					res.writeHead(400, {"Content-Type": contentType_text_plain});
-					res.end("\n400: Bad Request "+resultRejectd+"\n");
-					resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"Bad Request "+resultRejectd,currentdate,"");
-				} ); 
-			},(resultRejectc)=> { 
-				res.writeHead(400, {"Content-Type": contentType_text_plain});
-				res.end("\n400: Bad Request "+resultRejectc+"\n");
-				resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"Bad Request "+resultRejectc,currentdate,"");
-			} ); 
+	var create_new_db = MetadataModule.new_db(es_servername+":"+es_port,SERVERDB );
+	create_new_db.then((resultFind) => {
+		var arr_labels = [ 'metadata', 'users', 'tokens', 'logs' ];
+		var arr_mappings = [ metadatamapping ,usersmapping, tokensmapping, logsmapping ];
+		var create_new_mappings =register_next_mapping (arr_labels, arr_mappings, es_servername, es_port ); 
+		create_new_mappings.then((resultFindb) => { 
+			res.writeHead(200, {"Content-Type": "application/json"});
+			res.end(resultFindb+"\n"); 
+			var resultloga = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,"DB successfully created",currentdate,"");  
 		},(resultRejectb)=> { 
 			res.writeHead(400, {"Content-Type": contentType_text_plain});
 			res.end("\n400: Bad Request "+resultRejectb+"\n");
-			resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"Bad Request "+resultRejectb,currentdate,"");
+			var resultlogb = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"Bad Request "+resultRejectb,currentdate,"");
 		} );
 	},(resultReject)=> { 
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
-		res.end("\n400: Bad Request "+resultReject+"\n");
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"Bad Request "+resultReject,currentdate,"");
+		res.end("\n400: Bad Request when creating DB "+resultReject+"\n");
+		var  resultlogc = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"Bad Request "+resultReject,currentdate,"");
 	} );
 });
-
 //**********************************************************
 app.get('/_flush', function(req, res) { 
 	var verify_flush = CommonModule.my_flush(req.connection.remoteAddress,es_servername+':'+es_port, SERVERDB );
@@ -700,7 +773,11 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 	//		jsontext = JSON.stringify(jsontext);
 	} 
 	var source_proj= get_source_project_json(jsontext);  
-	jsontext=update_filename_path_on_json(jsontext, DestFileName, DestPath);
+	jsontext=update_filename_path_on_json(jsontext, DestFileName, DestPath); //this adds the field 
+	
+// 	console.log("send_repo_update_to_suscribers("+source_proj.project + " "+ source_proj.source+")"+jsontext);
+	send_repo_update_to_suscribers(source_proj.project, source_proj.source,jsontext);
+	
 	var storage_path=source_proj.project+"/"+source_proj.source+"/"+DestPath;  
 	var result= MetadataModule.register_update_filename_path_json(es_servername+":"+es_port,SERVERDB, jsontext, source_proj.project, source_proj.source, DestFileName, DestPath); 
 	result.then((resultResolve) => {
@@ -836,7 +913,7 @@ app.post('/signup', function(req, res) {
 		res.end("\n403: FORBIDDEN access from external IP.\n");
 		return ;
 	}
-	var result = UsersModule.register_new_user(es_servername+":"+es_port,SERVERDB,  name, email, pw);
+	var result = UsersModule.register_new_user(es_servername+":"+es_port,SERVERDB, name, email, pw);
 	result.then((resultreg) => {
 		var messageb = "REGISTER USER '"+ email + "' GRANTED";
 		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,resultreg.code, req.connection.remoteAddress, messageb,currentdate,""); 
@@ -846,12 +923,12 @@ app.post('/signup', function(req, res) {
 			res.end("Succeed\n");	
 		},(reject_result)=> {
 			res.writeHead(reject_result.code, {"Content-Type": contentType_text_plain});
-			res.end(reject_result.text+"ERROR FLUSH\n", 'utf-8');
+			res.end(reject_result.text+": ERROR FLUSH\n", 'utf-8');
 			resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, reject_result.code, req.connection.remoteAddress, reject_result.text+"ERROR FLUSH",currentdate,"");
 		});//
 	},(resultReject)=> { 
 		res.writeHead(resultReject.code, {"Content-Type": contentType_text_plain});
-		res.end(resultReject.code+"Bad Request "+resultReject.text+"\n");
+		res.end(resultReject.code+": Bad Request "+resultReject.text+"\n");
 		var messagec = "REGISTER USER '"+ email + "' BAD REQUEST";
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, resultReject.code, req.connection.remoteAddress, messagec,currentdate,"");
 	} ); 
@@ -947,6 +1024,211 @@ app.get('/login', function(req, res) {
 				"400: Bad Token Request "+resultReject,currentdate,"");	
 	} );
 }); // login
+function originIsAllowed(origin) {
+	// put logic here to detect whether the specified origin is allowed.
+	return true;
+};
+
+//report on the screen the list of fields, and values
+function consolelogjsonws(JSONstring ){
+	var jsonobj = JSON.parse(JSONstring);
+	var keys = Object.keys(jsonobj); 
+	var myres = { user: "", project:  "" , source:  ""};
+	for (var i = 0; i < keys.length; i++) {
+		var labeltxt=Object.getOwnPropertyNames(jsonobj)[i];
+		if(labeltxt.toLowerCase() == 'user') {
+			myres.user = jsonobj[keys[i]]; 
+		}else if(labeltxt.toLowerCase() == 'project') {
+			myres.project = jsonobj[keys[i]]; 
+		}else if(labeltxt.toLowerCase() == 'source') {
+			myres.source = jsonobj[keys[i]]; 
+		}
+	}
+	return myres;
+};
+
+function send_repo_update_to_suscribers(projectname,sourcename, jsontext){
+	//*******************************************************************
+	if(projectname != undefined){ 
+		//Now we find the suscribed users and we send copy
+		for (var u = 0; u < max_users; u++) {
+			var found_sucrip=false;
+			var i=0; 
+			while(i< total_project_suscriptions[u] && found_sucrip==false){ 
+				if(ProjectSubscriptions[u,i]==projectname){ 
+					found_sucrip=true;
+				}else{
+					i++;
+				}
+			}
+			if(found_sucrip==true){ 
+				//we send the copy because we found the SUSCRIPTION
+				console.log("Forwarding to suscribed user: "+user_ids[u] + " Project: "+ projectname);
+				//user_conn[u].send("{\"project modified \":\""+projectname+"\"  }"); 
+				user_conn[u].send(jsontext);
+				return;//then not send the the json two times, in case user also suscribed to the sourcename
+			}
+		}   
+	}  
+ 
+	if(sourcename != undefined){ 
+		//Now we find the suscribed users and we send copy
+		for (var u = 0; u < max_users; u++) {
+			var found_sucrip=false;
+			var i=0; 
+			while(i< total_source_suscriptions[u] && found_sucrip==false){ 
+				if(SourceSubscriptions[u,i]==sourcename){ 
+					found_sucrip=true;
+				}else{
+					i++;
+				}
+			}
+			if(found_sucrip==true){ 
+				//we send the copy because we found the SUSCRIPTION
+				console.log("Forwarding to suscribed user: "+user_ids[u] + " Source: "+ sourcename);
+				//user_conn[u].send("{\"project modified \":\""+sourcename+"\" }"); 
+				user_conn[u].send(jsontext);
+			}
+		}   
+	}  
+};
+
+function find_pos_user_address(client_address){
+	var i=0;
+	while (i<totalusers && user_address[i] != client_address){
+		i=i+1;
+	}
+	return i;
+}
+
+app.ws('/', function(ws_connection, req) {
+	var client_address = ws_connection._socket.remoteAddress + ":" + ws_connection._socket.remotePort;
+	var user_input;
+	if(!originIsAllowed(ws_connection._socket.remoteAddress)) {
+		// Make sure we only accept requests from an allowed origin
+		req.reject();
+		console.log((new Date()) + ' Connection rejected from origin '+ client_address);
+		return;
+	} 	
+	console.log((new Date()) + ' Connection accepted from ' + client_address); 
+	// we need to know client index to remove them on 'close' event
+	var index = clients.push(ws_connection) - 1;  
+	var user_id = max_users;  //no valid value to represent not defined
+	//******************************************
+	// received a message from the user 
+	ws_connection.on('message', function(message) { //received message is message  
+		user_input = consolelogjsonws( message );
+		user_id=find_pos_user_address(client_address);
+		if(user_id==totalusers){//address not registered, we add it at the end of the list
+			user_id=0;
+			//we look if there is any position was free in the list before the last used
+			while(user_id<totalusers && user_address[user_id]!= undefined ){
+				user_id=user_id+1;
+			}
+			if(user_id==totalusers && totalusers<max_users){//we don't found such free position, then the list increases in one position
+				totalusers=totalusers+1;
+			}
+		}
+		if(user_id==max_users){
+			console.log("error, list of suscriptions full, we can not register new one");
+			return;
+		}
+		user_address[user_id]=client_address;
+		user_index[user_id]=index;
+		user_ids[user_id]=user_input.user;//only for debuging
+		user_conn[user_id]=ws_connection;
+		
+		//compose the message describing the update of suscription 
+		var update_suscription_msg = {};
+		update_suscription_msg["user"]= user_input.user ; 
+		if(user_input.project != undefined)
+		if(user_input.project.length > 0){ 
+			update_suscription_msg ["suscribed_to_project"] = user_input.project ;
+		} 
+		if(user_input.source != undefined)
+		if(user_input.source.length > 0){ 
+			update_suscription_msg["suscribed_to_source"] = user_input.source ; 
+		} 				 
+		
+		console.log(JSON.stringify(update_suscription_msg));
+		
+		ws_connection.send(JSON.stringify(update_suscription_msg)); 
+// 		console.log((new Date()) + ' Received Suscription from ' + user_input.user + ': ' + message );   
+		//**********************************************************************
+		//first we need find if the user_id already suscribed, if not then we add the new suscription
+		//**********************************************************************
+		//adding suscriptoin on PROJECTS:
+		var found_susc=false;
+		if(user_input.project.length > 0)
+		if(user_input.project!=undefined){
+			for (var i = 0; i < total_project_suscriptions[user_id]; i++)  
+				if(ProjectSubscriptions[user_id,i]==user_input.project) {
+					found_susc=true;
+// 					console.log("found previous suscription adding at "+user_id+" "+i);
+				}
+			if(found_susc==false){
+				console.log("not found previous project suscription adding at "+user_id+" "+total_project_suscriptions[user_id]+ ": "+user_input.project);
+				ProjectSubscriptions[user_id,total_project_suscriptions[user_id]]=user_input.project;
+				total_project_suscriptions[user_id]=total_project_suscriptions[user_id]+1;
+			}
+		}
+		//**********************************************************************
+		//adding suscriptoin on SOURCEs:
+		found_susc=false; 
+		if(user_input.source.length > 0)
+		if(user_input.source!=undefined){
+			for (var i = 0; i < total_source_suscriptions[user_id]; i++)  
+				if(SourceSubscriptions[user_id,i]==user_input.source) {
+					found_susc=true; 
+// 					console.log("found previous suscription adding at "+user_id+" "+i);
+				}
+			if(found_susc==false){
+				console.log("not found previous source suscription adding at "+user_id+" "+total_source_suscriptions[user_id]+ ": "+user_input.source);
+				SourceSubscriptions[user_id,total_source_suscriptions[user_id]]=user_input.source;
+				total_source_suscriptions[user_id]=total_source_suscriptions[user_id]+1;
+			}
+		}
+		user_input.project=undefined;
+		user_input.source=undefined;
+	});
+	// user disconnected
+	ws_connection.on('close', function(reasonCode, description) {
+		console.log((new Date()) + ' Peer: ' + client_address + ' disconnected.'+ 'user is: '+ user_input.user);
+		var i=find_pos_user_address(client_address);
+		if(i<totalusers) { 
+			user_address[i]=undefined;
+			total_project_suscriptions[i]=0;
+			total_source_suscriptions[i]=0; 
+			// remove user from the list of connected clients
+			clients.splice(user_index[i], 1); 
+		}
+	});
+});
+
+// set up error handler
+function errorHandler (err, req, res, next) {
+    if(req.ws){
+        console.error("ERROR from WS route - ", err);
+    } else {
+        console.error(err);
+        res.setHeader('Content-Type', 'text/plain');
+        res.status(500).send(err.stack);
+    }
+}
+app.use(errorHandler);
+
+// app.use(function (err, req, res) {
+//     log.error('Error on path %s\n%s\n', req.url, err.stack);
+//     res.status(500).send((process.env.NODE_ENV == 'production') ? 'Internal Server Error' : err.stack.replace(/(?:\r\n|\r|\n)/g, '<br />'));
+// });
+//********************************************************** 
+app.all("*", function(req, res) { 
+	const url = require('url'); 
+	res.writeHead(400, {"Content-Type": contentType_text_plain});
+	//req.method  used for indentify the request method GET, PUT, POST, DELETE
+	res.end("[ERROR]: the requested path: \""+ url.parse(req.url).pathname +"\" for the method \""+ req.method +"\" is not implemented in the current version.\n", 'utf-8'); 
+	return; 
+});
 //**********************************************************
 var tryToOpenServer = function(port)
 {

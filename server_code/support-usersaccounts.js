@@ -20,6 +20,7 @@ var my_type = 'users'
 module.exports = { 
 	//****************************************************
 	//This function is used to confirm that an user exists or not in the DataBase.
+	//We first counted if existence is >0
 	find_user_id: function(es_server, my_index, email){ 
 		return new Promise( (resolve,reject) => {
 			var elasticsearch = require('elasticsearch');
@@ -58,8 +59,8 @@ module.exports = {
 				type: my_type, 
 				body: {
 					"query":{"bool":{"must":[
-							{"match_phrase":{"email": email }},
-							{"term":{"email_length": email.length}}
+							{"match_phrase":{"email":email}},
+							{"term":{"email_length":email.length}}
 					]}}
 				}
 			}, function(error, response) {
