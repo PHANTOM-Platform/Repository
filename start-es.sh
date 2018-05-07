@@ -17,8 +17,8 @@ cd `dirname $0`;
  
 # GLOBAL VARIABLES
 	app=`basename $0`;
-        SERVER_DIR=~/phantom_servers/;
-        BASE_DIR=`dirname $0`;
+	SERVER_DIR=~/phantom_servers;
+	BASE_DIR=`dirname $0`;
 	TMP_DIR=${SERVER_DIR}/tmp;
 	DIST_DIR=${SERVER_DIR}/dist;
 	elasticsearch_port="9400";
@@ -30,6 +30,10 @@ cd `dirname $0`;
 	#ES_MIN_MEM=256m
 	ES_HEAP_SIZE=256m
 	CONFIG_FILE=$ES_HOME/config/elasticsearch.yml
+	if [ ! -d ${ES_HOME} ]; then
+		echo "Error: Not found the instalation of ElasticSearch"; 
+		exit;
+	fi;
 
 	ELASTICSEARCH_BIN=${ES_HOME}/bin/elasticsearch
 	if [ ! -d ${ES_HOME}/config ]; then
@@ -39,12 +43,11 @@ cd `dirname $0`;
 	if [ ! -d ${ES_HOME}/data ]; then
 		mkdir ${ES_HOME}/data
 	fi;
-
-	if [ ! -e ${BASE_DIR}/elasticsearch.yml ]; then
-		echo "Error: file ${BASE_DIR}/elasticsearch.yml NOT FOUND!";
+	if [ ! -e elasticsearch.yml ]; then
+		echo "Error: file elasticsearch.yml NOT FOUND!";
 		exit;
 	fi;
-	cp ${BASE_DIR}/elasticsearch.yml ${ES_HOME}/config/elasticsearch.yml;
+	cp elasticsearch.yml ${CONFIG_FILE};
 	command -v ${ELASTICSEARCH_BIN} >/dev/null 2>&1 || { echo " elasticsearch : Not installed. Aborting." >&2; exit 1; }
 	RESULT=$(netstat -lnt | awk '$6 == "LISTEN" && $4 ~ ":${elasticsearch_port}"')
 	if [[ -z "${RESULT}" ]] ; then

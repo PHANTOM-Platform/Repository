@@ -11,23 +11,25 @@
 # GLOBAL VARIABLES
 	app=`basename $0`;
 	SERVER_DIR=~/phantom_servers/;
-        BASE_DIR=`dirname $0`;
+	BASE_DIR=`dirname $0`;
 	cd ${BASE_DIR};
 	BASE_DIR=`pwd`;
-        TMP_DIR=${SERVER_DIR}/tmp;
-        DIST_DIR=${SERVER_DIR}/dist;
+	TMP_DIR=${SERVER_DIR}/tmp;
+	DIST_DIR=${SERVER_DIR}/dist;
 	repo_port=8000;
+	cd server_code;
+# IF THE SERVER WAS RUNNING, WE STOP IT BEFORE START A NEW INSTANCE
+	bash ../stop-repo.sh
+# START A NEW INSTACE OF THE REPOSITORY	
 	if [ ! -e node_modules ]; then
 		ln -s ~/phantom_servers/node_modules node_modules;
-	fi;	
-	cd server_code;
-	bash ../stop-repo.sh;
+	fi; 
 	${DIST_DIR}/nodejs/bin/node repo_app.js &
 	pid=$!;
 	echo "pid if the server is ${pid}";
 	echo ${pid} > ${TMP_DIR}/repo.pid;
 	sleep 1;
-
+# CHECK IF THE REPOSITORY IS RUNNING
 	let "j=0";
 	HTTP_STATUS=$(curl -s -w %{http_code} http://localhost:${repo_port});
 	while [[ ${HTTP_STATUS} != *"200"* ]] && [ ${j} -lt 30 ] ; do
@@ -41,4 +43,3 @@
 	echo ;
 	curl http://localhost:${repo_port};
 	echo -e "\n\n";
-
