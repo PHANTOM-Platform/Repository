@@ -24,7 +24,7 @@
 	cd ${BASE_DIR};
 #Set up an new database, 
 #In case that already setup, it will not perform any change just only return an error on already existing DB. 
-port=8500
+port=8000;
 server=localhost
 curl -s -XGET http://${server}:${port}/new_db > /dev/null;
 curl -s -XGET http://${server}:${port}/_flush > /dev/null;
