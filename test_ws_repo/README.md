@@ -29,7 +29,7 @@ bash ../repo_api_command_line/demo_admin_repo_curl.sh
 bash test_appman_ws_suscriber_repository.sh;
 ```
 
-### 4.- Perform some updates to the APP-Resource Manager, which will be forwared to the suscribed client
+#### 4.- Perform some updates to the APP-Resource Manager, which will be forwared to the suscribed client
 I suggest to run the next strings on a different terminal, or computer, to make it clear what is the feedback to the suscribed client
 
 ```bash
