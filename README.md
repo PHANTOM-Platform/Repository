@@ -49,25 +49,33 @@ Alternatively, you can install it using your operating system's software install
 This section assumes that you've successfully installed all required dependencies as described in the previous paragraphs.
 
 #### 1.- To ease the installation and preparation process, there is one shell script provided, which downloads and installs all the dependencies and packages. 
-Installs Nodejs 9.4.0. Please choose the appropriate shell scripts depending on your Operating System:
+Installs Nodejs 9.4.0. and Elastic-Search 2.4.6 on the folder {your_local_home_folder}/phantom_server.
+Please choose the appropriate shell scripts depending on your Operating System:
 
-
-Shell script for 32bits:
-
-```bash
-bash setup-server-32.sh;
-```
-
-or the Shell script for 64bits:
+Shell script for Intel-x86 32bits (tested on Ubuntu):
 
 ```bash
-bash setup-server-64.sh;
+bash setup-server-x86-32.sh
 ```
 
-The default port is 8000, which can be modified at the file app.js.
+or the Shell script for Intel-x86 64bits (tested on Ubuntu):
+
+```bash
+bash setup-server-x86-64.sh
+```
+
+or the Shell script for Armv7l 64bits (tested on Raspbian):
+
+```bash
+bash setup-server-armv7-64.sh
+```
+
+The default port is 8000, which can be modified at the file repo_app.js.
 
 
-#### 2.- The PHANTOM Repository relies on the Elasticsearch running on the SAME server. It is expected that ES is installed by the PHANTOM Monitoring Server.
+#### 2.- The PHANTOM Repository relies on the Elasticsearch running on the SAME server, which should be installed by the previous scripts.
+<!---
+It is expected that ES is installed by the PHANTOM Monitoring Server.
 In case, that you wish to test the PHANTOM Repository without running or installing the PHANTOM Monitoring Server THEN you will need to set up an installation ElasticSearch.
 For such case we provide two additional scripts:
 
@@ -80,6 +88,7 @@ and
 ```bash
 bash start-es.sh;
 ```
+-->
 
 Please take a look on the next suggested reference books, if you face difficulties on the setup of ElasticSearch-Database server: 
 
