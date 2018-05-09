@@ -80,17 +80,25 @@ The field project is MANDATORY, but the parameters source and filepath are optio
 
 ```bash
 your_string_token=`cat token.txt;`;
-curl -s -H "Authorization: OAuth ${your_string_token}" -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/downloadlist?project=phantom_tools_on_HPC\&source=user\&filepath=mypath\&filename=main.c ;
+curl -s -H "Authorization: OAuth ${your_string_token}" -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/downloadlist?project=phantom_tools_on_HPC\&source=user\&filepath=mypath ;
 ```
 
 
-### DOWNLOAD THE FILES IN A FOLDER (PROJECT + SOURCE(optional) + FILEPATH (optional))
+### DOWNLOAD INTO A SINGLE ZIP ALL THE FILES IN A FOLDER (PROJECT + SOURCE(optional) + FILEPATH (optional))
 
 The field project is MANDATORY, but the parameters source and filepath are optional
 
 ```bash
 your_string_token=`cat token.txt;`;
-curl -s -H "Authorization: OAuth ${your_string_token}" -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/downloadzip?project=phantom_tools_on_HPC\&source=user\&filepath=mypath\&filename=main.c ;
+curl -s -H "Authorization: OAuth ${your_string_token}" -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/downloadzip?project=phantom_tools_on_HPC\&source=user\&filepath=mypath  --output demo.zip;
+```
+
+other example downloading the full project is:
+
+
+```bash
+your_string_token=`cat token.txt;`;
+curl -s -H "Authorization: OAuth ${your_string_token}" -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/downloadzip?project=phantom_tools_on_HPC --output demo2.zip;
 ```
 
 
