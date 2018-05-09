@@ -886,7 +886,96 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 		}
 	});	 
 });
+//**********************************************************
+function list_of_files(myPath){
+	var path = path || require('path');
+	var fs = fs || require('fs');
+	var filelist = ""; 
+	files = fs.readdirSync(myPath); 
+	files.forEach(function(file) { 
+		if (fs.statSync(path.join(myPath, file)).isDirectory()) { 
+			filelist= filelist+list_of_files(path.join(myPath, file));
+		}else{
+			filelist= filelist+path.join(myPath, file)+"\n";
+		}
+	});
+	return(filelist);
+}
+//**********************************************************
+function json_list_of_files(myPath,filelist){ 
+	var path = path || require('path');
+	var fs = fs || require('fs');  
+	files = fs.readdirSync(myPath); 
+	filelist= "{ \"path\": \"" + myPath +"\", \"name\": \""+ myPath + "\" }" ; 
+// 	files.forEach(function(file) { 
+// 		if (fs.statSync(path.join(myPath, file)).isDirectory()) { 
+// 			filelist= filelist+json_list_of_files(path.join(myPath, file),filelist);
+// 		}else{
+// 			if(registered_path==false){
+// 			console.log(" path " +  myPath + " file "+file);
+// 			if(filelist!=undefined ){
+// 				filelist= filelist +  ", { \"path\": \"" + myPath + "\" , \"name\": \""+ file +"\" }" ;
+// 			}else{
+// 				filelist= "{ \"path\": \"" + myPath +"\", \"name\": \""+ file+ "\" }" ;
+// 			}
+// 			console.log("xxx "+ filelist  );}
+// 		}
+// 	});
+	return(filelist);
+}
+//**********************************************************
+app.get('/downloadlist',middleware.ensureAuthenticated, function(req, res) {
+	var fs = require('fs');
+	var path = require('path'); 
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
+	//******************************************* 
+	var project= find_param(req.body.project, req.query.project);
+	project= validate_parameter(project,"project",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
+	if (project != undefined)
+	if (project.length == 0){ 
+		res.writeHead(400, { 'Content-Type': contentType_text_plain });
+		res.end("\n400: Bad Request, missing "+"project"+".\n");
+		return;}
+	var myPath = os.homedir()+ File_Server_Path + '/' + project ;
+	//******************************************* 
+	var source= find_param(req.body.source, req.query.source);
+	source= validate_parameter(source,"source",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
+	if (source != undefined)
+	if (source.length != 0){ 
+		myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source ;   
+		//*******************************************
+		var filepath= find_param(req.body.filepath, req.query.filepath);
+		filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
+		if (filepath != undefined)
+		if (filepath.length != 0){ 
+			myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath ; 
+			//*******************************************
+			var filename=  find_param(req.body.filename, req.query.filename);
+			filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined 
+		}
+	}   
+	// Check if file specified by the filePath exists
+	fs.stat(myPath, function(err, stat) {
+		if(err == null) {
+			res.end(list_of_files(myPath));			
+		} else if(err.code == 'ENOENT') {
+			// file does not exist 
+			varresultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,404,req.connection.remoteAddress,"DOWNLOAD-LIST error: File not found: "+myPath ,currentdate,res.user);
+			//res.setHeader(name.value); //only before writeHeader 
+			res.writeHead(404, {"Content-Type": contentType_text_plain});
+			res.write("\n404: Bad Request, file not found.\n");
+			res.end("ERROR File does not exist: "+myPath+"\n");	
+			return; 
+		} else { 
+			res.writeHead(404, {"Content-Type": contentType_text_plain});
+			res.write("\n404: Bad Request, file not found.\n");
+			res.end("ERROR File does not exist: "+myPath+"\n");	
+			return; 
+		}
+	});
+});
 
+//**********************************************************
 app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 	var fs = require('fs');
 	var path = require('path'); 
@@ -894,42 +983,83 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 	//******************************************* 
 	var project= find_param(req.body.project, req.query.project);
 	project= validate_parameter(project,"project",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
+	if (project != undefined)
 	if (project.length == 0){ 
 		res.writeHead(400, { 'Content-Type': contentType_text_plain });
 		res.end("\n400: Bad Request, missing "+"project"+".\n");
 		return;}
 	var myPath = os.homedir()+ File_Server_Path + '/' + project ;
-	var zipfile =  project ;
+	var myDest =  project ; 
 	//******************************************* 
 	var source= find_param(req.body.source, req.query.source);
 	source= validate_parameter(source,"source",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
+	if (source != undefined)
 	if (source.length != 0){ 
-		myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source ;  
-		zipfile = project +'/' + source ; 
+		myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source ;   
+		myDest =  project +'/' + source ; 
 		//*******************************************
 		var filepath= find_param(req.body.filepath, req.query.filepath);
 		filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
+		if (filepath != undefined)
 		if (filepath.length != 0){ 
 			myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath ; 
-			zipfile = project +'/' + source +'/' + filepath  ; 
+			myDest =  project +'/' + source +'/' + filepath ; 
 			//*******************************************
-			var filename=  find_param(req.body.filename, req.query.filename);
-			filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-			if (filename.length != 0){ 
-				myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath + '/' + filename;  
-				zipfile =  project +'/' + source +'/' + filepath + '/' + filename; 
-			}
+			var filename= find_param(req.body.filename, req.query.filename);
+			filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined 
 		}
-	} 
+	}   
+	var zipfile ="demo";
+	// Check if file specified by the filePath exists
+	fs.stat(myPath, function(err, stat) {
+		if(err == null) {
+			var filelist=undefined;
+// 			filelist=json_list_of_files(myPath,filelist);
+			
+
+			var path = path || require('path');
+			var fs = fs || require('fs');  
+			files = fs.readdirSync(myPath); 
+			filelist= "{ \"path\": \""  + myPath +"\", \"name\": \""+ myDest + "\" }" ; 
+			
+			console.log(JSON.stringify( JSON.parse("[" + filelist+ "]"), null, 4 ));
+			
+			if(filelist!=undefined ){ 
+				res.zip({ 
+					files:   JSON.parse("[" + filelist+ "]"), 
+					filename: zipfile+'.zip'
+				});					
+			}else{ 
+				res.end("files not found in that directory");
+			}
+			
+		} else if(err.code == 'ENOENT') {
+			// file does not exist 
+			varresultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,404,req.connection.remoteAddress,"DOWNLOAD-LIST error: File not found: "+myPath ,currentdate,res.user);
+			//res.setHeader(name.value); //only before writeHeader 
+			res.writeHead(404, {"Content-Type": contentType_text_plain});
+			res.write("\n404: Bad Request, file not found.\n");
+			res.end("ERROR File does not exist: "+myPath+"\n");	
+			return; 
+		} else { 
+			res.writeHead(404, {"Content-Type": contentType_text_plain});
+			res.write("\n404: Bad Request, file not found.\n");
+			res.end("ERROR File does not exist: "+myPath+"\n");	
+			return; 
+		}
+	});
+	
+
+	
 	//*******************************************  
 // 	res.zip({ files: [ {   content: 'downloaded from the PHANTOM REPOSITORY', name: 'test-file', mode: 0755, comment: zipfile, date: new Date(), type: 'file' }, 
 // 			{ path: myPath, name: 'uploads' }    ], filename: zipfile+'.zip' });
-	res.zip({ 
-		files: [  
-			{ path: myPath, name: zipfile }    
-		], 
-		filename: zipfile+'.zip'
-	});	
+// 	res.zip({ 
+// 		files: [  
+// 			{ path: myPath, name: zipfile }    
+// 		], 
+// 		filename: zipfile+'.zip'
+// 	});	
 });
 //**********************************************************
 //example:
