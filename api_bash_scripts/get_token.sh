@@ -70,14 +70,21 @@ fi;
 	conectivity=$?;
 	if [ ${conectivity} -eq 1 ]; then
 		echo "[ERROR:] Server \"${server}\" is unreachable on port \"${repository_port}\".";
-		exit 1;	
+		exit 1;
 	fi;
 ##### Testing if the PHANTOM Repository server can access to the Elasticsearch Server ####
 	HTTP_STATUS=$(curl -s http://${server}:${repository_port}/verify_es_connection);
 	if [[ ${HTTP_STATUS} != "200" ]]; then
 		echo "PHANTOM Repository Doesn't get Response from the ElasticSearch Server. Aborting.";
 		exit 1;
-	fi; 
+	fi;
+# Look which kind of server is listening
+	SERVERNAME=$(curl --silent http://${server}:${repository_port}/servername);
+	if [[ ${SERVERNAME} != "PHANTOM Repository" ]]; then
+		echo " The server found is not a PHANTOM Repository server. Aborting.";
+		echo ${SERVERNAME};
+		exit 1;
+	fi;
 ######## Register of the new user ###################################################
 
 	resp=$(curl -s -H "Content-Type: text/plain" -XGET  --write-out "\n%{http_code}" http://${server}:${repository_port}/login?email="${email}"\&pw="${password}");

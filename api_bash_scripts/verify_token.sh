@@ -74,6 +74,13 @@ fi;
 		echo "PHANTOM Repository Doesn't get Response from the ElasticSearch Server. Aborting.";
 		exit 1;
 	fi; 
+# Look which kind of server is listening
+	SERVERNAME=$(curl --silent http://${server}:${repository_port}/servername);
+	if [[ ${SERVERNAME} != "PHANTOM Repository" ]]; then
+		echo " The server found is not a PHANTOM Repository server. Aborting.";
+		echo ${SERVERNAME};
+		exit 1;
+	fi;
 ######## Register of the new user ###################################################  
 	resp=$(curl -s -H "Authorization: OAuth ${mytoken}" -XGET --write-out "\n%{http_code}" http://${server}:${repository_port}/verifytoken);
 	HTTP_STATUS="${resp##*$'\n'}";

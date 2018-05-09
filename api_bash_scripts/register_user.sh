@@ -77,7 +77,14 @@ fi;
 	if [[ ${HTTP_STATUS} != "200" ]]; then
 		echo "PHANTOM Repository Doesn't get Response from the ElasticSearch Server. Aborting.";
 		exit 1;
-	fi; 
+	fi;
+# Look which kind of server is listening
+	SERVERNAME=$(curl --silent http://${server}:${repository_port}/servername);
+	if [[ ${SERVERNAME} != "PHANTOM Repository" ]]; then
+		echo " The server found is not a PHANTOM Repository server. Aborting.";
+		echo ${SERVERNAME};
+		exit 1;
+	fi;	
 ######## Register of the new user ###################################################
 HTTP_STATUS=$(curl -XPOST --silent --output /dev/null --write-out "%{http_code}" http://${server}:${repository_port}/signup?email="${email}"\&pw="${password}"); 
 #We sync, because it may start the next command before this operation completes.

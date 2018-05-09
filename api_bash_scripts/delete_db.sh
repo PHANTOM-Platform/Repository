@@ -75,6 +75,13 @@ if [[ ! ${confirm} = "" ]]; then
 			echo "PHANTOM Repository Doesn't get Response from the ElasticSearch Server. Aborting."
 			exit 1;
 		fi;
+# Look which kind of server is listening
+		SERVERNAME=$(curl --silent http://${server}:${repository_port}/servername);
+		if [[ ${SERVERNAME} != "PHANTOM Repository" ]]; then
+			echo " The server found is not a PHANTOM Repository server. Aborting.";
+			echo ${SERVERNAME};
+			exit 1;			
+		fi;			
 ######### Deleting the DB ########################################################### 
 		HTTP_STATUS=$(curl -XGET --silent --output /dev/null --write-out "%{http_code}" http://${server}:${repository_port}/drop_db);
 		if [[ ${HTTP_STATUS} == "200" ]]; then

@@ -95,7 +95,14 @@ fi;
 	if [[ ${HTTP_STATUS} != "200" ]]; then
 		echo "PHANTOM Repository Doesn't get Response from the ElasticSearch Server. Aborting.";
 		exit 1;
-	fi; 
+	fi;
+# Look which kind of server is listening
+	SERVERNAME=$(curl --silent http://${server}:${repository_port}/servername);
+	if [[ ${SERVERNAME} != "PHANTOM Repository" ]]; then
+		echo " The server found is not a PHANTOM Repository server. Aborting.";
+		echo ${SERVERNAME};
+		exit 1;
+	fi;	
 ######## UPLOAD file and metadata ###################################################  
 	resp=$(curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" --write-out "\n%{http_code}" -XPOST http://${server}:${repository_port}/delete_metadata?project=demo\&source=userDestFileName=${dst_file}\&Path=${dst_path});
  

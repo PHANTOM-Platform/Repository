@@ -55,10 +55,10 @@ if [ ! $# -eq 0 ]; then
 #project and source are defined in the json file
 				
 				
-			elif [ "$last" = "-dp" ] || [ "$last" = "-DP" ]; then
+			elif [ "$last" = "-df" ] || [ "$last" = "-DF" ]; then
 				dst_file=$i;
 				nuevo=false;
-			elif [ "$last" = "-df" ] || [ "$last" = "-DF" ]; then
+			elif [ "$last" = "-dp" ] || [ "$last" = "-DP" ]; then
 				dst_path=$i;
 				nuevo=false;
 			elif [ "$i" = "-h" ] || [ "$i" = "-H" ]; then
@@ -105,11 +105,14 @@ fi;
 if [ -z "${dst_path}" ]; then
 	echo -e "Missing parameter Destination Path: dp\n";
     exit 1;
-fi; 
+fi;
 if [ -z "${dst_file}" ]; then
     echo -e "Missing parameter Destination Filename: df\n";
-    exit 1;
+	dst_file=$(basename ${src_file});
+	echo -e "We define the destination filename as the same input filename: \"${dst_file}\"\n";
+    #exit 1;
 fi;
+
 ################### Testing connectivity with the PHANTOM Repository server: #############
 	source verify_connectivity.sh -s ${server} -port ${repository_port};
 	conectivity=$?;
@@ -123,6 +126,13 @@ fi;
 		echo "PHANTOM Repository Doesn't get Response from the ElasticSearch Server. Aborting.";
 		exit 1;
 	fi; 
+# Look which kind of server is listening
+	SERVERNAME=$(curl --silent http://${server}:${repository_port}/servername);
+	if [[ ${SERVERNAME} != "PHANTOM Repository" ]]; then
+		echo " The server found is not a PHANTOM Repository server. Aborting.";
+		echo ${SERVERNAME};
+		exit 1;
+	fi;
 ######## UPLOAD file and metadata ###################################################  
 	resp=$(curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" --write-out "\n%{http_code}" -XPOST -F "UploadFile=@${src_file}" -F "UploadJSON=@${json_file}" http://${server}:${repository_port}/upload?DestFileName=${dst_file}\&Path=${dst_path});
  
