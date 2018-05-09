@@ -175,6 +175,7 @@ const logsmapping = {
 
 	var clients = [ ];// list of currently connected clients (users) 
 //****************************************************
+var zip = require('express-easy-zip');
 //**********************************************************
 //This function removes double quotation marks if present at the beginning and the end of the input string
 function remove_quotation_marks(input_string){
@@ -467,15 +468,21 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cors());
 app.use(fileUpload()); 
+app.use(zip());
+
 //**********************************************************
 /* GET home page. */
 app.get('/', function(req, res, next) {	
 	var json = {};
-	json.message = SERVERNAME + "server is up and running."
+	json.message = SERVERNAME + " server is up and running."
 	json.release = req.app.get('version');
 	json.versions = [ 'v1' ];
 	json.current_time = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
 	res.json(json);
+});
+//**********************************************************
+app.get('/servername', function(req, res, next) {
+	res.end(SERVERNAME);
 });
 //**********************************************************
 app.get('/upload_file.html', function(req, res) {
@@ -577,9 +584,9 @@ app.get('/verify_es_connection', function(req, res) {
 		res.writeHead(rescode.statusCode, { 'Content-Type': contentType_text_plain });
 		res.end(""+rescode.statusCode, 'utf-8');
 	}).on('error', function(e) {
-		console.error(e);
-		res.writeHead(000, { 'Content-Type': contentType_text_plain });
-		res.end("000", 'utf-8');		
+// 		console.error(e); //if not reply is expected an ECONNREFUSED ERROR, we return 503 as not available service
+		res.writeHead(503, { 'Content-Type': contentType_text_plain });
+		res.end("503", 'utf-8');		
 	}); 
 });
 //**********************************************************
@@ -878,6 +885,51 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 			return; 			
 		}
 	});	 
+});
+
+app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
+	var fs = require('fs');
+	var path = require('path'); 
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
+	//******************************************* 
+	var project= find_param(req.body.project, req.query.project);
+	project= validate_parameter(project,"project",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
+	if (project.length == 0){ 
+		res.writeHead(400, { 'Content-Type': contentType_text_plain });
+		res.end("\n400: Bad Request, missing "+"project"+".\n");
+		return;}
+	var myPath = os.homedir()+ File_Server_Path + '/' + project ;
+	var zipfile =  project ;
+	//******************************************* 
+	var source= find_param(req.body.source, req.query.source);
+	source= validate_parameter(source,"source",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
+	if (source.length != 0){ 
+		myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source ;  
+		zipfile = project +'/' + source ; 
+		//*******************************************
+		var filepath= find_param(req.body.filepath, req.query.filepath);
+		filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
+		if (filepath.length != 0){ 
+			myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath ; 
+			zipfile = project +'/' + source +'/' + filepath  ; 
+			//*******************************************
+			var filename=  find_param(req.body.filename, req.query.filename);
+			filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
+			if (filename.length != 0){ 
+				myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath + '/' + filename;  
+				zipfile =  project +'/' + source +'/' + filepath + '/' + filename; 
+			}
+		}
+	} 
+	//*******************************************  
+// 	res.zip({ files: [ {   content: 'downloaded from the PHANTOM REPOSITORY', name: 'test-file', mode: 0755, comment: zipfile, date: new Date(), type: 'file' }, 
+// 			{ path: myPath, name: 'uploads' }    ], filename: zipfile+'.zip' });
+	res.zip({ 
+		files: [  
+			{ path: myPath, name: zipfile }    
+		], 
+		filename: zipfile+'.zip'
+	});	
 });
 //**********************************************************
 //example:
