@@ -74,7 +74,7 @@ your_string_token=`cat token.txt;`;
 curl -s -H "Authorization: OAuth ${your_string_token}" -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/download?project=phantom_tools_on_HPC\&source=user\&filepath=mypath\&filename=main.c --output main.c ;
 ```
 
-### LIST OF FILES IN A FOLDER (PROJECT + SOURCE(optional) + FILEPATH (optional)
+### LIST OF FILES IN A FOLDER (PROJECT + SOURCE(optional) + FILEPATH (optional))
 
 The field project is MANDATORY, but the parameters source and filepath are optional
 
@@ -84,7 +84,7 @@ curl -s -H "Authorization: OAuth ${your_string_token}" -H "Content-Type: multipa
 ```
 
 
-### DOWNLOAD THE FILES IN A FOLDER (PROJECT + SOURCE(optional) + FILEPATH (optional)
+### DOWNLOAD THE FILES IN A FOLDER (PROJECT + SOURCE(optional) + FILEPATH (optional))
 
 The field project is MANDATORY, but the parameters source and filepath are optional
 
@@ -175,7 +175,7 @@ curl -s -H "Content-Type: application/json" -XPOST http://localhost:8000/signup?
 ####  REQUEST FLUSH UPDATES IN THE DATABASE
 
 ```bash
-curl -s -XGET localhost:8000/_flush > /dev/null;
+curl -s -XGET http://localhost:8000/_flush > /dev/null;
 ```
 
 ## Acknowledgment
