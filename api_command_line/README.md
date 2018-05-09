@@ -32,13 +32,15 @@ curl -s -H "Content-Type: text/plain" -XGET http://localhost:8000/login?email="m
 ####   TEST IF A TOKEN IS VALID OR NOT, this is useful when we do not know if the token expired   
 
 ```bash
-curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -XGET localhost:8000/verifytoken;
+your_string_token=`cat token.txt;`;
+curl -s -H "Authorization: OAuth ${your_string_token}" -XGET localhost:8000/verifytoken;
 ```
 
 ####   UPLOADING A FILE 
  
 ```bash
-curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web/example.h" -F "UploadJSON=@../web/exampleh.json" http://localhost:8000/upload?DestFileName=main.h\&'Path=mypath/';
+your_string_token=`cat token.txt;`;
+curl -s -H "Authorization: OAuth ${your_string_token}" -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web/example.h" -F "UploadJSON=@../web/exampleh.json" http://localhost:8000/upload?DestFileName=main.h\&'Path=mypath/';
 ```
 
 Example of json file: exampleh.json
@@ -61,34 +63,60 @@ NOTICE: The 'project' and the 'source' are defined in the json file. We provided
 Command for downloading:
 
 ```bash
-curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/download?project=phantom_tools_on_HPC\&source=user\&filepath=mypath\&filename=main.c ;
+your_string_token=`cat token.txt;`;
+curl -s -H "Authorization: OAuth ${your_string_token}" -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/download?project=phantom_tools_on_HPC\&source=user\&filepath=mypath\&filename=main.c ;
 ```
 
 Command for downloading into a new local FILE:
 
 ```bash
-curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/download?project=phantom_tools_on_HPC\&source=user\&filepath=mypath\&filename=main.c --output main.c ;
+your_string_token=`cat token.txt;`;
+curl -s -H "Authorization: OAuth ${your_string_token}" -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/download?project=phantom_tools_on_HPC\&source=user\&filepath=mypath\&filename=main.c --output main.c ;
 ```
+
+### LIST OF FILES IN A FOLDER (PROJECT + SOURCE(optional) + FILEPATH (optional)
+
+The field project is MANDATORY, but the parameters source and filepath are optional
+
+```bash
+your_string_token=`cat token.txt;`;
+curl -s -H "Authorization: OAuth ${your_string_token}" -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/downloadlist?project=phantom_tools_on_HPC\&source=user\&filepath=mypath\&filename=main.c ;
+```
+
+
+### DOWNLOAD THE FILES IN A FOLDER (PROJECT + SOURCE(optional) + FILEPATH (optional)
+
+The field project is MANDATORY, but the parameters source and filepath are optional
+
+```bash
+your_string_token=`cat token.txt;`;
+curl -s -H "Authorization: OAuth ${your_string_token}" -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/downloadzip?project=phantom_tools_on_HPC\&source=user\&filepath=mypath\&filename=main.c ;
+```
+
+
 
 ####  DOWNLOADING METADATA
 
 Command for downloading METADATA for a path and a filename:
 
 ```bash
-curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -XGET http://localhost:8000/query_metadata?project=phantom_tools_on_HPC\&source=user\&Path=mypath%2F\&filename=main.c; 
+your_string_token=`cat token.txt;`;
+curl -s -H "Authorization: OAuth ${your_string_token}" -XGET http://localhost:8000/query_metadata?project=phantom_tools_on_HPC\&source=user\&Path=mypath%2F\&filename=main.c; 
 ```
 
 Command for downloading METADATA for files in a path:
 
 ```bash
-curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -XGET http://localhost:8000/query_metadata?project=phantom_tools_on_HPC\&source=user\&Path=mypath%2F ;
+your_string_token=`cat token.txt;`;
+curl -s -H "Authorization: OAuth ${your_string_token}" -XGET http://localhost:8000/query_metadata?project=phantom_tools_on_HPC\&source=user\&Path=mypath%2F ;
 ```
   
 
 ####   DELETING A FILE 
  
 ```bash
-curl -s -H "Authorization: OAuth 1fwgeahnaer.edfdf" -H "Content-Type: multipart/form-data" -XPOST  http://localhost:8000/delete_metadata?project=demo\&source=user\&DestFileName=main.h\&'Path=mypath/';
+your_string_token=`cat token.txt;`;
+curl -s -H "Authorization: OAuth ${your_string_token}" -H "Content-Type: multipart/form-data" -XPOST  http://localhost:8000/delete_metadata?project=demo\&source=user\&DestFileName=main.h\&'Path=mypath/';
 ```
 
 
@@ -98,8 +126,6 @@ Here is shown the different available scripts.
 The parameters are filled with some values such the access path to the REPOSITORY as localhost:8000.
 
 Please, replace the values of the parameters for the appropriate values in your case.
-
-
 
 
 ####  CHECK if the Repository server is running   
