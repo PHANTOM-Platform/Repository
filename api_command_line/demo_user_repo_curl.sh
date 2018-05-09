@@ -86,28 +86,11 @@ cd `dirname $0`;
 	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -XGET ${server}:${repository_port}/verifytoken";
 	read -p $'Press [Enter] key to \033[1;37mCHECK\033[1;34m if the \033[1;37mTOKEN\033[1;34m is valid or not'; echo -ne "${NO_COLOUR}";
 	curl -s -H "Authorization: OAuth ${mytoken}" -XGET ${server}:${repository_port}/verifytoken;
-# 9. ##################  TEST ACCESS WITH A NOT VALID TOKEN, access must be rejected UNAUTHORIZED:401 #####################
-	echo -e "\n${LIGHT_BLUE}";
-	echo "curl -s -H \"Authorization: OAuth 12345678\" -XGET ${server}:${repository_port}/verifytoken";
-	read -p $'Press [Enter] key to \033[1;37mCHECK\033[1;34m if dummy string is a valid \033[1;37mTOKEN\033[1;34m or not'; echo -ne "${NO_COLOUR}";
-	curl -s -H "Authorization: OAuth 12345678" -XGET ${server}:${repository_port}/verifytoken;
 # 10. ##################  TEST ACCESS WITHOUT A TOKEN, access must be rejected UNAUTHORIZED:401 ####################
 	echo -e "\n${LIGHT_BLUE}";
 	echo "curl -H \"Content-Type: multipart/form-data\" -XPOST -F \"UploadFile=@../web/example.c\" -F \"UploadJSON=@../web/examplec.json\" http://${server}:${repository_port}/upload?DestFileName=main.c\&Path=mypath/";
 	read -p $'Press [Enter] key to \033[1;37mUPLOAD\033[1;34m a file \033[1;37mWITHOUT TOKEN\033[1;34m'; echo -ne "${NO_COLOUR}";
 	curl -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web/example.c" -F "UploadJSON=@../web/examplec.json" http://${server}:${repository_port}/upload?DestFileName=main.c\&'Path=mypath/';
-# 11. ##################  TEST OF UPLOADING A FILE WITH A NOT VALID TOKEN, access must be rejected UNAUTHORIZED:401 ######## 
-	echo -e "\n${LIGHT_BLUE}";
-	echo "curl -s -H \"Authorization: OAuth 12345678\" -H \"Content-Type: multipart/form-data\" -XPOST -F \"UploadFile=@../web/example.c\" -F \"UploadJSON=@../web/examplec.json\" http://${server}:${repository_port}/upload?DestFileName=main.c\&Path=mypath/";
-	read -p $'Press [Enter] key to \033[1;37mUPLOAD\033[1;34m a \033[1;37mFILE\033[1;34m with \033[1;37mWRONG TOKEN\033[1;34m'; echo -ne "${NO_COLOUR}";
-	curl -s -H "Authorization: OAuth 12345678" -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web/example.c" -F "UploadJSON=@../web/examplec.json" http://${server}:${repository_port}/upload?DestFileName=main.c\&'Path=mypath/';
-# 12. ##################  TEST OF UPLOADING A FILE WITH A NOT VALID TOKEN, access must be rejected UNAUTHORIZED:401  ######## 
-	echo -e "\n${LIGHT_BLUE}";
-	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XPOST -F \"UploadFile=@../web/example.c\" -F \"UploadJSON=@../web/examplec.json\" http://${server}:${repository_port}/upload?DestFileName=main.c\&Path=mypath/";
-	read -p $'Press [Enter] key to \033[1;37mUPLOAD\033[1;34m a \033[1;37mFILE\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -e "${NO_COLOUR}";
-	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web/example.c" -F "UploadJSON=@../web/examplec.json" http://${server}:${repository_port}/upload?DestFileName=main.c\&'Path=mypath/';
-	#We sync, because it may start the next command before this operation completes.
-	curl -s -XGET ${server}:${repository_port}/_flush > /dev/null;
 # 13. ##################  TEST OF UPLOADING A FILE WITH A VALID TOKEN, access must be accepted : 200 ########## 
 	echo -e "\n${LIGHT_BLUE}";
 	echo "We upload one more file for testing later the Metadata queries...";
