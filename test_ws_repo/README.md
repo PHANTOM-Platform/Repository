@@ -35,3 +35,9 @@ I suggest to run the next strings on a different terminal, or computer, to make 
 ```bash
 bash test_repo_update_db.sh;
 ```
+
+
+Demonstration video at: 
+
+
+https://www.youtube.com/watch?v=NByRNFJG1tI
