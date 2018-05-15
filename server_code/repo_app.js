@@ -845,7 +845,11 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 		res.end("\n400: Bad Request, missing "+"filename"+".\n");
 		return;}
 	//******************************************* 
-	var myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath + '/' + filename;  
+	var myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath + '/' + filename; 
+	
+//Maybe look for NGAC policy here, then decide if continue or not !!	
+	
+	
 	// Check if file specified by the filePath exists
 	fs.stat(myPath, function(err, stat) {
 		if(err == null) {
@@ -1010,6 +1014,11 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 		}
 	}   
 	var zipfile ="demo";
+	
+	
+	
+//Maybe look for NGAC policy here, then decide if continue or not !!	
+	
 	// Check if file specified by the filePath exists
 	fs.stat(myPath, function(err, stat) {
 		if(err == null) {
