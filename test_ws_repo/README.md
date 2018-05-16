@@ -35,6 +35,11 @@ I suggest to run the next strings on a different terminal, or computer, to make 
 ```bash
 bash test_repo_update_db.sh;
 ```
+Demonstration step-by-step video of suscribing with JAVA to notifications to the APP-Manager is available at [Demo WS][Demo WS], which is similar to the use of the example in the folder for the suscription on the Repository.
+
+
+[Demo WS]: https://www.youtube.com/watch?v=NByRNFJG1tI
+
 
 
 Demonstration video at: 
