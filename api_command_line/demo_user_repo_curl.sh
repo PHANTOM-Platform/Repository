@@ -146,8 +146,8 @@ cd `dirname $0`;
 	
 ########### EXAMPLE OF DOWNLOADING A FOLDER FROM THE REPOSITORY INTO A ZIP FILE
 	echo -e "\n${LIGHT_BLUE}";
-	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XGET http://${server}:${repository_port}/downloadzip?project=phantom_tools_on_HPC\&source=user\&filepath=mypath ";
+	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XGET http://${server}:${repository_port}/downloadzip?project=phantom_tools_on_HPC\&source=user\&filepath=mypath --output demo.zip";
 	read -p $'Press [Enter] key to \033[1;37mList the files in the PROJECT+SOURCE+PATH\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -ne "${NO_COLOUR}"
-	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XGET http://${server}:${repository_port}/downloadzip?project=phantom_tools_on_HPC\&source=user\&filepath=mypath ;
+	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XGET http://${server}:${repository_port}/downloadzip?project=phantom_tools_on_HPC\&source=user\&filepath=mypath --output demo.zip ;
 
 
