@@ -40,9 +40,4 @@ Demonstration step-by-step video of suscribing with JAVA to notifications to the
 
 [Demo WS]: https://www.youtube.com/watch?v=NByRNFJG1tI
 
-
-
-Demonstration video at: 
-
-
-https://www.youtube.com/watch?v=NByRNFJG1tI
+ 
