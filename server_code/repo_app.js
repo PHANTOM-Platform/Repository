@@ -226,16 +226,16 @@ function update_filename_path_on_json(JSONstring, filename, path){
 	var new_json = {  } 
 	var jsonobj = JSON.parse(JSONstring);
 	var keys = Object.keys(jsonobj); 
+	new_json['path']		=path;
+	new_json['path_length']	=path.length; //label can not contain points '.' !
+	new_json['filename']	=filename;
+	new_json['filename_length']=filename.length;	
 	for (var i = 0; i < keys.length; i++) {
 		var label=Object.getOwnPropertyNames(jsonobj)[i];
 		label=label.toLowerCase();
 		if((label != 'path') && (label != 'filename') && (label != 'path_length') && (label != 'filename_length'))
 		new_json[label]=jsonobj[keys[i]];	//add one property 
 	} 
-	new_json['path']		=path;
-	new_json['path_length']	=path.length; //label can not contain points '.' !
-	new_json['filename']	=filename;
-	new_json['filename_length']=filename.length;
 	new_json=(JSON.stringify(new_json));
 	return new_json;
 }
@@ -244,14 +244,14 @@ function update_device_length_on_json(JSONstring, device){
 	var new_json = {  } 
 	var jsonobj = JSON.parse(JSONstring);
 	var keys = Object.keys(jsonobj); 
+	new_json['device']		=device;
+	new_json['device_length']	=device.length; 	
 	for (var i = 0; i < keys.length; i++) {
 		var label=Object.getOwnPropertyNames(jsonobj)[i];
 		label=label.toLowerCase();
 		if((label != 'device') && (label != 'device_length'))
 		new_json[label]=jsonobj[keys[i]];	//add one property 
 	} 
-	new_json['device']		=device;
-	new_json['device_length']	=device.length; 
 	new_json=(JSON.stringify(new_json));
 	return new_json;
 }
@@ -260,14 +260,14 @@ function update_app_length_on_json(JSONstring, appname){
 	var new_json = {  } 
 	var jsonobj = JSON.parse(JSONstring);
 	var keys = Object.keys(jsonobj); 
+	new_json['app']		=appname;
+	new_json['app_length']	=appname.length; 	
 	for (var i = 0; i < keys.length; i++) {
 		var label=Object.getOwnPropertyNames(jsonobj)[i];
 		label=label.toLowerCase();
 		if((label != 'app') && (label != 'app_length'))
 		new_json[label]=jsonobj[keys[i]];	//add one property 
 	} 
-	new_json['app']		=appname;
-	new_json['app_length']	=appname.length; 
 	new_json=(JSON.stringify(new_json));
 	return new_json;
 }
@@ -316,6 +316,25 @@ function get_value_json(JSONstring,label){
 	}
 	return (myres);
 }
+
+
+function update_projectname_length_on_json(JSONstring, projectname){ 
+	var new_json = {  } 
+	var jsonobj = JSON.parse(JSONstring);
+	var keys = Object.keys(jsonobj); 
+	new_json['project']		=projectname;
+	new_json['project_length']	=projectname.length; 	
+	for (var i = 0; i < keys.length; i++) {
+		var label=Object.getOwnPropertyNames(jsonobj)[i];
+		label=label.toLowerCase();
+		if((label != 'project') && (label != 'project_length'))
+		new_json[label]=jsonobj[keys[i]];	//add one property 
+	} 
+	new_json=(JSON.stringify(new_json));
+	return new_json;
+}
+
+
 //**********************************************************
 function validate_parameter(parameter,label,currentdate,user,address){
 	var message_error = "DOWNLOAD Bad Request missing "+label;  
@@ -845,11 +864,14 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 		res.end("\n400: Bad Request, missing "+"filename"+".\n");
 		return;}
 	//******************************************* 
-	var myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath + '/' + filename; 
+	var myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath + '/' + filename;  
+
+
 	
 //Maybe look for NGAC policy here, then decide if continue or not !!	
-	
-	
+
+
+
 	// Check if file specified by the filePath exists
 	fs.stat(myPath, function(err, stat) {
 		if(err == null) {
@@ -957,7 +979,12 @@ app.get('/downloadlist',middleware.ensureAuthenticated, function(req, res) {
 			var filename=  find_param(req.body.filename, req.query.filename);
 			filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined 
 		}
-	}   
+	}  
+
+
+	
+//Maybe look for NGAC policy here, then decide if continue or not !!	
+ 
 	// Check if file specified by the filePath exists
 	fs.stat(myPath, function(err, stat) {
 		if(err == null) {
@@ -994,6 +1021,7 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 		return;}
 	var myPath = os.homedir()+ File_Server_Path + '/' + project ;
 	var myDest =  project ; 
+	var myDest =  project ; 
 	//******************************************* 
 	var source= find_param(req.body.source, req.query.source);
 	source= validate_parameter(source,"source",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
@@ -1013,35 +1041,25 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 			filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined 
 		}
 	}   
-	var zipfile ="demo";
-	
-	
-	
-//Maybe look for NGAC policy here, then decide if continue or not !!	
-	
+	var zipfile ="download_repo_zip";
 	// Check if file specified by the filePath exists
 	fs.stat(myPath, function(err, stat) {
 		if(err == null) {
 			var filelist=undefined;
 // 			filelist=json_list_of_files(myPath,filelist);
-			
-
 			var path = path || require('path');
 			var fs = fs || require('fs');  
 			files = fs.readdirSync(myPath); 
 			filelist= "{ \"path\": \""  + myPath +"\", \"name\": \""+ myDest + "\" }" ; 
-			
-			console.log(JSON.stringify( JSON.parse("[" + filelist+ "]"), null, 4 ));
-			
+// 			console.log(JSON.stringify( JSON.parse("[" + filelist+ "]"), null, 4 )); 
 			if(filelist!=undefined ){ 
 				res.zip({ 
 					files:   JSON.parse("[" + filelist+ "]"), 
 					filename: zipfile+'.zip'
-				});					
+				});
 			}else{ 
 				res.end("files not found in that directory");
 			}
-			
 		} else if(err.code == 'ENOENT') {
 			// file does not exist 
 			varresultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,404,req.connection.remoteAddress,"DOWNLOAD-LIST error: File not found: "+myPath ,currentdate,res.user);
