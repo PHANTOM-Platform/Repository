@@ -348,7 +348,7 @@ function validate_parameter(parameter,label,currentdate,user,address){
 }
 
 //*********************************************************
-function retrieve_file(filePath,req){
+function retrieve_file(filePath,res){
 	var fs = require('fs');
 	var path = require('path');
 	var extname = path.extname(filePath);
@@ -505,28 +505,28 @@ app.get('/servername', function(req, res, next) {
 });
 //**********************************************************
 app.get('/upload_file.html', function(req, res) {
-	var filePath = 'web/upload_file.html';
-	retrieve_file(filePath,req);
+	var filePath = '../web/upload_file.html';
+	retrieve_file(filePath,res);
 });
 //**********************************************************
 app.get('/upload_file.html', function(req, res) { 
-	var filePath = 'web/upload_file.html';
-	retrieve_file(filePath,req);
+	var filePath = '../web/upload_file.html';
+	retrieve_file(filePath,res);
 });
 //*******************************
 app.get('/download_file.html', function(req, res) { 
-	var filePath = 'web/download_file.html';
-	retrieve_file(filePath,req);
+	var filePath = '../web/download_file.html';
+	retrieve_file(filePath,res);
 });
 //*******************************
 app.get('/examplec.json', function(req, res) { 
-	var filePath = 'web/examplec.json';
-	retrieve_file(filePath,req);
+	var filePath = '../web/examplec.json';
+	retrieve_file(filePath,res);
 });
 //*******************************
 app.get('/query_metadata.html', function(req, res) { 
-	var filePath = 'web/query_metadata.html';
-	retrieve_file(filePath,req);
+	var filePath = '../web/query_metadata.html';
+	retrieve_file(filePath,res);
 });
 // Path only accesible when Authenticated
 app.get('/private',middleware.ensureAuthenticated, function(req, res) {
@@ -1222,9 +1222,9 @@ app.get('/login', function(req, res) {
 			resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200, req.connection.remoteAddress, "New token Generated",currentdate,"");
 		}else{
 			res.writeHead(401, {"Content-Type": contentType_text_plain});
-			res.end("401 (Unauthorized) Autentication failed, incorrect user "+ email +" or passwd "+ pw +"\n"); 
+			res.end("401 (Unauthorized) Autentication failed, incorrect user " +" or passwd " +"\n"); 
 			resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 401, req.connection.remoteAddress, 
-				"401: Bad Request of Token, incorrect user or passwd "+email+"or passwd "+pw,currentdate,"");
+				"401: Bad Request of Token, incorrect user or passwd "+email+"or passwd ",currentdate,"");
 		}
 	},(resultReject)=> { 
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
