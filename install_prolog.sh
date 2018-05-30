@@ -18,23 +18,29 @@ cp -p build.templ build
 ./build
 
 #another way
+wget http://www.swi-prolog.org/download/stable/src/swipl-7.6.4.tar.gz
 
-Building the RPM
-Setup RPM build environment (according to CreatingPackageHowTo)
-% sudo yum groupinstall "Development Tools"
-% sudo yum install rpmdevtools
-% rpmdev-setuptree
-Download from the Project page
-% rpm -ihv --nomd5 https://kojipkgs.fedoraproject.org//packages/pl/7.2.3/3.fc25/src/pl-7.2.3-3.fc25.src.rpm
-Install development libraries needed to compile SWI-Prolog
-% cd ~/rpmbuild
-% su
-% sudo yum install java-1.6.0-openjdk-devel
-% sudo yum install `grep ^BuildRequires SPECS/pl.spec | awk 'NF==2 {print $2}'`
-Build SWI-Prolog
-% rpmbuild -ba SPECS/pl.spec
-On RHEL 5 it may become necessary to disable SELinux temporarily to build the RPM because the built library libswipl.so requires text relocation.
 
-Install the built packages
-% sudo yum install RPMS/x86_64/pl-*.rpm
+
+#Building the RPM
+#Setup RPM build environment (according to CreatingPackageHowTo)
+sudo yum groupinstall "Development Tools"
+sudo yum install rpmdevtools
+rpmdev-setuptree
+#Download from the Project page
+rpm -ihv --nomd5 https://kojipkgs.fedoraproject.org//packages/pl/7.2.3/3.fc25/src/pl-7.2.3-3.fc25.src.rpm
+#Install development libraries needed to compile SWI-Prolog
+ cd ~/rpmbuild
+ su
+ sudo yum install java-1.6.0-openjdk-devel
+ sudo yum install `grep ^BuildRequires SPECS/pl.spec | awk 'NF==2 {print $2}'`
+ git clone git://github.com/jquery/jquery.git;
+ npm run build;
+ npm install -g grunt-cli
+#Build SWI-Prolog
+ rpmbuild -ba SPECS/pl.spec
+#On RHEL 5 it may become necessary to disable SELinux temporarily to build the RPM because the built library libswipl.so requires text relocation.
+
+#Install the built packages
+ sudo yum install RPMS/x86_64/pl-*.rpm
 
