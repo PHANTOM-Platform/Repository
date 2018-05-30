@@ -14,4 +14,5 @@ cd swipl-devel
 make distclean
 git pull
 ./prepare
+cp -p build.templ build
 ./build
