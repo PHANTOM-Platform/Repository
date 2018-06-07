@@ -26,7 +26,7 @@ bash ../repo_api_command_line/demo_admin_repo_curl.sh
 
 #### 3.- run a client, which will suscribe to some project updates, and some type of source updates.
 ```bash
-bash test_appman_ws_suscriber_repository.sh;
+bash test_client_ws_suscriber_repository.sh;
 ```
 
 #### 4.- Perform some updates to the APP-Resource Manager, which will be forwared to the suscribed client
