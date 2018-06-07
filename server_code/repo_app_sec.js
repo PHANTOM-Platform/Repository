@@ -841,9 +841,209 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 });
 
 //**********************************************************
+/* GET home page. */
+const request = require('request'); 
+
+function request_permission(user, access, domain){
+	return new Promise( (resolve,reject) => {
+		request.get('http://127.0.0.1:8001/pqapi/access?user='+user+'&ar='+access+'&object='+domain, function(err, response, body) {//expected possible responses are "permit\n" or "deny\n"
+			if(body.length>0){
+				if(body.charAt(body.length-1) === '\n') {
+					body = body.substring(0, body.length - 1); 
+				}
+			}
+			body = body.toLowerCase();
+			resolve(body);
+		});
+	});
+} 
+
+// function jsontotable(myjson){
+// 	var html ="";
+// 	html += "<div class = 'cat'><table>\n"; // style='width:100%'>";
+// 	count =1;	
+// 	var jsonobj = JSON.parse(myjson); 
+// 	console.log(jsonobj);
+// 	if(Object.getOwnPropertyNames(jsonobj)[0] == "hits"){
+// 		jsonobj = jsonobj.hits[0];
+// 		keys = Object.keys(jsonobj); 
+// 	}	
+// 	for (var i = 0; i < keys.length; i++) {
+// 		var label=Object.getOwnPropertyNames(jsonobj)[i];
+// 		label=label.toLowerCase(); 
+// 		var value =jsonobj[keys[i]];		 
+// 		if(count == 1) { 
+// 			html += "\t<tr align=\"left\"><th><strong>" + label + "</strong>: " + value + "</th></tr>\n";
+// 		} else{
+// 			html += "\t<tr><td><strong> &emsp; " + label + "</strong>: " +value + "</td></tr>\n";
+// 		}
+// 		count = count +1;
+// 	} 
+// 	html += "</table></div><br>";
+// 	return html;	 
+// }
+
+
+function findomainjson(myjson){ 
+	var jsonobj = JSON.parse(myjson); 
+	if(Object.getOwnPropertyNames(jsonobj)[0] == "hits"){
+		jsonobj = jsonobj.hits[0];
+		if(jsonobj==undefined) return "";
+		keys = Object.keys(jsonobj); 
+	}	
+	for (var i = 0; i < keys.length; i++) {
+		var label=Object.getOwnPropertyNames(jsonobj)[i];
+		label=label.toLowerCase(); 
+		if(label == "domain"){
+			return(jsonobj[keys[i]]); 
+		}
+	} 
+	return "";
+}
+
+app.get('/permission', function(req, res, next) {
+	//the request is expected to be done internally, same machine on port 8001
+	var user= find_param(req.body.user, req.query.user);//cheptsov@hlrs.de
+	var domain= find_param(req.body.domain, req.query.domain);//domain_hlrs
+	var access= find_param(req.body.access, req.query.access);//w
+	if(user==undefined || domain == undefined || access == undefined){
+		res.writeHead(400, { 'Content-Type': contentType_text_plain });
+		res.end("400 Error, missing parameter");
+	} 
+	var permission = request_permission(user, access, domain);
+	permission.then((resultFind) => { 
+		if( resultFind == "permit"){
+			res.writeHead(200, { 'Content-Type': contentType_text_plain });
+			res.end("200: Access granted");
+		}else if( resultFind == "deny"){
+			res.writeHead(403, { 'Content-Type': contentType_text_plain });
+			res.end("403: Access denied");
+		}else {
+			res.writeHead(400, { 'Content-Type': contentType_text_plain });
+			res.end("400 unexpected error "+resultFind);
+		} 
+	},(resultReject)=> { 
+			res.writeHead(400, { 'Content-Type': contentType_text_plain });
+			res.end("400 unexpected error "+resultReject);
+	} ); 
+}); 
+
+app.get('/test_metadata', function(req, res) { 
+	"use strict"; 
+	var pretty = find_param(req.body.pretty, req.query.pretty);
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
+	//***************************************
+	var filepath =find_param(req.body.Path,req.query.Path);
+	if (filepath != undefined)
+		filepath=remove_quotation_marks(filepath); 
+	//***************************************
+	var filename =find_param(req.body.filename,req.query.filename);
+	if (filename != undefined)
+		filename=remove_quotation_marks(filename); 
+	//***************************************
+	var project =find_param(req.body.project,req.query.project);
+	if (project != undefined) 
+		project=remove_quotation_marks(project); 
+	//***************************************
+	var source =find_param(req.body.source,req.query.source);
+	if (source != undefined) 
+		source=remove_quotation_marks(source); 
+	var query= MetadataModule.compose_query(project,source,filepath, filename); 
+	//1.1- find id of the existing doc for such path filename
+	
+	var searching = MetadataModule.query_metadata(es_servername+":"+es_port,SERVERDB,query, pretty);
+	var resultlog="";
+	searching.then((resultFind) => { 
+		res.writeHead(200, {"Content-Type": "application/json"});
+		var domain =findomainjson(resultFind);
+		if(domain.length==0){
+			res.end("The domain of the file is: not defined domain\n");
+		}else{
+			res.end("The domain of the file is: "+domain+"\n");	
+		}
+// 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,200,req.connection.remoteAddress,"QUERY METADATA granted to query:"
+// 			+JSON.stringify(query),currentdate,res.user);
+	},(resultReject)=> { 
+		res.writeHead(400, {"Content-Type": contentType_text_plain});
+		res.end("querymetadata: Bad Request "+resultReject +"\n");
+// 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"QUERY METADATA BAD Request on query:" 
+// 			+JSON.stringify(query),currentdate,res.user); 
+	}); 
+});
+
+//**********************************************************
+app.get('/test_download',middleware.ensureAuthenticated, function(req, res) {
+	"use strict"; 
+	var pretty = find_param(req.body.pretty, req.query.pretty);
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
+	//***************************************
+	var filepath =find_param(req.body.Path,req.query.Path);
+	if (filepath != undefined)
+		filepath=remove_quotation_marks(filepath); 
+	//***************************************
+	var filename =find_param(req.body.filename,req.query.filename);
+	if (filename != undefined)
+		filename=remove_quotation_marks(filename); 
+	//***************************************
+	var project =find_param(req.body.project,req.query.project);
+	if (project != undefined) 
+		project=remove_quotation_marks(project); 
+	//***************************************
+	var source =find_param(req.body.source,req.query.source);
+	if (source != undefined) 
+		source=remove_quotation_marks(source); 
+	
+	
+	var query= MetadataModule.compose_query(project,source,filepath, filename); 
+	//1.1- find id of the existing doc for such path filename	
+	var searching = MetadataModule.query_metadata(es_servername+":"+es_port,SERVERDB,query, pretty);
+// 	var resultlog="";
+	searching.then((resultFind) => { 
+		var domain =findomainjson(resultFind); 
+		if(domain.length==0){
+			domain= 'domain_public'; 
+			var label_domain = "not defined domain";
+		}else{
+			var label_domain = domain;
+		}
+		var permission = request_permission(res.user, 'r', domain); 
+		permission.then((resultFind) => { 
+			var rescode=0;
+			var resend="";
+			if( resultFind == "permit"){
+				rescode=200;
+				resend="Access granted";
+			}else if( resultFind == "deny"){
+				rescode=403;
+				resend="Access denied";
+			}else {
+				rescode=400;
+				resend="unexpected error "+resultFind;
+			}
+			res.writeHead(rescode, { 'Content-Type': contentType_text_plain });
+			res.write("    The userid is: "+res.user+"\n");
+			res.write("    The domain of the file is: "+label_domain+" \n");
+			res.write("    The access to the file is: "+resultFind+"\n");							
+			res.end("    "+rescode+": "+resend);
+		},(resultReject)=> { 
+			res.writeHead(400, { 'Content-Type': contentType_text_plain });
+			res.end("400 unexpected error "+resultReject);
+		} );
+// 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,200,req.connection.remoteAddress,"QUERY METADATA granted to query:"
+// 			+JSON.stringify(query),currentdate,res.user);
+	},(resultReject)=> { 
+		res.writeHead(400, {"Content-Type": contentType_text_plain});
+		res.end("querymetadata: Bad Request "+resultReject +"\n");
+// 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"QUERY METADATA BAD Request on query:" 
+// 			+JSON.stringify(query),currentdate,res.user); 
+	}); 
+});
+
+//**********************************************************
 app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 	var fs = require('fs');
 	var path = require('path'); 
+	var pretty = find_param(req.body.pretty, req.query.pretty);
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
 	//******************************************* 
 	var project= find_param(req.body.project, req.query.project);
@@ -877,47 +1077,101 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 	var myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath + '/' + filename;  
 
 	
-//Maybe look for NGAC policy here, then decide if continue or not !!	 
-
-	// Check if file specified by the filePath exists
-	fs.stat(myPath, function(err, stat) {
-		if(err == null) {
-// 			console.log('File exists');
-			// Content-type is very interesting part that guarantee that
-			// Web browser will handle response in an appropriate manner.
-			//fs.createReadStream(myPath).pipe(response);
-			var resolvedBase = path.resolve(myPath);
-			var stream = fs.createReadStream(resolvedBase);
-			//stream.setEncoding('UTF8');
-			// Handle non-existent file
-			stream.on('error', function(error) {
-				returncode=404; 
-			});
-			// File exists, stream it to user 
-			res.writeHead(200, {
-				"Content-Type": "application/octet-stream",
-				"Content-Disposition": "attachment; filename=" + filename
-			}); 
-			stream.pipe(res);
-			var resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,"DONWLOAD granted to file: "+myPath,currentdate,res.user);
-			return; 
-		} else if(err.code == 'ENOENT') {
-			// file does not exist
-// 			console.log('file does not exist\n');
-			varresultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,404,req.connection.remoteAddress,"DOWNLOAD error: File not found: "+myPath ,currentdate,res.user);
-			//res.setHeader(name.value); //only before writeHeader 
-			res.writeHead(404, {"Content-Type": contentType_text_plain});
-			res.write("\n404: Bad Request, file not found.\n");
-			res.end("ERROR File does not exist: "+myPath+"\n");	
-			return; 
-		} else {
-// 			console.log('Some other error: ', err.code);
-			res.writeHead(404, {"Content-Type": contentType_text_plain});
-			res.write("\n404: Bad Request, file not found.\n");
-			res.end("ERROR File does not exist: "+myPath+"\n");	
-			return; 			
+ 
+	
+	var query= MetadataModule.compose_query(project,source,filepath, filename); 
+	//1.1- find id of the existing doc for such path filename	
+	var searching = MetadataModule.query_metadata(es_servername+":"+es_port,SERVERDB,query, pretty);
+// 	var resultlog="";
+	searching.then((resultFind) => { 
+		var domain =findomainjson(resultFind); 
+		if(domain.length==0){
+			domain= 'domain_public'; 
+			var label_domain = "not defined domain";
+		}else{
+			var label_domain = domain;
 		}
-	});	 
+		var permission = request_permission(res.user, 'r', domain); 
+		permission.then((resultFind) => { 
+			var rescode=0;
+			var resend="";
+			if( resultFind == "permit"){
+ 
+
+
+				// Check if file specified by the filePath exists
+				fs.stat(myPath, function(err, stat) {
+					if(err == null) {
+			// 			console.log('File exists');
+						// Content-type is very interesting part that guarantee that
+						// Web browser will handle response in an appropriate manner.
+						//fs.createReadStream(myPath).pipe(response);
+						var resolvedBase = path.resolve(myPath);
+						var stream = fs.createReadStream(resolvedBase);
+						//stream.setEncoding('UTF8');
+						// Handle non-existent file
+						stream.on('error', function(error) {
+							returncode=404; 
+						});
+						// File exists, stream it to user 
+						res.writeHead(200, {
+							"Content-Type": "application/octet-stream",
+							"Content-Disposition": "attachment; filename=" + filename
+						}); 
+						stream.pipe(res);
+						var resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,"DONWLOAD granted to file: "+myPath,currentdate,res.user);
+						return; 
+					} else if(err.code == 'ENOENT') {
+						// file does not exist
+			// 			console.log('file does not exist\n');
+						varresultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,404,req.connection.remoteAddress,"DOWNLOAD error: File not found: "+myPath ,currentdate,res.user);
+						//res.setHeader(name.value); //only before writeHeader 
+						res.writeHead(404, {"Content-Type": contentType_text_plain});
+						res.write("\n404: Bad Request, file not found.\n");
+						res.end("ERROR File does not exist: "+myPath+"\n");	
+						return; 
+					} else {
+			// 			console.log('Some other error: ', err.code);
+						res.writeHead(404, {"Content-Type": contentType_text_plain});
+						res.write("\n404: Bad Request, file not found.\n");
+						res.end("ERROR File does not exist: "+myPath+"\n");	
+						return;
+					}
+				});
+				
+				
+			}else if( resultFind == "deny"){
+				rescode=403;
+				resend="Access denied";
+				res.writeHead(rescode, { 'Content-Type': contentType_text_plain });
+				res.write("    The userid is: "+res.user+"\n");
+				res.write("    The domain of the file is: "+label_domain+" \n");
+				res.write("    The access to the file is: "+resultFind+"\n");							
+				res.end("    "+rescode+": "+resend);				
+			}else {
+				rescode=400;
+				resend="unexpected error "+resultFind;
+				res.writeHead(rescode, { 'Content-Type': contentType_text_plain });
+				res.write("    The userid is: "+res.user+"\n");
+				res.write("    The domain of the file is: "+label_domain+" \n");
+				res.write("    The access to the file is: "+resultFind+"\n");							
+				res.end("    "+rescode+": "+resend);
+			}
+		},(resultReject)=> { 
+			res.writeHead(400, { 'Content-Type': contentType_text_plain });
+			res.end("400 unexpected error "+resultReject);
+		} );
+// 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,200,req.connection.remoteAddress,"QUERY METADATA granted to query:"
+// 			+JSON.stringify(query),currentdate,res.user);
+	},(resultReject)=> { 
+		res.writeHead(400, {"Content-Type": contentType_text_plain});
+		res.end("querymetadata: Bad Request "+resultReject +"\n");
+// 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"QUERY METADATA BAD Request on query:" 
+// 			+JSON.stringify(query),currentdate,res.user); 
+	}); 
+	
+	
+				
 });
 //**********************************************************
 function list_of_files(myPath){

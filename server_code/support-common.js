@@ -9,7 +9,7 @@ module.exports = {
 		var myres = { code: "", text: "" }; 
 		var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
 		return new Promise( (resolve,reject) => {
-			testhttp.get('http://'+es_server+'/'+my_index+'/_flush', function(rescode) {	
+			testhttp.get('http://'+es_server+'/'+my_index+'/_flush', function(rescode) {
 				myres.code="200";
 				myres.text="200 Succeed";
 				resolve (myres);

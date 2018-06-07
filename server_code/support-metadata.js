@@ -17,42 +17,44 @@
  
 var my_type = 'metadata'; 
 
+function add_query_term(mquery, mylabel , value ){
+	const key = 'must';
+	if (value != undefined)
+	if (value.length > 0){
+		if(mquery==undefined ){
+			var mquery = {} // empty Object
+			mquery[key] = []; // empty Array, which you can push() values into
+		}  
+		var tquery ={};
+			tquery[mylabel]=value;
+		var xquery ={};
+			xquery["match_phrase"] = tquery;
+		var secondlabel = mylabel +"_length";
+		mquery[key].push(xquery);
+		
+		mylabel = mylabel +"_length";
+		var tquery ={};
+			tquery[mylabel]=value.length;
+		var xquery ={};
+			xquery["term"] = tquery; 
+		mquery[key].push(xquery); 
+	} 
+	return mquery;
+} 
+
 module.exports = {
 compose_query: function(project,source,filepath, filename){ 
-	var mquery=undefined;
-	if (project != undefined)
-	if (project.length > 0){
-		mquery= {"match_phrase":{"project": project }}, {"term":{"project_length": project.length}};
-	} 
-	if (source != undefined)
-	if (source.length > 0){
-		if(mquery!=undefined ){
-			mquery= mquery, {"match_phrase":{"source": source }}, {"term":{"source_length": source.length}} ;
-		}else{
-			mquery= {"match_phrase":{"source": source }}, {"term":{"source_length": source.length}};
-		} 
-	} 
-	if (filepath!=undefined)	
-	if (filepath.length > 0){
-		if(mquery!=undefined ){
-			mquery = mquery, {"match_phrase":{"path": filepath }}, {"term":{"path_length": filepath.length}} ;
-		}else{
-			mquery= {"match_phrase":{"path": filepath }}, {"term":{"path_length": filepath.length}} ;
-		} 
-	}
-	if (filename!=undefined) 
-	if (filename.length > 0){
-		if(mquery!=undefined ){
-			mquery = mquery, {"match_phrase":{"filename": filename }}, {"term":{"filename_length": filename.length}} ;
-		}else{
-			mquery = {"match_phrase":{"filename": filename }}, {"term":{"filename_length": filename.length}} ;
-		}
-	} 
+	var mquery=undefined; 
+	mquery = add_query_term(mquery,"project",project );
+	mquery = add_query_term(mquery,"source",source );
+	mquery = add_query_term(mquery,"path",filepath );
+	mquery = add_query_term(mquery,"filename",filename ); 
 	if(mquery!=undefined ){
-		mquery= { query: { bool: { must: [ mquery ] } } };
+		mquery= { query: { bool:  mquery } };
 	}else{ 
 		mquery= { query: { "match_all": {} }};
-	}
+	} 
+// 	console.log("query is: "+JSON.stringify(mquery)); 
 	return mquery;
 },
 //**********************************************************
@@ -121,19 +123,19 @@ find_metadata_id: function(es_server ,my_index, project,source,filename,path){
 			resolve (response.hits.hits[0]._id); 
 		});
 	});
-},	
+},
 
 //**********************************************************
 //This function is used to verify if a filename-path is registered
-query_count_filename_path: function(es_server, my_index,project,source, filename,path){
-	return new Promise( (resolve,reject) => { 
+query_count_filename_path: function(es_server, my_index,project,source, filename,path){ 
+	return new Promise( (resolve,reject) => {  
 		var elasticsearch = require('elasticsearch');
 		var client = new elasticsearch.Client({
 			host: es_server,
 			log: 'error'
 		});
-		var count_query = this.compose_query(project,source, path, filename); 
-// 		console.log("query is: "+JSON.stringify(count_query)); 
+		var count_query = this.compose_query(project,source, path, filename);  
+// 			console.log("query is: "+JSON.stringify(count_query)); 
 		client.count({
 			index: my_index,
 			type: my_type, 
@@ -177,7 +179,7 @@ register_update_filename_path_json: function(es_server, my_index, body, project,
 // 				delete body.path_length;
 		var myres = { code: "", text: "" };
 		var count_metadata = this.query_count_filename_path(es_server, my_index, project,source,filename,path);
-		count_metadata.then((resultCount) => { 
+		count_metadata.then((resultCount) => {  
 			if(resultCount==0){ //File+path don't found, proceed to register new entry. 
 				var new_reg = this.register_json(es_server, my_index, body);
 				new_reg.then((resultReg) => {
@@ -430,7 +432,7 @@ new_mapping: function(es_server, my_index, mytype, mytypemapping ) {
 // 		log: 'error'
 // 	});
 // 	var item = "";
-// 	search_query= compose_query(project,source, path, filename); 
+// 	search_query= this.compose_query(project,source, path, filename); 
 // 	client.search({
 // 		index: my_index,
 // 		type: my_type,
