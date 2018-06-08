@@ -1403,9 +1403,16 @@ app.ws('/', function(ws_connection, req) {
 		user_input.project=undefined;
 		user_input.source=undefined;
 	});
+	
+	// EPIPE means that writing of (presumably) the HTTP request failed
+	// because the other end closed the connection.
+	ws_connection.on('error', function(e){	
+		console.log("socket error:"+ e);
+	});
+	  
 	// user disconnected
 	ws_connection.on('close', function(reasonCode, description) {
-		console.log((new Date()) + ' Peer: ' + client_address + ' disconnected.'+ 'user is: '+ user_input.user);
+// 		console.log((new Date()) + ' Peer: ' + client_address + ' disconnected.'+ 'user is: '+ user_input.user);
 		var i=find_pos_user_address(client_address);
 		if(i<totalusers) { 
 			user_address[i]=undefined;
@@ -1417,12 +1424,15 @@ app.ws('/', function(ws_connection, req) {
 	});
 });
 
+
+ 
+   
 // set up error handler
 function errorHandler (err, req, res, next) {
     if(req.ws){
         console.error("ERROR from WS route - ", err);
     } else {
-        console.error(err);
+        console.error("ERROR from WS: " +err);
         res.setHeader('Content-Type', 'text/plain');
         res.status(500).send(err.stack);
     }

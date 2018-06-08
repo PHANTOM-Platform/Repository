@@ -844,19 +844,24 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 /* GET home page. */
 const request = require('request'); 
 
-function request_permission(user, access, domain){
+function request_user_domain_permission(user, access, domain,j){ 
 	return new Promise( (resolve,reject) => {
+		var result = { body: "", j: "" };
+		result.j=j;
 		request.get('http://127.0.0.1:8001/pqapi/access?user='+user+'&ar='+access+'&object='+domain, function(err, response, body) {//expected possible responses are "permit\n" or "deny\n"
 			if(body.length>0){
 				if(body.charAt(body.length-1) === '\n') {
 					body = body.substring(0, body.length - 1); 
 				}
 			}
-			body = body.toLowerCase();
-			resolve(body);
+			result.body = body.toLowerCase();
+			resolve(result);
 		});
 	});
 } 
+
+
+
 
 // function jsontotable(myjson){
 // 	var html ="";
@@ -884,7 +889,7 @@ function request_permission(user, access, domain){
 // }
 
 
-function findomainjson(myjson){ 
+function findomainjson_first(myjson){ 
 	var jsonobj = JSON.parse(myjson); 
 	if(Object.getOwnPropertyNames(jsonobj)[0] == "hits"){
 		jsonobj = jsonobj.hits[0];
@@ -899,7 +904,7 @@ function findomainjson(myjson){
 		}
 	} 
 	return "";
-}
+}//findomainjson_first
 
 app.get('/permission', function(req, res, next) {
 	//the request is expected to be done internally, same machine on port 8001
@@ -910,17 +915,17 @@ app.get('/permission', function(req, res, next) {
 		res.writeHead(400, { 'Content-Type': contentType_text_plain });
 		res.end("400 Error, missing parameter");
 	} 
-	var permission = request_permission(user, access, domain);
+	var permission = request_user_domain_permission(user, access, domain,0);
 	permission.then((resultFind) => { 
-		if( resultFind == "permit"){
+		if( resultFind.body == "permit"){
 			res.writeHead(200, { 'Content-Type': contentType_text_plain });
 			res.end("200: Access granted");
-		}else if( resultFind == "deny"){
+		}else if( resultFind.body == "deny"){
 			res.writeHead(403, { 'Content-Type': contentType_text_plain });
 			res.end("403: Access denied");
 		}else {
 			res.writeHead(400, { 'Content-Type': contentType_text_plain });
-			res.end("400 unexpected error "+resultFind);
+			res.end("400 unexpected error "+resultFind.body);
 		} 
 	},(resultReject)=> { 
 			res.writeHead(400, { 'Content-Type': contentType_text_plain });
@@ -933,14 +938,6 @@ app.get('/test_metadata', function(req, res) {
 	var pretty = find_param(req.body.pretty, req.query.pretty);
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
 	//***************************************
-	var filepath =find_param(req.body.Path,req.query.Path);
-	if (filepath != undefined)
-		filepath=remove_quotation_marks(filepath); 
-	//***************************************
-	var filename =find_param(req.body.filename,req.query.filename);
-	if (filename != undefined)
-		filename=remove_quotation_marks(filename); 
-	//***************************************
 	var project =find_param(req.body.project,req.query.project);
 	if (project != undefined) 
 		project=remove_quotation_marks(project); 
@@ -949,27 +946,128 @@ app.get('/test_metadata', function(req, res) {
 	if (source != undefined) 
 		source=remove_quotation_marks(source); 
 	var query= MetadataModule.compose_query(project,source,filepath, filename); 
+	//***************************************
+	var filepath =find_param(req.body.Path,req.query.Path);
+	if (filepath != undefined)
+		filepath=remove_quotation_marks(filepath); 
+	//***************************************
+	var filename =find_param(req.body.filename,req.query.filename);
+	if (filename != undefined)
+		filename=remove_quotation_marks(filename); 
 	//1.1- find id of the existing doc for such path filename
 	
-	var searching = MetadataModule.query_metadata(es_servername+":"+es_port,SERVERDB,query, pretty);
-	var resultlog="";
+	var searching = MetadataModule.query_metadata(es_servername+":"+es_port,SERVERDB,query, pretty); 
 	searching.then((resultFind) => { 
 		res.writeHead(200, {"Content-Type": "application/json"});
-		var domain =findomainjson(resultFind);
+		var domain =findomainjson_first(resultFind);
 		if(domain.length==0){
 			res.end("The domain of the file is: not defined domain\n");
 		}else{
 			res.end("The domain of the file is: "+domain+"\n");	
 		}
-// 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,200,req.connection.remoteAddress,"QUERY METADATA granted to query:"
+// 		var resultloga = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,200,req.connection.remoteAddress,"QUERY METADATA granted to query:"
 // 			+JSON.stringify(query),currentdate,res.user);
 	},(resultReject)=> { 
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("querymetadata: Bad Request "+resultReject +"\n");
-// 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"QUERY METADATA BAD Request on query:" 
+// 		var resultlogb = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"QUERY METADATA BAD Request on query:" 
 // 			+JSON.stringify(query),currentdate,res.user); 
 	}); 
 });
+
+
+
+function function_promesas_encadenadas(totalkeys, user, domain,j){ 
+	return new Promise( (resolve,reject) => {
+		var myresultarray = new Array(totalkeys);
+		if(j< totalkeys-1) {
+			callj= function_promesas_encadenadas(totalkeys, user, domain,j+1); 
+			callj.then((resiltgood) => {
+				myresultarray = resiltgood;
+				var temppermission = request_user_domain_permission( user, 'r', domain[j],j) ; 
+				temppermission.then((resultFind) => {
+// 					console.log("permisson "+resultFind.body+ " on j "+ j+ " domain is " +domain[j]);
+					myresultarray [j]=resultFind.body; 
+// 					if(j==0){
+// 						for (var kj = 0; kj < totalkeys; kj++) {
+// 							console.log("                on kj "+ kj+ " myresultarray is " +myresultarray[kj]);
+// 						}
+// 					}
+					resolve(myresultarray ); 
+				},(resultReject)=> {  
+					reject("Unexpected error at request_permission");
+				} );  
+			},(resultReject)=> { 
+				reject("unexepected error promesas encadenadas");
+			});
+		}else{//soy el ultimo 
+			var temppermission = request_user_domain_permission( user, 'r', domain[j],j) ; 
+			temppermission.then((resultFind) => { 
+// 				console.log("permisson "+resultFind.body+ " on j "+ j+ " domain is " +domain[j]);
+				myresultarray [j]=resultFind.body;
+				resolve(myresultarray );			
+			},(resultReject)=> {  
+				reject("Unexpected error at request_permission");
+			} ); 
+		}
+	});
+}
+ 
+
+function request_permission( user,pretty, project,source,filepath, filename){
+	return new Promise( (resolve,reject) => {		
+		var query= MetadataModule.compose_query(project,source,filepath, filename); 
+		//1.1- find id of the existing doc for such path filename	
+		var searching = MetadataModule.query_metadata(es_servername+":"+es_port,SERVERDB,query, pretty);
+		searching.then((resultFind) => {  
+			var result = { totalkeys: 1, permission: [''], jsonfilename : [''], domain: [''], label_domain: [''] };
+			result.permission ="permit"; 
+			resultFind = JSON.parse(resultFind); 
+			if(resultFind.hits !=undefined) { 	
+				var totalkeys =  Object.keys(resultFind.hits);
+				result.totalkeys = totalkeys.length;
+				result.domain = new Array(totalkeys.length); 
+				result.label_domain = new Array(totalkeys.length); 
+				result.jsonfilename = new Array(totalkeys.length);
+				result.permission = new Array(totalkeys.length);
+				for (var j = 0; j < totalkeys.length; j++) {	 
+					var jsonobj = resultFind.hits[j]; 
+					keys = Object.keys(jsonobj);   
+					for (var i = 0; i < keys.length; i++) {
+						var label=Object.getOwnPropertyNames(jsonobj)[i];
+						label=label.toLowerCase(); 
+						if(label == "domain"){
+							result.domain[j] = jsonobj[keys[i]]; 
+						}
+						if(label == "filename"){ 
+							result.jsonfilename[j] = jsonobj[keys[i]];  
+						}	 
+					}  //for i 
+					if(result.domain[j].length==0){
+						result.domain[j]= 'domain_public'; 
+						result.label_domain[j] = "not defined domain";
+					}else{
+						result.label_domain[j] = result.domain[j];
+					}   
+				}//anyway the next loop run after the first loop even if we join the loop. Then this coding stile looks mor similar to the execution behaviour. 
+				var kresults= function_promesas_encadenadas(totalkeys.length, user, result.domain,0);
+				kresults.then((resultFind) => { 
+					for (var kj = 0; kj <totalkeys.length;  kj++) {
+						result.permission[kj]=resultFind[kj]; 
+					}
+					resolve(result);
+				},(resultReject)=> {  
+					reject("Unexpected error at function_promesas_encadenadas");
+				} );   
+			}else{
+				reject("Unexpected error at request_permission");
+			} 
+		},(resultReject)=> { 
+			reject("querymetadata: Bad Request "+resultReject +"\n");
+		});
+	});
+}//end request_permission
+		
 
 //**********************************************************
 app.get('/test_download',middleware.ensureAuthenticated, function(req, res) {
@@ -977,63 +1075,54 @@ app.get('/test_download',middleware.ensureAuthenticated, function(req, res) {
 	var pretty = find_param(req.body.pretty, req.query.pretty);
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
 	//***************************************
-	var filepath =find_param(req.body.Path,req.query.Path);
-	if (filepath != undefined)
-		filepath=remove_quotation_marks(filepath); 
-	//***************************************
-	var filename =find_param(req.body.filename,req.query.filename);
-	if (filename != undefined)
-		filename=remove_quotation_marks(filename); 
-	//***************************************
 	var project =find_param(req.body.project,req.query.project);
 	if (project != undefined) 
 		project=remove_quotation_marks(project); 
 	//***************************************
 	var source =find_param(req.body.source,req.query.source);
 	if (source != undefined) 
-		source=remove_quotation_marks(source); 
-	
-	
-	var query= MetadataModule.compose_query(project,source,filepath, filename); 
-	//1.1- find id of the existing doc for such path filename	
-	var searching = MetadataModule.query_metadata(es_servername+":"+es_port,SERVERDB,query, pretty);
-// 	var resultlog="";
-	searching.then((resultFind) => { 
-		var domain =findomainjson(resultFind); 
-		if(domain.length==0){
-			domain= 'domain_public'; 
-			var label_domain = "not defined domain";
-		}else{
-			var label_domain = domain;
-		}
-		var permission = request_permission(res.user, 'r', domain); 
-		permission.then((resultFind) => { 
-			var rescode=0;
-			var resend="";
-			if( resultFind == "permit"){
-				rescode=200;
-				resend="Access granted";
-			}else if( resultFind == "deny"){
-				rescode=403;
-				resend="Access denied";
-			}else {
-				rescode=400;
-				resend="unexpected error "+resultFind;
+		source=remove_quotation_marks(source);
+	//***************************************	
+	var filepath =find_param(req.body.Path,req.query.Path);
+	if (filepath != undefined)
+		filepath=remove_quotation_marks(filepath);
+	//***************************************
+	var filename =find_param(req.body.filename,req.query.filename);
+	if (filename != undefined)
+		filename=remove_quotation_marks(filename); 
+	var query_permission =request_permission(res.user,pretty, project,source,filepath, filename);
+	query_permission.then((result) => {    
+		var rescode=200;  // 200 stands for permit
+		for (var j = 0; j < result.totalkeys; j++) {
+			if(result.permission[j] == "deny"){
+				rescode= 403; //permision denied
+			}else if (result.permission[j] != "permit"){
+				rescode=400;  //error procesing the request
 			}
-			res.writeHead(rescode, { 'Content-Type': contentType_text_plain });
-			res.write("    The userid is: "+res.user+"\n");
-			res.write("    The domain of the file is: "+label_domain+" \n");
-			res.write("    The access to the file is: "+resultFind+"\n");							
-			res.end("    "+rescode+": "+resend);
-		},(resultReject)=> { 
-			res.writeHead(400, { 'Content-Type': contentType_text_plain });
-			res.end("400 unexpected error "+resultReject);
-		} );
+		} 
+		
+		res.writeHead(rescode, { 'Content-Type': contentType_text_plain });
+		//el bucle anterior no se puede combinar con el siguiente porque necesitamos primger generar la cabecera de respuesta.
+		res.write("    The userid is: "+res.user+"\n");
+		for (var j = 0; j < result.totalkeys; j++) {
+			res.write("    The file is: "+result.jsonfilename[j]+" \n");
+			res.write("    The domain of the file is: "+result.label_domain[j]+" \n");
+			res.write("    The access to the file is: "+result.permission[j]+"\n");  
+		}
+		var resend="";
+		if( rescode =200){ 
+			resend="Access granted";
+		}else if( rescode=403){ 
+			resend="Access denied";
+		}else { 
+			resend="unexpected error "+result.permission;
+		}
+		res.end(" \n Global Permission: "+rescode+": "+resend); 
 // 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,200,req.connection.remoteAddress,"QUERY METADATA granted to query:"
 // 			+JSON.stringify(query),currentdate,res.user);
 	},(resultReject)=> { 
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
-		res.end("querymetadata: Bad Request "+resultReject +"\n");
+		res.end(resultReject);
 // 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"QUERY METADATA BAD Request on query:" 
 // 			+JSON.stringify(query),currentdate,res.user); 
 	}); 
@@ -1075,29 +1164,24 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 		return;}
 	//******************************************* 
 	var myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath + '/' + filename;  
-
-	
- 
-	
+ 	
 	var query= MetadataModule.compose_query(project,source,filepath, filename); 
 	//1.1- find id of the existing doc for such path filename	
 	var searching = MetadataModule.query_metadata(es_servername+":"+es_port,SERVERDB,query, pretty);
 // 	var resultlog="";
 	searching.then((resultFind) => { 
-		var domain =findomainjson(resultFind); 
+		var domain =findomainjson_first(resultFind); 
 		if(domain.length==0){
 			domain= 'domain_public'; 
 			var label_domain = "not defined domain";
 		}else{
 			var label_domain = domain;
 		}
-		var permission = request_permission(res.user, 'r', domain); 
+		var permission = request_user_domain_permission(res.user, 'r', domain,0); 
 		permission.then((resultFind) => { 
 			var rescode=0;
 			var resend="";
-			if( resultFind == "permit"){
- 
-
+			if( resultFind.body == "permit"){ 
 
 				// Check if file specified by the filePath exists
 				fs.stat(myPath, function(err, stat) {
@@ -1140,21 +1224,21 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 				});
 				
 				
-			}else if( resultFind == "deny"){
+			}else if( resultFind.body == "deny"){
 				rescode=403;
 				resend="Access denied";
 				res.writeHead(rescode, { 'Content-Type': contentType_text_plain });
 				res.write("    The userid is: "+res.user+"\n");
 				res.write("    The domain of the file is: "+label_domain+" \n");
-				res.write("    The access to the file is: "+resultFind+"\n");							
+				res.write("    The access to the file is: "+resultFind.body+"\n");							
 				res.end("    "+rescode+": "+resend);				
 			}else {
 				rescode=400;
-				resend="unexpected error "+resultFind;
+				resend="unexpected error "+resultFind.body;
 				res.writeHead(rescode, { 'Content-Type': contentType_text_plain });
 				res.write("    The userid is: "+res.user+"\n");
 				res.write("    The domain of the file is: "+label_domain+" \n");
-				res.write("    The access to the file is: "+resultFind+"\n");							
+				res.write("    The access to the file is: "+resultFind.body+"\n");							
 				res.end("    "+rescode+": "+resend);
 			}
 		},(resultReject)=> { 
@@ -1188,6 +1272,22 @@ function list_of_files(myPath){
 	});
 	return(filelist);
 }
+
+function list_of_files_metadata(project,source, filepath, filename){
+	var path = path || require('path');
+	var fs = fs || require('fs');
+	var filelist = ""; 
+	files = fs.readdirSync(myPath); 
+	files.forEach(function(file) { 
+		if (fs.statSync(path.join(myPath, file)).isDirectory()) { 
+			filelist= filelist+list_of_files(path.join(myPath, file));
+		}else{
+			filelist= filelist+path.join(myPath, file)+"\n";
+		}
+	});
+	return(filelist);
+}//list_of_files_metadata
+
 //**********************************************************
 function json_list_of_files(myPath,filelist){ 
 	var path = path || require('path');
@@ -1210,11 +1310,19 @@ function json_list_of_files(myPath,filelist){
 // 	});
 	return(filelist);
 }
+
+//*****
+// quiero que de la lista de los dominios de cada ficherlo en la lista
+// si no tiene dominio imprimimos dominio_public*
+// si no tiene metadata imprimimos dominio_public?
+//
 //**********************************************************
 app.get('/downloadlist',middleware.ensureAuthenticated, function(req, res) {
 	var fs = require('fs');
 	var path = require('path'); 
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
+	var filename = undefined;
+	var filepath = undefined;
 	//******************************************* 
 	var project= find_param(req.body.project, req.query.project);
 	project= validate_parameter(project,"project",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
@@ -1231,13 +1339,13 @@ app.get('/downloadlist',middleware.ensureAuthenticated, function(req, res) {
 	if (source.length != 0){ 
 		myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source ;   
 		//*******************************************
-		var filepath= find_param(req.body.filepath, req.query.filepath);
+		filepath= find_param(req.body.filepath, req.query.filepath);
 		filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
 		if (filepath != undefined)
 		if (filepath.length != 0){ 
 			myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath ; 
 			//*******************************************
-			var filename=  find_param(req.body.filename, req.query.filename);
+			filename=  find_param(req.body.filename, req.query.filename);
 			filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined 
 		}
 	}  
@@ -1247,7 +1355,8 @@ app.get('/downloadlist',middleware.ensureAuthenticated, function(req, res) {
 	// Check if file specified by the filePath exists
 	fs.stat(myPath, function(err, stat) {
 		if(err == null) {
-			res.end(list_of_files(myPath));			
+			res.end(list_of_files(myPath));				
+// 			res.end(list_of_files_metadata(project,source, filepath, filename));
 		} else if(err.code == 'ENOENT') {
 			// file does not exist 
 			varresultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,404,req.connection.remoteAddress,"DOWNLOAD-LIST error: File not found: "+myPath ,currentdate,res.user);
@@ -1270,6 +1379,8 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 	var fs = require('fs');
 	var path = require('path'); 
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
+	var filepath=undefined;
+	var filename=undefined;
 	//******************************************* 
 	var project= find_param(req.body.project, req.query.project);
 	project= validate_parameter(project,"project",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
@@ -1279,60 +1390,78 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 		res.end("\n400: Bad Request, missing "+"project"+".\n");
 		return;}
 	var myPath = os.homedir()+ File_Server_Path + '/' + project ;
-	var myDest =  project ; 
-	var myDest =  project ; 
+	var myDest =  project ;  
 	//******************************************* 
 	var source= find_param(req.body.source, req.query.source);
 	source= validate_parameter(source,"source",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
 	if (source != undefined)
 	if (source.length != 0){ 
 		myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source ;   
-		myDest =  project +'/' + source ; 
+		myDest = project +'/' + source ; 
 		//*******************************************
-		var filepath= find_param(req.body.filepath, req.query.filepath);
+		filepath= find_param(req.body.filepath, req.query.filepath);
 		filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
 		if (filepath != undefined)
 		if (filepath.length != 0){ 
 			myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath ; 
 			myDest =  project +'/' + source +'/' + filepath ; 
 			//*******************************************
-			var filename= find_param(req.body.filename, req.query.filename);
+			filename= find_param(req.body.filename, req.query.filename);
 			filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined 
 		}
-	}   
-	var zipfile ="download_repo_zip";
-	// Check if file specified by the filePath exists
-	fs.stat(myPath, function(err, stat) {
-		if(err == null) {
-			var filelist=undefined;
-// 			filelist=json_list_of_files(myPath,filelist);
-			var path = path || require('path');
-			var fs = fs || require('fs');  
-			files = fs.readdirSync(myPath); 
-			filelist= "{ \"path\": \""  + myPath +"\", \"name\": \""+ myDest + "\" }" ; 
-// 			console.log(JSON.stringify( JSON.parse("[" + filelist+ "]"), null, 4 )); 
-			if(filelist!=undefined ){ 
-				res.zip({ 
-					files:   JSON.parse("[" + filelist+ "]"), 
-					filename: zipfile+'.zip'
-				});
-			}else{ 
-				res.end("files not found in that directory");
+	}
+	
+	
+	var query_permission =request_permission(res.user,pretty, project,source,filepath, filename);
+	query_permission.then((result) => {     
+		for (var j = 0; j < result.totalkeys; j++) {
+			if(result.permission[j] == "deny"){ //permision denied
+				res.writeHead(403, {"Content-Type": contentType_text_plain}); 
+				res.end("Access DENY: You may not have permission to download some file in the folder\n"); 
+			}else if (result.permission[j] != "permit"){ //error procesing the request
+				res.writeHead(400, {"Content-Type": contentType_text_plain}); 
+				res.end("ERROR processing the permissions\n");	
+				return; 
 			}
-		} else if(err.code == 'ENOENT') {
-			// file does not exist 
-			varresultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,404,req.connection.remoteAddress,"DOWNLOAD-LIST error: File not found: "+myPath ,currentdate,res.user);
-			//res.setHeader(name.value); //only before writeHeader 
-			res.writeHead(404, {"Content-Type": contentType_text_plain});
-			res.write("\n404: Bad Request, file not found.\n");
-			res.end("ERROR File does not exist: "+myPath+"\n");	
-			return; 
-		} else { 
-			res.writeHead(404, {"Content-Type": contentType_text_plain});
-			res.write("\n404: Bad Request, file not found.\n");
-			res.end("ERROR File does not exist: "+myPath+"\n");	
-			return; 
 		}
+		var zipfile ="download_repo_zip";
+		// Check if file specified by the filePath exists
+		fs.stat(myPath, function(err, stat) {
+			if(err == null) {
+				var filelist=undefined;
+	// 			filelist=json_list_of_files(myPath,filelist);
+				var path = path || require('path');
+				var fs = fs || require('fs');  
+				files = fs.readdirSync(myPath); 
+				filelist= "{ \"path\": \""  + myPath +"\", \"name\": \""+ myDest + "\" }" ; 
+	// 			console.log(JSON.stringify( JSON.parse("[" + filelist+ "]"), null, 4 )); 
+				if(filelist!=undefined ){ 
+					res.zip({ 
+						files:   JSON.parse("[" + filelist+ "]"), 
+						filename: zipfile+'.zip'
+					});
+				}else{ 
+					res.end("files not found in that directory");
+				}
+			} else if(err.code == 'ENOENT') {
+				// file does not exist 
+				varresultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,404,req.connection.remoteAddress,"DOWNLOAD-LIST error: File not found: "+myPath ,currentdate,res.user);
+				//res.setHeader(name.value); //only before writeHeader 
+				res.writeHead(404, {"Content-Type": contentType_text_plain});
+				res.write("\n404: Bad Request, file not found.\n");
+				res.end("ERROR File does not exist: "+myPath+"\n");	
+				return; 
+			} else { 
+				res.writeHead(404, {"Content-Type": contentType_text_plain});
+				res.write("\n404: Bad Request, file not found.\n");
+				res.end("ERROR File does not exist: "+myPath+"\n");	
+				return; 
+			}
+		});
+	},(resultReject)=> { 
+		res.writeHead(400, {"Content-Type": contentType_text_plain}); 
+		res.end("ERROR: "+resultReject+"\n");	
+		return;
 	}); 
 	
 	//*******************************************  
@@ -1657,9 +1786,16 @@ app.ws('/', function(ws_connection, req) {
 		user_input.project=undefined;
 		user_input.source=undefined;
 	});
+	
+	// EPIPE means that writing of (presumably) the HTTP request failed
+	// because the other end closed the connection.
+	ws_connection.on('error', function(e){	
+		console.log("socket error:"+ e);
+	});
+	  
 	// user disconnected
 	ws_connection.on('close', function(reasonCode, description) {
-		console.log((new Date()) + ' Peer: ' + client_address + ' disconnected.'+ 'user is: '+ user_input.user);
+// 		console.log((new Date()) + ' Peer: ' + client_address + ' disconnected.'+ 'user is: '+ user_input.user);
 		var i=find_pos_user_address(client_address);
 		if(i<totalusers) { 
 			user_address[i]=undefined;
@@ -1671,12 +1807,15 @@ app.ws('/', function(ws_connection, req) {
 	});
 });
 
+
+ 
+   
 // set up error handler
 function errorHandler (err, req, res, next) {
     if(req.ws){
         console.error("ERROR from WS route - ", err);
     } else {
-        console.error(err);
+        console.error("ERROR from WS: " +err);
         res.setHeader('Content-Type', 'text/plain');
         res.status(500).send(err.stack);
     }
