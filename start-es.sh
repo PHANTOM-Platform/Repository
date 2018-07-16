@@ -49,9 +49,9 @@ cd `dirname $0`;
 	fi;
 	cp elasticsearch.yml ${CONFIG_FILE};
 	command -v ${ELASTICSEARCH_BIN} >/dev/null 2>&1 || { echo " elasticsearch : Not installed. Aborting." >&2; exit 1; }
-	RESULT=$(netstat -lnt | awk '$6 == "LISTEN" && $4 ~ ":${elasticsearch_port}"')
+	RESULT=$(netstat -lnt | awk '$6 == "LISTEN" && $4 ~ ":'${elasticsearch_port}'"')
 	if [[ -z "${RESULT}" ]] ; then
-		nohup ${ELASTICSEARCH_BIN} >  jaja.txt  2>&1 &
+		nohup ${ELASTICSEARCH_BIN} >  /dev/null  2>&1 &
 		echo $! > ${TMP_DIR}/elasticsearch.pid ;
 		cat ${TMP_DIR}/elasticsearch.pid ;
 	else

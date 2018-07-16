@@ -115,3 +115,5 @@ http.cors.allow-origin: "*"
 changes.port: 9800
 #ATTENTION: The websockets plugin needs be added security permissions, please look at set-websockets.sh
 
+es.logger.level: DEBUG
+
