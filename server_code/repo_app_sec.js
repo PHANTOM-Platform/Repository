@@ -15,7 +15,7 @@
 // 		WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // 		See the License for the specific language governing permissions and
 // 		limitations under the License.
-process.title = 'PHANTOM-repository-server';
+process.title = 'PHANTOM-Repository-server';
 
 //****************** VARIABLES OF THE REPOSITORY SERVER, MODIFY DEPENDING ON YOUR DEPLOYMENT *****
 	const es_servername = 'localhost';
@@ -1043,6 +1043,7 @@ function request_permission( user,pretty, project,source,filepath, filename){
 							result.jsonfilename[j] = jsonobj[keys[i]];  
 						}	 
 					}  //for i 
+					if( result.domain[j]==undefined )  result.domain[j]="";
 					if(result.domain[j].length==0){
 						result.domain[j]= 'domain_public'; 
 						result.label_domain[j] = "not defined domain";
@@ -1183,28 +1184,38 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 			var resend="";
 			if( resultFind.body == "permit"){ 
 
+				
+				
+	try{ 
+				
 				// Check if file specified by the filePath exists
 				fs.stat(myPath, function(err, stat) {
 					if(err == null) {
-			// 			console.log('File exists');
+						console.log('File exists');
+						console.log("myPath "+myPath);
 						// Content-type is very interesting part that guarantee that
 						// Web browser will handle response in an appropriate manner.
 						//fs.createReadStream(myPath).pipe(response);
 						var resolvedBase = path.resolve(myPath);
 						var stream = fs.createReadStream(resolvedBase);
 						//stream.setEncoding('UTF8');
-						// Handle non-existent file
+						// Handle non-existent file 
 						stream.on('error', function(error) {
-							returncode=404; 
+							console.log("Stream error: "+error); 
+							res.writeHead(404, {"Content-Type": contentType_text_plain});
+							res.write("\n400: stream error.\n");
+							res.end("path: "+myPath+"\n");
+							return;
 						});
+						
 						// File exists, stream it to user 
 						res.writeHead(200, {
 							"Content-Type": "application/octet-stream",
 							"Content-Disposition": "attachment; filename=" + filename
-						}); 
+						});  
 						stream.pipe(res);
 						var resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,"DONWLOAD granted to file: "+myPath,currentdate,res.user);
-						return; 
+						return;
 					} else if(err.code == 'ENOENT') {
 						// file does not exist
 			// 			console.log('file does not exist\n');
@@ -1222,7 +1233,13 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 						return;
 					}
 				});
-				
+	}catch(e){ 
+							console.log("Stream error: "+e); 
+							res.writeHead(404, {"Content-Type": contentType_text_plain});
+							res.write("\n400: stream e.\n");
+							res.end("path: "+myPath+"\n");
+							return;		
+	} 					
 				
 			}else if( resultFind.body == "deny"){
 				rescode=403;
@@ -1377,7 +1394,9 @@ app.get('/downloadlist',middleware.ensureAuthenticated, function(req, res) {
 //**********************************************************
 app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 	var fs = require('fs');
-	var path = require('path'); 
+	var path = require('path');
+
+	var pretty = find_param(req.body.pretty, req.query.pretty);
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
 	var filepath=undefined;
 	var filename=undefined;
@@ -1411,10 +1430,28 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 		}
 	}
 	
-	
+console.log("pretty "+pretty); 
+console.log("project "+project); 
+console.log("myPath "+myPath); 
+console.log("source "+source); 
+console.log("filepath "+filepath); 
+console.log("myDest "+myDest); 
+console.log("filename "+filename); 
+console.log("res.user "+res.user);
+// project example7
+// myPath /nas_home//hpcjmont/phantom_servers/phantom_repository/example7/user
+// source user
+// filepath undefined
+// myDest example7/user
+// filename undefined
+// res.user gtzanettis@wings-ict-solutions.eu
+
+
 	var query_permission =request_permission(res.user,pretty, project,source,filepath, filename);
-	query_permission.then((result) => {     
+	query_permission.then((result) => {
 		for (var j = 0; j < result.totalkeys; j++) {
+			console.log("permission "+j+" "+result.permission[j]);
+			
 			if(result.permission[j] == "deny"){ //permision denied
 				res.writeHead(403, {"Content-Type": contentType_text_plain}); 
 				res.end("Access DENY: You may not have permission to download some file in the folder\n"); 
@@ -1426,6 +1463,7 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 		}
 		var zipfile ="download_repo_zip";
 		// Check if file specified by the filePath exists
+try{
 		fs.stat(myPath, function(err, stat) {
 			if(err == null) {
 				var filelist=undefined;
@@ -1434,12 +1472,37 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 				var fs = fs || require('fs');  
 				files = fs.readdirSync(myPath); 
 				filelist= "{ \"path\": \""  + myPath +"\", \"name\": \""+ myDest + "\" }" ; 
-	// 			console.log(JSON.stringify( JSON.parse("[" + filelist+ "]"), null, 4 )); 
-				if(filelist!=undefined ){ 
-					res.zip({ 
-						files:   JSON.parse("[" + filelist+ "]"), 
-						filename: zipfile+'.zip'
-					});
+				console.log(JSON.stringify(JSON.parse("[" + filelist+ "]"), null, 4 ));
+				if(filelist!=undefined ){
+					try{
+						console.log("res.zip try" );	 
+						res.zip({
+							files:   JSON.parse("[" + 
+								{ content: 'content',
+								name: 'file-name',
+								mode: 0755,
+								comment: 'comment-for-the-file',
+								date: new Date(),
+								type: 'file' },
+							+filelist+ "]"),
+							filename: zipfile+'.zip'
+						})
+						.then(function(obj){
+							console.log(" succeeed");	//if zip failed
+							var zipFileSizeInBytes = obj.size;
+							var ignoredFileArray = obj.ignored;
+						})
+						.catch(function(err){
+							console.log("res.zip " +err);	//if zip failed
+						});
+						
+					}catch(eb){ 
+						console.log("Stream-2 error: "+eb); 
+						res.writeHead(404, {"Content-Type": contentType_text_plain});
+						res.write("\n400: stream-2: "+eb+" \n");
+						res.end("path: "+myPath+"\n");
+						return;		
+					} 					
 				}else{ 
 					res.end("files not found in that directory");
 				}
@@ -1458,6 +1521,13 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 				return; 
 			}
 		});
+}catch(e){ 
+	console.log("Stream-2 error: "+e); 
+	res.writeHead(404, {"Content-Type": contentType_text_plain});
+	res.write("\n400: stream-2: "+e+" \n");
+	res.end("path: "+myPath+"\n");
+	return;		
+} 			
 	},(resultReject)=> { 
 		res.writeHead(400, {"Content-Type": contentType_text_plain}); 
 		res.end("ERROR: "+resultReject+"\n");	

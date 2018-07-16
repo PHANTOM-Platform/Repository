@@ -15,16 +15,16 @@
 // 		WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // 		See the License for the specific language governing permissions and
 // 		limitations under the License.
-process.title = 'PHANTOM-Repository-server';
+process.title = 'PHANTOM-Execution-Manager-server';
 
 //****************** VARIABLES OF THE REPOSITORY SERVER, MODIFY DEPENDING ON YOUR DEPLOYMENT *****
 	const es_servername = 'localhost';
 	const es_port = 9400;
 	const ips = ['::ffff:127.0.0.1','127.0.0.1',"::1"];
-	const File_Server_Path = '/phantom_servers/phantom_repository'; 
-	const SERVERNAME ="PHANTOM Repository";
-	const SERVERPORT = 8000;
-	const SERVERDB = "repository_db";
+	const SERVERNAMElong ="PHANTOM Execution Manager";
+	const SERVERNAME ='PHANTOM Execution Manager';
+	const SERVERPORT = 8700;
+	const SERVERDB = "manager_db";
 	
 	// This will be allocated in the home folder of the user running nodejs !! os.homedir()+File_Server_Path
 //******************** PACKAGES AND SOME GLOBAL VARIABLES ************
@@ -36,19 +36,135 @@ process.title = 'PHANTOM-Repository-server';
 	const os 			= require('os'); 
 	const contentType_text_plain = 'text/plain';
 //********************* SUPPORT JS file, with variable defs *********
-	const colours 			= require('./colours');
+	const colours 		= require('./colours');
 //********************* SUPPORT JS file, for DB functionalities *****
-	const MetadataModule 	= require('./support-metadata'); 
-	const UsersModule 		= require('./support-usersaccounts');
-	const LogsModule 		= require('./support-logs');
-	const CommonModule 		= require('./support-common');
-	const supportmkdir 		= require('./mkdirfullpath'); 
-//*********************** SUPPORT JS file, for TOKENS SUPPORT *******
+	const MetadataModule = require('./support-metadata'); 
+	const UsersModule 	= require('./support-usersaccounts');
+	const LogsModule 	= require('./support-logs');
+	const CommonModule 	= require('./support-common');
+	const supportmkdir 	= require('./mkdirfullpath'); 
+	const TasksModule	= require('./support-tasks-man');
+	const DeviceModule	= require('./support-devices-man');
+	const ExecsModule	= require('./support-execs-man');
+	//*********************** SUPPORT JS file, for TOKENS SUPPORT *******
 	var bodyParser	= require('body-parser');
 	var cors		= require('cors');
 	var auth		= require('./token-auth');
-var middleware	= require('./token-middleware');
-//*************************** MAPPING OF THE TABLES **************	
+	var middleware	= require('./token-middleware');
+//*************************** MAPPING OF THE TABLES WHEN BEING CREATED, ADDITIONAL FIELDS WILL BE ADD ON DEMAND DURING RUNNING TIME **************
+const devicemapping = {
+	"devices": {
+		"properties": {
+			"device": {
+				"type": "string",
+				"index": "analyzed"
+			},
+			"device_length":{
+				"type": "int"				
+			},
+			"device_length": { // this field is registered for quering purposes
+				"type": "short"
+			},
+			"cpu_type": { 
+				"type": "string",
+				"index": "analyzed"
+			},
+			"cpu_cores": { //Example: 4
+				"type": "short"
+			},
+			"ram_size_bytes": { //Example 1gb_ram 1073741824
+				"type": "long"
+			},
+			"gpu_type": { 
+				"type": "string", //Example: NA, "Nvidia GTX960"
+				"index": "analyzed"
+			},
+			"gpu_ram": { 
+				"type": "string", //Example: NA, "1GB"
+				"index": "analyzed"
+			},
+			"fpga_type": { //Example NA, "Zynq 7020"
+				"type": "string",
+				"index": "analyzed"
+			},
+			"fpga_logic_gates": { 
+				"type": "long"
+			},
+			"hide":{//Delete devices will be not allowed due to consistency in the DB, this field allow to hide the device when listing
+				"type": "string", //Example "true" to hide in list, any other value will not hide the device
+				"index": "not_analyzed"
+			}
+		} 
+	}
+};
+
+const statusmapping = { //the idea is keep a single entry, the evolution of load will be stored in the Monitoring Server, because we wish the APP manager-DB be small and light
+	"devices_status": {
+		"properties": {
+			"device_id":{
+				"type": "string", //this is the id from the table devices
+				"index": "not_analyzed"				
+			},
+			"device_id_length":{
+				"type": "int"				
+			},
+			"cpu_load": { // the used percentage of the cpu 
+				"type": "float"
+			},
+			"ram_load": {  // the used percentage of the available ram 
+				"type": "float"
+			},
+			"swap_load": { // the used percentage of the available swap
+				"type": "string",
+				"index": "not_analyzed" //for avoid hacking when using incomplete pw.
+			},
+			"network_load": { // as b/s, an integer because the smallest unit is a byte
+				"type": "long"
+			},
+			"io_load": { // as b/s, an integer because the smallest unit is a byte
+				"type": "long"
+			},
+			"timestamp": { // 
+				"type": "date",
+				"store": "yes",
+				"format": "yyyy-MM-dd'T'HH:mm:ss.SSS",
+				"index": "analyzed"
+			}
+		}
+	}
+};
+const execsmapping = {
+	"executions_status": {
+		"properties": {
+			"app": { // the used percentage of the cpu 
+				"type": "string", //Example: NA, Nvidia GTX960
+				"index": "analyzed"
+			},
+			"app_length":{
+				"type": "int"				
+			},
+			"device": { // the used percentage of the cpu 
+				"type": "string", //Example: NA, Nvidia GTX960
+				"index": "analyzed"
+			},
+			"start_timestamp": { //  
+				"type": "date",
+				"store": "yes",
+				"format": "yyyy-MM-dd'T'HH:mm:ss.SSS",
+				"index": "analyzed"
+			},
+			"end_timestamp": { //  
+				"type": "date",
+				"store": "yes",
+				"format": "yyyy-MM-dd'T'HH:mm:ss.SSS",
+				"index": "analyzed"
+			},
+			"energy": { // as J
+				"type": "float"
+			}		
+		}
+	}
+};
 const metadatamapping = {
 	"metadata": {
 		"properties": {
@@ -76,8 +192,8 @@ const metadatamapping = {
 			}
 		} 
 	}
-}
-const usersmapping = {			 
+};
+const usersmapping = {
 	"users": {
 		"properties": {
 			"email": {
@@ -96,7 +212,7 @@ const usersmapping = {
 			}
 		}
 	}
-}
+};
 const tokensmapping = { 
 	"tokens":{
 		"properties": {
@@ -117,7 +233,7 @@ const tokensmapping = {
 			}
 		}
 	}
-} 
+};
 const logsmapping = { 
 	"logs":{
 		"properties": {
@@ -138,7 +254,8 @@ const logsmapping = {
 			}
 		}
 	}
-} 
+} ; 
+
 	var expressWs 		= require('express-ws')(app); 
 	var app = expressWs.app;
 //*******************************************************************
@@ -168,14 +285,20 @@ const logsmapping = {
 		total_project_suscriptions[i]=0;
 	var ProjectSubscriptions = new Array(max_users,max_suscrip); //stack of "max_suscrip" proj suscr for each user
 	
-	var total_source_suscriptions= [max_users]; //for each user
+	var total_device_suscriptions= [max_users]; //for each user
 	for (var i = 0; i < max_users; i++) 
-		total_source_suscriptions[i]=0;
-	var SourceSubscriptions = new Array(max_users,max_suscrip); //stack of "max_suscrip" proj suscr for each user
+		total_device_suscriptions[i]=0;
+	var DeviceSubscriptions = new Array(max_users,max_suscrip); //stack of "max_suscrip" proj suscr for each user
+	
+	var total_exec_suscriptions= [max_users]; //for each user
+	for (var i = 0; i < max_users; i++) 
+		total_exec_suscriptions[i]=0;
+	var ExecSubscriptions = new Array(max_users,max_suscrip); //stack of "max_suscrip" proj suscr for each user
+	
 
 	var clients = [ ];// list of currently connected clients (users) 
+
 //****************************************************
-var zip = require('express-easy-zip');
 //**********************************************************
 //This function removes double quotation marks if present at the beginning and the end of the input string
 function remove_quotation_marks(input_string){
@@ -414,96 +537,19 @@ app.get('/verifytoken',middleware.ensureAuthenticated, function(req, res) {
 			res.writeHead(200, { 'Content-Type': 'text/plain' });
 			res.end(message, 'utf-8');
 } );
-var deleteFolderRecursive = function(path) {
-	if( fs.existsSync(path) ) {
-		fs.readdirSync(path).forEach(function(file,index){
-			var curPath = path + "/" + file;
-			if(fs.lstatSync(curPath).isDirectory()) { // recurse
-				deleteFolderRecursive(curPath);
-			} else { // delete file
-				fs.unlinkSync(curPath);
-			}
-		});
-		fs.rmdirSync(path);
-	}
-};
-
-//**********************************************************
-//after succedd on the upload of themetadata, we proceed to upload the file 
-function upload_file (UploadFile, homedir, File_Server_Path, DestPath,DestFileName,user, ipaddress,date,mydebug) {
-	return new Promise( (resolve,reject) => {		
-		//Folder: compose and create if not existing
-	/*	if (!fs.existsSync(File_Server_Path + '/' +DestPath)) 
-			fs.mkdirSync(File_Server_Path+ '/' +DestPath); */
-		var myres = { code: "400", text: "" };
-		try{
-			supportmkdir.mkDirFullPathSync(os.homedir()+File_Server_Path+ '/' +DestPath);
-		}catch(e){
-			myres.code="400";
-			myres.text="error mkdir "+e ;
-			reject (myres);
-		}
-		// Use the mv() method to place the file somewhere on your server
-		// Upload the file, after create the folder if not existing
-		if (UploadFile == undefined){ 
-			resultlog = LogsModule.register_log( 400,ipaddress,"UPLOAD Error ", date, user);
-			resultlog.then((resultreg) => {
-				myres.code="400";
-				myres.text="param UploadFile undefined ." ;
-				reject (myres);
-			},(resultReject)=> { 
-				myres.code="400";
-				myres.text="param UploadFile undefined ." ;
-				reject (myres);
-			});
-		}else{
-			var dir = DestPath + '/';
-			UploadFile.mv( os.homedir()+File_Server_Path + '/' + dir + DestFileName, function(err) { 
-				if (err) { 
-					resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,ipaddress,"UPLOAD Error "+err, date, user); 
-					resultlog.then((resultreg) => {
-						myres.code="400";
-						myres.text=" ."+err ; 
-						reject (myres);
-					},(resultReject)=> { 
-						myres.code="400";
-						myres.text="."+err ; 
-						reject (myres);
-					});
-				} else{ 
-					resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,200,ipaddress,'File UPLOADED at path: '+
-						os.homedir()+File_Server_Path+ '/' + dir + DestFileName , date, user);
-					resultlog.then((resultreg) => {
-						myres.code="200";
-						if ( (mydebug.localeCompare("true")==0) || (mydebug.localeCompare("TRUE")==0) ){//strings equal, in other case returns the order of sorting
-							myres.text='\n' +  colours.FgYellow + colours.Bright +
-								'File uploaded at path: '+ colours.Reset +os.homedir()+File_Server_Path+ '/' + '\n\n' ;
-						}else{
-							myres.text="UPLOAD: succeed" ; 
-						}
-						resolve(myres);
-					},(resultReject)=> { 
-						myres.code="400";
-						myres.text="400: Error on registering the Log\n" ;
-						reject (myres);
-					});	 
-				}
-			});
-		}
-	}); 
-} //end register 
 //********************************************************** 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cors());
-app.use(fileUpload()); 
-app.use(zip());
+app.use(fileUpload());
 
+
+ 
 //**********************************************************
 /* GET home page. */
 app.get('/', function(req, res, next) {	
 	var json = {};
-	json.message = SERVERNAME + " server is up and running."
+	json.message = SERVERNAMElong + " server is up and running."
 	json.release = req.app.get('version');
 	json.versions = [ 'v1' ];
 	json.current_time = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
@@ -514,96 +560,141 @@ app.get('/servername', function(req, res, next) {
 	res.end(SERVERNAME);
 });
 //**********************************************************
-app.get('/upload_file.html', function(req, res) {
-	var filePath = '../web/upload_file.html';
+app.get('/appmanager.html', function(req, res) {
+	var filePath = '../web/appmanager.html';
 	retrieve_file(filePath,res);
 });
 //**********************************************************
-app.get('/upload_file.html', function(req, res) { 
-	var filePath = '../web/upload_file.html';
+app.get('/appmanager.css', function(req, res) {
+	var filePath = '../web/appmanager.css';
 	retrieve_file(filePath,res);
 });
 //*******************************
-app.get('/download_file.html', function(req, res) { 
-	var filePath = '../web/download_file.html';
+app.get('/appmanager.js', function(req, res) {
+	var filePath = '../web/appmanager.js';
+	retrieve_file(filePath,res);
+});
+
+
+//*******************************
+app.get('/phantom.gif', function(req, res) {
+	var filePath = '../web/phantom.gif';
 	retrieve_file(filePath,res);
 });
 //*******************************
-app.get('/examplec.json', function(req, res) { 
-	var filePath = '../web/examplec.json';
+app.get('/app_new.html', function(req, res) {
+	var filePath = '../web/app_new.html';
 	retrieve_file(filePath,res);
 });
 //*******************************
+app.get('/app_update.html', function(req, res) {
+	var filePath = '../web/app_update.html';
+	retrieve_file(filePath,res);
+}); 
+//*******************************
+app.get('/app_list.html', function(req, res) {
+	var filePath = '../web/app_list.html';
+	retrieve_file(filePath,res);
+});
+//*******************************
+app.get('/app_update1.json', function(req, res) {
+	var filePath = '../web/app_update1.json';
+	retrieve_file(filePath,res);
+});
+//*******************************
+app.get('/app_update2.json', function(req, res) {
+	var filePath = '../web/app_update2.json';
+	retrieve_file(filePath,res);
+});
+//*******************************
+app.get('/app_update3.json', function(req, res) {
+	var filePath = '../web/app_update3.json';
+	retrieve_file(filePath,res);
+});
+
+
+
+
+//*******************************
+app.get('/devicemanager.html', function(req, res) {
+	var filePath = '../web/devicemanager.html';
+	retrieve_file(filePath,res);
+}); 
+//*******************************
+app.get('/device_new.html', function(req, res) {
+	var filePath = '../web/device_new.html';
+	retrieve_file(filePath,res);
+});
+//*******************************
+app.get('/device_update.html', function(req, res) {
+        var filePath = '../web/device_update.html';
+        retrieve_file(filePath,res);
+}); 
+//*******************************
+app.get('/device_list.html', function(req, res) {
+	var filePath = '../web/device_list.html';
+	retrieve_file(filePath,res);
+});
+//*******************************
+app.get('/device_update1.json', function(req, res) {
+	var filePath = '../web/device_update1.json';
+	retrieve_file(filePath,res);
+});
+//*******************************
+app.get('/device_update2.json', function(req, res) {
+	var filePath = '../web/device_update2.json';
+	retrieve_file(filePath,res);
+});
+//*******************************
+
+
+app.get('/executionmanager.html', function(req, res) {
+	var filePath = '../web/executionmanager.html';
+	retrieve_file(filePath,res);
+}); 
+//*******************************
+app.get('/exec_new.html', function(req, res) {
+	var filePath = '../web/exec_new.html';
+	retrieve_file(filePath,res);
+});
+//*******************************
+app.get('/exec_update.html', function(req, res) {
+	var filePath = '../web/exec_update.html';
+	retrieve_file(filePath,res);
+}); 
+//*******************************
+app.get('/exec_list.html', function(req, res) {
+	var filePath = '../web/exec_list.html';
+	retrieve_file(filePath,res);
+});
+//*******************************
+app.get('/exec_update1.json', function(req, res) {
+	var filePath = '../web/exec_update1.json';
+	retrieve_file(filePath,res);
+});
+//*******************************
+app.get('/exec_update2.json', function(req, res) {
+	var filePath = '../web/exec_update2.json';
+	retrieve_file(filePath,res);
+});
+//*******************************
+
+
 app.get('/query_metadata.html', function(req, res) { 
-	var filePath = '../web/query_metadata.html';
+	var filePath = 'web/query_metadata.html';
 	retrieve_file(filePath,res);
-});
+}); 
+//*******************************
+app.get('/PleaseEnableJavascript.html', function(req, res) { 
+	var filePath = 'web/PleaseEnableJavascript.html';
+	retrieve_file(filePath,res);
+}); 
+//***********************************
 // Path only accesible when Authenticated
 app.get('/private',middleware.ensureAuthenticated, function(req, res) {
 	var message = "\n\nAccess to restricted content !!!.\n\n"
 		res.writeHead(200, { 'Content-Type': contentType_text_plain});
 		res.end(message, 'utf-8');
-});
-//**********************************************************
-app.post('/delete_metadata',middleware.ensureAuthenticated, function(req, res) {
-	"use strict"; 
-	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");  
-	var resultlog ;  
-	const message_missing = "DELETE Bad Request missing "; 
-	var project= find_param(req.body.project, req.query.project); 
-	if ( project == undefined){  
-		res.writeHead(400, { 'Content-Type': contentType_text_plain });
-		res.end("400:"+message_missing+" Project.\n");
-		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,message_no_path,currentdate,res.user); 
-		return;	 
-	} 
-	
-	var source= find_param(req.body.source, req.query.source); 
-	if ( source == undefined){  
-		res.writeHead(400, { 'Content-Type': contentType_text_plain });
-		res.end("400:"+message_missing+" source.\n");
-		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,message_no_path,currentdate,res.user); 
-		return;	 
-	} 
-	
-	
-	var DestPath= find_param(req.body.Path, req.query.Path); 
-	if ( DestPath == undefined){  
-		res.writeHead(400, { 'Content-Type': contentType_text_plain });
-		res.end("400:"+message_missing+" Path.\n");
-		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,message_no_path,currentdate,res.user); 
-		return;	 
-	} 
- 
-	var DestFileName = find_param(req.body.DestFileName, req.query.DestFileName); 
-	if (DestFileName == undefined){  
-		res.writeHead(400, { 'Content-Type': contentType_text_plain });
-		res.end("400:"+message_missing+" DestFileName.\n");
-		resultlog = LogsModule.register_log(es_servername+":"+es_port, SERVERDB, 400,req.connection.remoteAddress,message_no_file,currentdate,res.user);
-		return;
-	} 
-	
-	var result= MetadataModule.delete_filename_path_json(es_servername+":"+es_port,SERVERDB, project, source, DestFileName, DestPath); 
-	result.then((resultResolve) => {
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,resultResolve.text,currentdate,res.user); 
-		fs.unlink(os.homedir()+ File_Server_Path + '/' + DestPath + '/' + DestFileName, function(err) {
-			if (err) {
-				res.writeHead(400, {"Content-Type": contentType_text_plain});
-				res.end("Error when deleting the file: "+err+"\n", 'utf-8');
-				return;
-			}else{
-				console.log('successfully file deleted');
-				res.writeHead(resultResolve.code, {"Content-Type": contentType_text_plain});
-				res.end(resultResolve.text+"\n", 'utf-8');
-				return;
-			}
-		});
-	},(resultReject)=> {
-		res.writeHead(resultReject.code, {"Content-Type": contentType_text_plain});
-		res.end(resultReject.text+"\n", 'utf-8');
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"Delete Error",currentdate,res.user); 
-		return;
-	});// 
 });
 //**********************************************************
 app.get('/verify_es_connection', function(req, res) {	
@@ -628,17 +719,16 @@ app.get('/drop_db', function(req, res) {
 	if(( req.connection.remoteAddress!= ips[0] ) &&( req.connection.remoteAddress!=ips[1])&&( req.connection.remoteAddress!=ips[2])){
 		console.log(" ACCESS DENIED from IP address: "+req.connection.remoteAddress);
 		res.writeHead(403, {"Content-Type": contentType_text_plain});
-		res.end("\n403: FORBIDDEN access from external IP.\n");		
+		res.end("\n403: FORBIDDEN access from external IP.\n");
 		var messagea = "Deleting Database FORBIDDEN access from external IP.";
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 403,req.connection.remoteAddress,messagea,currentdate,""); 
 		return ;
 	}
-	var searching = MetadataModule.drop_db(es_servername+":"+es_port,SERVERDB );
+	var searching = MetadataModule.drop_db(es_servername+":"+es_port, SERVERDB );
 	searching.then((resultFind) => { 
-		deleteFolderRecursive (os.homedir()+File_Server_Path) ;
-		res.writeHead(200, {"Content-Type": "application/json"});
-		res.end(resultFind+"\n"); 
-		//not register log here, because we can not register nothing after delete the DB !!! 
+		res.writeHead(200, {"Content-Type": contentType_text_plain});
+		res.end("200: "+resultFind+"\n"); 
+		//not register log here, because we can not register nothing after delete the DB !!!
 	},(resultReject)=> {
 // 		console.log("log: Bad Request: " + resultReject); 
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
@@ -672,30 +762,30 @@ function register_next_mapping (arr_labels, arr_mappings, es_servername, es_port
 //**********************************************************
 app.get('/new_db', function(req, res) {
 	"use strict"; 
-	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
 	var create_new_db = MetadataModule.new_db(es_servername+":"+es_port,SERVERDB );
 	create_new_db.then((resultFind) => {
-		var arr_labels = [ 'metadata', 'users', 'tokens', 'logs' ];
-		var arr_mappings = [ metadatamapping ,usersmapping, tokensmapping, logsmapping ];
+		var arr_labels = [ 'metadata', 'users', 'tokens', 'logs', 'devices_status', 'devices', 'executions_status' ];
+		var arr_mappings = [ metadatamapping ,usersmapping, tokensmapping, logsmapping, statusmapping, devicemapping, execsmapping ];
 		var create_new_mappings =register_next_mapping (arr_labels, arr_mappings, es_servername, es_port ); 
-		create_new_mappings.then((resultFindb) => { 
+		create_new_mappings.then((resultFind_map) => { 
 			res.writeHead(200, {"Content-Type": "application/json"});
-			res.end(resultFindb+"\n"); 
-			var resultloga = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,"DB successfully created",currentdate,"");  
-		},(resultRejectb)=> { 
+			res.end(resultFind_map+"\n"); 
+			var resultlog_map = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,"DB successfully created",currentdate,"");
+		},(resultReject_map)=> { 
 			res.writeHead(400, {"Content-Type": contentType_text_plain});
-			res.end("\n400: Bad Request "+resultRejectb+"\n");
-			var resultlogb = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"Bad Request "+resultRejectb,currentdate,"");
+			res.end("\n400: Bad Request "+resultReject_map+"\n");
+			var resultlogb = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"Bad Request "+resultReject_map,currentdate,"");
 		} );
 	},(resultReject)=> { 
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("\n400: Bad Request when creating DB "+resultReject+"\n");
-		var  resultlogc = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"Bad Request "+resultReject,currentdate,"");
+		var resultlogc = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"Bad Request "+resultReject,currentdate,"");
 	} );
 });
 //**********************************************************
 app.get('/_flush', function(req, res) { 
-	var verify_flush = CommonModule.my_flush(req.connection.remoteAddress,es_servername+':'+es_port, SERVERDB );
+	var verify_flush = CommonModule.my_flush(req.connection.remoteAddress ,es_servername+':'+es_port, SERVERDB );
 	verify_flush.then((resolve_result) => {
 		res.writeHead(resolve_result.code, {"Content-Type": contentType_text_plain});
 		res.end(resolve_result.text+"\n", 'utf-8');
@@ -725,21 +815,21 @@ app.get('/query_metadata',middleware.ensureAuthenticated, function(req, res) {
 	var source =find_param(req.body.source,req.query.source);
 	if (source != undefined) 
 		source=remove_quotation_marks(source); 
-	var query= MetadataModule.compose_query(project,source,filepath, filename); 
+	var bodyquery= TasksModule.compose_query(project,source,filepath, filename); 
 	//1.1- find id of the existing doc for such path filename
-	
-	var searching = MetadataModule.query_metadata(es_servername+":"+es_port,SERVERDB,query, pretty);
+	//console.log("Qquery is "+JSON.stringify(bodyquery));
+	var searching = TasksModule.query_metadata(es_servername+":"+es_port,SERVERDB,bodyquery, pretty);
 	var resultlog="";
 	searching.then((resultFind) => { 
 		res.writeHead(200, {"Content-Type": "application/json"});
 		res.end(resultFind+"\n");
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,200,req.connection.remoteAddress,"QUERY METADATA granted to query:"
-			+JSON.stringify(query),currentdate,res.user);
+			+JSON.stringify(bodyquery),currentdate,res.user);
 	},(resultReject)=> { 
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("querymetadata: Bad Request "+resultReject +"\n");
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"QUERY METADATA BAD Request on query:" 
-			+JSON.stringify(query),currentdate,res.user); 
+			+JSON.stringify(bodyquery),currentdate,res.user); 
 	}); 
 });
 //**********************************************************
@@ -750,7 +840,7 @@ app.get('/es_query_metadata', middleware.ensureAuthenticated, function(req, res)
 	var pretty 		= find_param(req.body.pretty, req.query.pretty); 
 	var mybody_obj	= JSON.parse( QueryBody);   
 	//1.1- find id of the existing doc for such path filename JSON.stringify(
-	var searching = MetadataModule.query_metadata(es_servername+":"+es_port,SERVERDB, mybody_obj, pretty); //.replace(/\//g, '\\/');
+	var searching = TasksModule.query_metadata(es_servername+":"+es_port,SERVERDB, mybody_obj, pretty); //.replace(/\//g, '\\/');
 	var resultlog="";
 	searching.then((resultFind) => { 
 		res.writeHead(200, {"Content-Type": "application/json"});
@@ -764,334 +854,426 @@ app.get('/es_query_metadata', middleware.ensureAuthenticated, function(req, res)
 			+JSON.stringify(QueryBody),currentdate,res.user); 
 	}); 
 }); 
-//**********************************************************
-//TODO: falta confirmar que los archivos existen
-//si no existen en el curl parece que se queda esperando indefinidamente
-app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
-	"use strict"; 
-	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");  
+//********************************************************** 
+function register_exec(req, res,new_exec){
+	"use strict";
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
 	var message_bad_request = "UPLOAD Bad Request missing ";
-	var resultlog ; 
+	var resultlog ;
 	if (!req.files){
 		res.writeHead(400, { 'Content-Type': contentType_text_plain });
-		res.end('No files were uploaded.'); 
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,'No files were uploaded.',currentdate,res.user);
+		res.end('No files were uploaded.');
+		resultlog = LogsModule.register_log(es_servername + ":" + es_port,SERVERDB, 400,req.connection.remoteAddress,'No files were uploaded.',currentdate,res.user);
 		return;
 	}  
-	var RawJSON=  find_param(req.body.RawJSON, req.query.RawJSON);
- 
-	
-	var DestPath=find_param(req.body.Path,req.query.Path);
-	if (DestPath == undefined){ 
+	if (req.files.UploadJSON == undefined){
 		res.writeHead(400, { 'Content-Type': contentType_text_plain });
-		res.end("400:Bad Request, missing Path.\n");
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"Path",currentdate,res.user); 
+		res.end('Error Json file not found.');
+		resultlog = LogsModule.register_log(es_servername + ":" + es_port,SERVERDB, 400,req.connection.remoteAddress,'Error Json file not found.',currentdate,res.user);
 		return;
-	} 
-
-	var DestFileName=find_param( req.body.DestFileName , req.query.DestFileName);
-	if (DestFileName == undefined){  
-		res.writeHead(400, { 'Content-Type': contentType_text_plain });
-		res.end("400:Bad Request, missing DestFileName.\n");
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"DestFileName",currentdate,res.user);
-		return;
-	} 
-	// The name of the input field (i.e. "UploadFile") is used to retrieve the uploaded file
-	let UploadFile = req.files.UploadFile; 	
-	var jsontext="";
-	//1.2- Not existing doc, just need to add
-	// process the RAW JSON parameter: upload the info in the ElasticSearch server.
-	if (RawJSON != undefined){
-		jsontext = RawJSON;
-	}else if (req.files.UploadJSON != undefined){
-		jsontext=req.files.UploadJSON.data.toString('utf8'); 
- 	//	if (jsontext.length > 0)
-	//		jsontext = JSON.stringify(jsontext);
-	} 
-	var source_proj= get_source_project_json(jsontext);  
-	jsontext=update_filename_path_on_json(jsontext, DestFileName, DestPath); //this adds the field 
+	}
+	//1 Parse the JSON and find the app name.
+	//2 If not existing in the db, then we will just register the JSON content
+	//3 if already exists, we need to merge with the existing entries, updating those fields redefined in the json
+	var jsontext =req.files.UploadJSON.data.toString('utf8');
+	var appname= get_value_json(jsontext,"app"); //(1) parsing the JSON
+	appname=appname.value;
+	jsontext =update_app_length_on_json(jsontext, appname); //this adds the field app.length
 	
-// 	console.log("send_repo_update_to_suscribers("+source_proj.project + " "+ source_proj.source+")"+jsontext);
-	send_repo_update_to_suscribers(source_proj.project, source_proj.source,jsontext);
-	
-	var storage_path=source_proj.project+"/"+source_proj.source+"/"+DestPath;  
-	var result= MetadataModule.register_update_filename_path_json(es_servername+":"+es_port,SERVERDB, jsontext, source_proj.project, source_proj.source, DestFileName, DestPath); 
-	result.then((resultResolve) => {
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,resultResolve.text,currentdate,res.user); 
-		//after succeed on the upload of themetadata, we proceed to upload the file 
-		var result_upload = upload_file(UploadFile, os.homedir(), File_Server_Path,
-			storage_path,DestFileName, 
-			res.user,req.connection.remoteAddress,currentdate,"false");//debug=false
-		result_upload.then((resultResUp) => {
-			res.writeHead(resultResUp.code, {"Content-Type": contentType_text_plain});
-			res.end(resultResUp.text+"\n", 'utf-8');
-			return;
-		},(resultRejectUp)=> { 
-			console.log("resultRejectUp.code" +resultRejectUp.code);
-			res.writeHead(resultRejectUp.code, {"Content-Type": contentType_text_plain});
-			res.end(resultRejectUp.text+"\n", 'utf-8');
-			return;
-		} );
-	},(resultReject)=> {
-		res.writeHead(resultReject.code, {"Content-Type": contentType_text_plain});
-		res.end(resultReject.text+"\n", 'utf-8')
-		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"Upload Error",currentdate,res.user); 
-		return;
-	});//end   
-});
-
-//**********************************************************
-app.get('/download',middleware.ensureAuthenticated, function(req, res) {
-	var fs = require('fs');
-	var path = require('path'); 
-	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
-	//******************************************* 
-	var project= find_param(req.body.project, req.query.project);
-	project= validate_parameter(project,"project",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (project.length == 0){ 
-		res.writeHead(400, { 'Content-Type': contentType_text_plain });
-		res.end("\n400: Bad Request, missing "+"project"+".\n");
-		return;}
-	//******************************************* 
-	var source= find_param(req.body.source, req.query.source);
-	source= validate_parameter(source,"source",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (source.length == 0){ 
-		res.writeHead(400, { 'Content-Type': contentType_text_plain });
-		res.end("\n400: Bad Request, missing "+"source"+".\n");
-		return;}			
-	//*******************************************
-	var filepath= find_param(req.body.filepath, req.query.filepath);
-	filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (filepath.length == 0){ 
-		res.writeHead(400, { 'Content-Type': contentType_text_plain });
-		res.end("\n400: Bad Request, missing "+"filepath"+".\n");
-		return;}	
-	//*******************************************
-	var filename=  find_param(req.body.filename, req.query.filename);
-	filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (filename.length == 0){ 
-		res.writeHead(400, { 'Content-Type': contentType_text_plain });
-		res.end("\n400: Bad Request, missing "+"filename"+".\n");
-		return;}
-	//******************************************* 
-	var myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath + '/' + filename;  
-
-	
-//Maybe look for NGAC policy here, then decide if continue or not !!	 
-
-	// Check if file specified by the filePath exists
-	fs.stat(myPath, function(err, stat) {
-		if(err == null) {
-// 			console.log('File exists');
-			// Content-type is very interesting part that guarantee that
-			// Web browser will handle response in an appropriate manner.
-			//fs.createReadStream(myPath).pipe(response);
-			var resolvedBase = path.resolve(myPath);
-			var stream = fs.createReadStream(resolvedBase);
-			//stream.setEncoding('UTF8');
-			// Handle non-existent file
-			stream.on('error', function(error) {
-				console.log("Stream error: "+error);
-				returncode=404; 
+// 	console.log("send_exec_update_to_suscribers("+appname+")");
+	send_exec_update_to_suscribers(appname,jsontext);	
+	var result_count = ExecsModule.query_count_exec(es_servername + ":" + es_port,SERVERDB, appname);
+	result_count.then((resultResolve) => {
+		if(resultResolve==0){//new entry (2) we resister new entry
+			var result = ExecsModule.register_exec_json(es_servername + ":" + es_port,SERVERDB, jsontext);
+			result.then((resultResolve) => {
+				resultlog = LogsModule.register_log(es_servername + ":" + es_port,SERVERDB, 200,req.connection.remoteAddress,"Add task Succeed",currentdate,res.user);
+				res.writeHead(resultResolve.code, {"Content-Type": contentType_text_plain});
+				res.end(resultResolve.text + "\n", 'utf-8');
+			},(resultReject)=> {
+				res.writeHead(resultReject.code, {"Content-Type": contentType_text_plain});
+				res.end(resultReject.text + "\n", 'utf-8');
+				resultlog = LogsModule.register_log( es_servername + ":" + es_port,SERVERDB,400,req.connection.remoteAddress,"Upload Error",currentdate,res.user);
 			});
-			// File exists, stream it to user 
-			res.writeHead(200, {
-				"Content-Type": "application/octet-stream",
-				"Content-Disposition": "attachment; filename=" + filename
-			}); 
-			stream.pipe(res);
-			var resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,"DONWLOAD granted to file: "+myPath,currentdate,res.user);
-			return; 
-		} else if(err.code == 'ENOENT') {
-			// file does not exist
-// 			console.log('file does not exist\n');
-			varresultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,404,req.connection.remoteAddress,"DOWNLOAD error: File not found: "+myPath ,currentdate,res.user);
-			//res.setHeader(name.value); //only before writeHeader 
-			res.writeHead(404, {"Content-Type": contentType_text_plain});
-			res.write("\n404: Bad Request, file not found.\n");
-			res.end("ERROR File does not exist: "+myPath+"\n");	
-			return; 
-		} else {
-// 			console.log('Some other error: ', err.code);
-			res.writeHead(404, {"Content-Type": contentType_text_plain});
-			res.write("\n404: Bad Request, file not found.\n");
-			res.end("ERROR File does not exist: "+myPath+"\n");	
-			return; 			
+			return;
+		}else if (new_exec==true){
+			res.writeHead(400, {"Content-Type": contentType_text_plain});
+			res.end("[ERROR] Can not register as new executions_status, because there is an alredy registered executions_status with that name\n", 'utf-8');
+			return;
+		}else{ //already existing, (3.1) first we get the registered json
+			var result_id = ExecsModule.find_exec_id(es_servername + ":" + es_port,SERVERDB, appname);
+			result_id.then((result_idResolve) => {
+				var elasticsearch = require('elasticsearch');
+				var clientb = new elasticsearch.Client({
+					host: es_servername + ":" + es_port,
+					log: 'error'
+				});
+				var algo= new Promise( (resolve,reject) => {
+					var mergejson = JSON.parse(jsontext);
+					clientb.update({//index replaces the json in the DB with the new one
+						index: SERVERDB,
+						type: 'executions_status', 
+						id: result_idResolve,
+						body: {doc: mergejson}
+					}, function(error, response) {
+						if(error){
+							reject (error);
+						} else if(!error){
+							var verify_flush = CommonModule.my_flush( req.connection.remoteAddress ,es_servername + ":" + es_port,SERVERDB);
+							verify_flush.then((resolve_result) => {
+								resolve ("Succeed" );
+							},(reject_result)=> {
+								reject ( );
+							});
+						}
+					});//end query client.index
+				});
+				algo.then((resultResolve) => {
+					res.writeHead(420, {"Content-Type": contentType_text_plain});
+					res.end( "Succeed." , 'utf-8');
+					return;
+				},(resultReject)=> {
+					res.writeHead(400, {"Content-Type": contentType_text_plain});
+					res.end( "error: "+resultReject, 'utf-8');
+					return;
+				});
+			},(result_idReject)=> {
+				res.writeHead(400, {"Content-Type": contentType_text_plain});
+				res.end( "error requesting id", 'utf-8');
+				return;
+			});
 		}
-	});	 
-});
-//**********************************************************
-function list_of_files(myPath){
-	var path = path || require('path');
-	var fs = fs || require('fs');
-	var filelist = ""; 
-	files = fs.readdirSync(myPath); 
-	files.forEach(function(file) { 
-		if (fs.statSync(path.join(myPath, file)).isDirectory()) { 
-			filelist= filelist+list_of_files(path.join(myPath, file));
-		}else{
-			filelist= filelist+path.join(myPath, file)+"\n";
-		}
+	},(resultReject)=> {
+		res.writeHead(400, {"Content-Type": contentType_text_plain});
+		res.end(resultReject + "\n", 'utf-8'); //error counting projects in the DB
+		resultlog = LogsModule.register_log( es_servername + ":" + es_port,SERVERDB,400,req.connection.remoteAddress,"ERROR on Update-register executions_status",currentdate,res.user);
+		return;
 	});
-	return(filelist);
-}
+}//register_exec
+
 //**********************************************************
-function json_list_of_files(myPath,filelist){ 
-	var path = path || require('path');
-	var fs = fs || require('fs');  
-	files = fs.readdirSync(myPath); 
-	filelist= "{ \"path\": \"" + myPath +"\", \"name\": \""+ myPath + "\" }" ; 
-// 	files.forEach(function(file) { 
-// 		if (fs.statSync(path.join(myPath, file)).isDirectory()) { 
-// 			filelist= filelist+json_list_of_files(path.join(myPath, file),filelist);
-// 		}else{
-// 			if(registered_path==false){
-// 			console.log(" path " +  myPath + " file "+file);
-// 			if(filelist!=undefined ){
-// 				filelist= filelist +  ", { \"path\": \"" + myPath + "\" , \"name\": \""+ file +"\" }" ;
-// 			}else{
-// 				filelist= "{ \"path\": \"" + myPath +"\", \"name\": \""+ file+ "\" }" ;
-// 			}
-// 			console.log("xxx "+ filelist  );}
-// 		}
-// 	});
-	return(filelist);
-}
-//**********************************************************
-app.get('/downloadlist',middleware.ensureAuthenticated, function(req, res) {
-	var fs = require('fs');
-	var path = require('path'); 
-	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
-	//******************************************* 
-	var project= find_param(req.body.project, req.query.project);
-	project= validate_parameter(project,"project",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (project != undefined)
-	if (project.length == 0){ 
+//this function returns the exec_id of the requested app name, if not exists then it is created a new register with the app name and not hide as only filled fields
+function request_exec_id(appname){
+	return new Promise( (resolve,reject) => {
+		"use strict";
+		var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
+		var result_count = ExecsModule.query_count_exec(es_servername + ":" + es_port,SERVERDB, appname);
+		result_count.then((resultResolve) => {
+			if(resultResolve==0){//new entry (2) we resister new entry 
+				var jsontext= {
+					"app": appname,
+					"app_length":  appname.length,
+					"hide": "false"
+				};
+				var result = ExecsModule.register_exec_json(es_servername + ":" + es_port,SERVERDB, jsontext);
+				result.then((resultResolve) => {
+					var result_id = ExecsModule.find_exec_id(es_servername + ":" + es_port,SERVERDB, appname);
+					result_id.then((result_idResolve) => {
+						resolve (result_idResolve);
+					},(result_idReject)=> {//error finding the exec id 
+						reject("error requesting id");
+					});
+				},(resultReject)=> {//error regsiterning the new appname
+					reject (resultReject.text );
+				});
+			}else{
+				var result_id = ExecsModule.find_exec_id(es_servername + ":" + es_port,SERVERDB, appname);
+				result_id.then((result_idResolve) => {
+					resolve(result_idResolve);
+				},(result_idReject)=> {//error finding the exec id
+					reject( "error requesting id" );
+				});
+			}
+		},(resultReject)=> { //error looking for appname
+			reject(resultReject );
+		});
+	});
+}//request_exec_id
+
+//********************************************************** 
+app.get('/get_user_defined_metrics', function(req, res) { //this is for the table executions_status, all the info is in a JSON file
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
+ 	var appid		= CommonModule.remove_quotation_marks(find_param(req.body.appid, req.query.appid));
+	var execfile	= CommonModule.remove_quotation_marks(find_param(req.body.execfile, req.query.execfile));
+	var experimentid	= CommonModule.remove_quotation_marks(find_param(req.body.execution, req.query.execution));
+	if((execfile==undefined) || (appid==undefined) || ( experimentid ==undefined ) ){
 		res.writeHead(400, { 'Content-Type': contentType_text_plain });
-		res.end("\n400: Bad Request, missing "+"project"+".\n");
-		return;}
-	var myPath = os.homedir()+ File_Server_Path + '/' + project ;
-	//******************************************* 
-	var source= find_param(req.body.source, req.query.source);
-	source= validate_parameter(source,"source",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (source != undefined)
-	if (source.length != 0){ 
-		myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source ;   
-		//*******************************************
-		var filepath= find_param(req.body.filepath, req.query.filepath);
-		filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-		if (filepath != undefined)
-		if (filepath.length != 0){ 
-			myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath ; 
-			//*******************************************
-			var filename=  find_param(req.body.filename, req.query.filename);
-			filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined 
+		res.end("\n400: Bad Request, missing " + "parameter" + ".\n");
+		return;
+	}else{
+		var result_countagg = ExecsModule.get_user_defined_metrics(es_servername + ":" + es_port,appid, execfile, experimentid);
+		result_countagg.then((resultCount) => {
+			res.writeHead(200, {"Content-Type": contentType_text_plain});
+			res.end(resultCount);
+			return;
+		},(resultReject)=> {
+			res.writeHead(400, {"Content-Type": contentType_text_plain});
+			res.end("ERROR on counting list of executed apps, the appid+execfile \""+ appid+"_"+execfile+"\" may not be registered\n" + resultReject + "\n", 'utf-8'); //error counting projects in the DB
+			var resultlog = LogsModule.register_log( es_servername + ":" + es_port,SERVERDB,400,req.connection.remoteAddress,"ERROR on counting list of executed apps",currentdate,res.user);
+			return;
+		});
+	}
+});
+
+//********************************************************** 
+app.get('/get_component_timing', function(req, res) { //this is for the table executions_status, all the info is in a JSON file
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
+ 	var appid		= CommonModule.remove_quotation_marks(find_param(req.body.appid, req.query.appid));
+	var execfile	= CommonModule.remove_quotation_marks(find_param(req.body.execfile, req.query.execfile));
+	var experimentid	= CommonModule.remove_quotation_marks(find_param(req.body.execution, req.query.execution));
+	if((execfile==undefined) || (appid==undefined) || ( experimentid ==undefined ) ){
+		res.writeHead(400, { 'Content-Type': contentType_text_plain });
+		res.end("\n400: Bad Request, missing " + "parameter" + ".\n");
+		return;
+	}else{
+		var result_countagg = ExecsModule.get_component_timing(es_servername + ":" + es_port,appid, execfile, experimentid);
+		result_countagg.then((resultCount) => {
+			res.writeHead(200, {"Content-Type": contentType_text_plain});
+			res.end(resultCount);
+			return;
+		},(resultReject)=> {
+			res.writeHead(400, {"Content-Type": contentType_text_plain});
+			res.end("ERROR on counting list of executed apps, the appid+execfile \""+ appid+"_"+execfile+"\" may not be registered\n" + resultReject + "\n", 'utf-8'); //error counting projects in the DB
+			var resultlog = LogsModule.register_log( es_servername + ":" + es_port,SERVERDB,400,req.connection.remoteAddress,"ERROR on counting list of executed apps",currentdate,res.user);
+			return;
+		});
+	}
+});
+
+//********************************************************** 
+app.get('/get_experiments_stats', function(req, res) { //this is for the table executions_status, all the info is in a JSON file
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
+ 	var appid		= CommonModule.remove_quotation_marks(find_param(req.body.appid, req.query.appid));
+	var execfile	= CommonModule.remove_quotation_marks(find_param(req.body.execfile, req.query.execfile));
+	var experimentid	= CommonModule.remove_quotation_marks(find_param(req.body.execution, req.query.execution));
+	if((execfile==undefined) || (appid==undefined) || ( experimentid ==undefined ) ){
+		res.writeHead(400, { 'Content-Type': contentType_text_plain });
+		res.end("\n400: Bad Request, missing " + "parameter" + ".\n");
+		return;
+	}else{
+		var result_countagg = ExecsModule.get_exp_stats(es_servername + ":" + es_port,appid, execfile, experimentid);
+		result_countagg.then((resultCount) => {
+			res.writeHead(200, {"Content-Type": contentType_text_plain});
+			res.end(resultCount);
+			return;
+		},(resultReject)=> {
+			res.writeHead(400, {"Content-Type": contentType_text_plain});
+			res.end("ERROR on counting list of executed apps, the appid+execfile \""+ appid+"_"+execfile+"\" may not be registered\n" + resultReject + "\n", 'utf-8'); //error counting projects in the DB
+			var resultlog = LogsModule.register_log( es_servername + ":" + es_port,SERVERDB,400,req.connection.remoteAddress,"ERROR on counting list of executed apps",currentdate,res.user);
+			return;
+		});
+	}
+});
+
+//********************************************************** 
+app.get('/count_experiments_metrics', function(req, res) { //this is for the table executions_status, all the info is in a JSON file
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
+ 	var appid		= CommonModule.remove_quotation_marks(find_param(req.body.appid, req.query.appid));
+	var execfile	= CommonModule.remove_quotation_marks(find_param(req.body.execfile, req.query.execfile));
+	var experimentid	= CommonModule.remove_quotation_marks(find_param(req.body.execution, req.query.execution));
+	if((execfile==undefined) || (appid==undefined) || ( experimentid ==undefined ) ){
+		res.writeHead(400, { 'Content-Type': contentType_text_plain });
+		res.end("\n400: Bad Request, missing " + "parameter" + ".\n");
+		return;
+	}else{
+		var result_countagg = ExecsModule.count_exp_metrics(es_servername + ":" + es_port,appid, execfile, experimentid);
+		result_countagg.then((resultCount) => {
+			res.writeHead(200, {"Content-Type": contentType_text_plain});
+			res.end(resultCount);
+			return;
+		},(resultReject)=> {
+			res.writeHead(400, {"Content-Type": contentType_text_plain});
+			res.end("ERROR on counting list of executed apps, the appid+execfile \""+ appid+"_"+execfile+"\" may not be registered\n" + resultReject + "\n", 'utf-8'); //error counting projects in the DB
+			var resultlog = LogsModule.register_log( es_servername + ":" + es_port,SERVERDB,400,req.connection.remoteAddress,"ERROR on counting list of executed apps",currentdate,res.user);
+			return;
+		});
+	}
+});
+
+//********************************************************** 
+app.get('/count_executions', function(req, res) { //this is for the table executions_status, all the info is in a JSON file
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
+ 	var appid		= CommonModule.remove_quotation_marks(find_param(req.body.appid, req.query.appid));
+	var execfile	= CommonModule.remove_quotation_marks(find_param(req.body.execfile, req.query.execfile));
+	if((execfile==undefined) || (appid==undefined)){
+		res.writeHead(400, { 'Content-Type': contentType_text_plain });
+		res.end("\n400: Bad Request, missing " + "parameter" + ".\n");
+		return;
+	}else{
+		var result_countagg = ExecsModule.count_search_agg_id(es_servername + ":" + es_port,appid, execfile);
+		result_countagg.then((resultCount) => {
+			res.writeHead(200, {"Content-Type": contentType_text_plain});
+			res.end(resultCount);
+			return;
+		},(resultReject)=> {
+			res.writeHead(400, {"Content-Type": contentType_text_plain});
+			res.end("ERROR on counting list of executed apps, the appid+execfile \""+ appid+"_"+execfile+"\" may not be registered\n" + resultReject + "\n", 'utf-8'); //error counting projects in the DB
+			var resultlog = LogsModule.register_log( es_servername + ":" + es_port,SERVERDB,400,req.connection.remoteAddress,"ERROR on counting list of executed apps",currentdate,res.user);
+			return;
+		});
+	}
+});
+
+
+//**********************************************************
+// app.get('/list_executions',middleware.ensureAuthenticated, function(req, res) {
+app.get('/list_executions', function(req, res) { //this is for the table executions_status, all the info is in a JSON file
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
+ 	var appid		= CommonModule.remove_quotation_marks(find_param(req.body.appid, req.query.appid));
+// 	var appid ="demo";, execfile ="pthread-example";
+	var execfile	= CommonModule.remove_quotation_marks(find_param(req.body.execfile, req.query.execfile));
+	if((execfile==undefined) || (appid==undefined)){
+		res.writeHead(400, { 'Content-Type': contentType_text_plain });
+		res.end("\n400: Bad Request, missing " + "parameter" + ".\n");
+		return;
+	}else{
+		var result_countagg = ExecsModule.count_search_agg_id(es_servername + ":" + es_port,appid, execfile);
+		result_countagg.then((resultCount) => {
+			if(resultCount==0){
+				res.writeHead(200, {"Content-Type": contentType_text_plain});
+				res.end("empty list of experiments!!");
+				return;
+			}else{
+				var result_agg = ExecsModule.query_search_agg_id(es_servername + ":" + es_port,appid, execfile);
+				result_agg.then((resultResolve) => {
+					res.writeHead(200, {"Content-Type": contentType_text_plain});
+					res.end(resultResolve);
+					return;
+				},(resultReject)=> {
+					res.writeHead(400, {"Content-Type": contentType_text_plain});
+					res.end(resultReject + "\n", 'utf-8'); //error counting projects in the DB
+					var resultlog = LogsModule.register_log( es_servername + ":" + es_port,SERVERDB,400,req.connection.remoteAddress,"ERROR on requesting list of executed apps",currentdate,res.user);
+					return;
+				});
+			}
+		},(resultReject)=> {
+			res.writeHead(400, {"Content-Type": contentType_text_plain});
+			res.end("ERROR on counting list of executed apps, the appid+execfile \""+ appid+"_"+execfile+"\" may not be registered\n" + resultReject + "\n", 'utf-8');//error counting projects in the DB
+			var resultlog = LogsModule.register_log( es_servername + ":" + es_port,SERVERDB,400,req.connection.remoteAddress,"ERROR on counting list of executed apps",currentdate,res.user);
+			return;
+		});
+	}
+});
+
+
+
+//********************************************************** 
+app.post('/register_new_exec',middleware.ensureAuthenticated, function(req, res) { //this is for the table executions_status, all the info is in a JSON file
+	register_exec(req, res,true);
+});
+//********************************************************** 
+app.post('/update_exec',middleware.ensureAuthenticated, function(req, res) { //this is for the table executions_status, all the info is in a JSON file, will update and merge with existing fields
+	register_exec(req, res,false);
+});
+//********************************************************** 
+app.get('/get_exec_list', function(req, res) {
+	"use strict";
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
+	var message_bad_request = "UPLOAD Bad Request missing ";
+	var pretty		= find_param(req.body.pretty, req.query.pretty);
+	var execname	= CommonModule.remove_quotation_marks(find_param(req.body.app, req.query.app));
+	if (execname==undefined) execname="";
+	var result_count = ExecsModule.query_count_exec(es_servername + ":" + es_port,SERVERDB, execname);
+	result_count.then((resultResolve) => {
+		if(resultResolve!=0){//new entry (2) we resister new entry
+			var result_id = ExecsModule.find_exec(es_servername + ":" + es_port,SERVERDB, execname,pretty);
+			result_id.then((result_json) => {
+				res.writeHead(200, {"Content-Type": contentType_text_plain});
+				res.end(result_json);
+				return;
+			},(result_idReject)=> {
+				res.writeHead(400, {"Content-Type": contentType_text_plain});
+				res.end("error requesting list of executed apps", 'utf-8');
+				return;
+			});
+		}else{
+			res.writeHead(430, {"Content-Type": contentType_text_plain});	//not put 200 then webpage works
+			if(execname.length==0){
+				res.end("Empty list of Executed Apps" );
+			}else{
+				res.end("Executions of the App \""+execname+"\" not found");
+			}
+			return;
 		}
-	}  
-	
-//Maybe look for NGAC policy here, then decide if continue or not !!	
- 
-	// Check if file specified by the filePath exists
-	fs.stat(myPath, function(err, stat) {
-		if(err == null) {
-			res.end(list_of_files(myPath));			
-		} else if(err.code == 'ENOENT') {
-			// file does not exist 
-			varresultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,404,req.connection.remoteAddress,"DOWNLOAD-LIST error: File not found: "+myPath ,currentdate,res.user);
-			//res.setHeader(name.value); //only before writeHeader 
-			res.writeHead(404, {"Content-Type": contentType_text_plain});
-			res.write("\n404: Bad Request, file not found.\n");
-			res.end("ERROR File does not exist: "+myPath+"\n");	
-			return; 
-		} else { 
-			res.writeHead(404, {"Content-Type": contentType_text_plain});
-			res.write("\n404: Bad Request, file not found.\n");
-			res.end("ERROR File does not exist: "+myPath+"\n");	
-			return; 
-		}
+	},(resultReject)=> {
+		res.writeHead(400, {"Content-Type": contentType_text_plain});
+		res.end(resultReject + "\n", 'utf-8');//error counting projects in the DB
+		var resultlog = LogsModule.register_log( es_servername + ":" + es_port,SERVERDB,400,req.connection.remoteAddress,"ERROR on requesting list of executed apps",currentdate,res.user);
+		return;
 	});
 });
 
 //**********************************************************
-app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
-	var fs = require('fs');
-	var path = require('path');
-// 	var pretty = find_param(req.body.pretty, req.query.pretty);
-	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
-	//******************************************* 
-	var project= find_param(req.body.project, req.query.project);
-	project= validate_parameter(project,"project",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (project != undefined)
-	if (project.length == 0){ 
-		res.writeHead(400, { 'Content-Type': contentType_text_plain });
-		res.end("\n400: Bad Request, missing "+"project"+".\n");
-		return;}
-	var myPath = os.homedir()+ File_Server_Path + '/' + project ;
-	var myDest =  project ;
-	var myDest =  project ;
-	//******************************************* 
-	var source= find_param(req.body.source, req.query.source);
-	source= validate_parameter(source,"source",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (source != undefined)
-	if (source.length != 0){ 
-		myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source ;   
-		myDest =  project +'/' + source ; 
-		//*******************************************
-		var filepath= find_param(req.body.filepath, req.query.filepath);
-		filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-		if (filepath != undefined)
-		if (filepath.length != 0){ 
-			myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath ; 
-			myDest =  project +'/' + source +'/' + filepath ; 
-			//*******************************************
-			var filename= find_param(req.body.filename, req.query.filename);
-			filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined 
-		}
-	}   
-	var zipfile ="download_repo_zip";
-	// Check if file specified by the filePath exists
-	fs.stat(myPath, function(err, stat) {
-		if(err == null) {
-			var filelist=undefined;
-// 			filelist=json_list_of_files(myPath,filelist);
-			var path = path || require('path');
-			var fs = fs || require('fs');  
-			files = fs.readdirSync(myPath); 
-			filelist= "{ \"path\": \""  + myPath +"\", \"name\": \""+ myDest + "\" }" ; 
-// 			console.log(JSON.stringify( JSON.parse("[" + filelist+ "]"), null, 4 )); 
-			if(filelist!=undefined ){ 
-				res.zip({ 
-					files:   JSON.parse("[" + filelist+ "]"), 
-					filename: zipfile+'.zip'
-				});
-			}else{ 
-				res.end("files not found in that directory");
-			}
-		} else if(err.code == 'ENOENT') {
-			// file does not exist 
-			varresultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,404,req.connection.remoteAddress,"DOWNLOAD-LIST error: File not found: "+myPath ,currentdate,res.user);
-			//res.setHeader(name.value); //only before writeHeader 
-			res.writeHead(404, {"Content-Type": contentType_text_plain});
-			res.write("\n404: Bad Request, file not found.\n");
-			res.end("ERROR File does not exist: "+myPath+"\n");	
-			return; 
-		} else { 
-			res.writeHead(404, {"Content-Type": contentType_text_plain});
-			res.write("\n404: Bad Request, file not found.\n");
-			res.end("ERROR File does not exist: "+myPath+"\n");	
-			return; 
-		}
-	}); 
+app.get('/query_exec',middleware.ensureAuthenticated, function(req, res) {
+	var currentdate	= dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
+	var pretty 		= find_param(req.body.pretty, req.query.pretty);
+	var appname	= find_param(req.body.app, req.query.app);
+	appname= validate_parameter(appname,"app",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined 
 	
+	if(appname==undefined) appname="";
+	if (appname.length == 0){
+		res.writeHead(400, { 'Content-Type': contentType_text_plain });
+		res.end("\n400: Bad Request, missing " + "app" + ".\n");
+		return;} 
 	//*******************************************  
-// 	res.zip({ files: [ {   content: 'downloaded from the PHANTOM REPOSITORY', name: 'test-file', mode: 0755, comment: zipfile, date: new Date(), type: 'file' }, 
-// 			{ path: myPath, name: 'uploads' }    ], filename: zipfile+'.zip' });
-// 	res.zip({ 
-// 		files: [  
-// 			{ path: myPath, name: zipfile }    
-// 		], 
-// 		filename: zipfile+'.zip'
-// 	});	
+	var result_count = ExecsModule.query_count_exec(es_servername + ":" + es_port,SERVERDB, appname);
+	result_count.then((resultResolve) => {
+		if(resultResolve==0){//new entry (2) we resister new entry
+			res.writeHead(200, {"Content-Type": contentType_text_plain});
+			res.end("Not entries found for that Execution : " + appname+ "\n", 'utf-8');
+			return;
+		}else{
+			var result_id = ExecsModule.find_exec_id(es_servername + ":" + es_port,SERVERDB, appname, pretty);
+			result_id.then((result_idResolve) => {
+				
+				var mybody_obj= ExecsModule.compose_query_id(result_idResolve);
+				var searching = ExecsModule.query_exec(es_servername+":"+es_port,SERVERDB, mybody_obj, pretty);//.replace(/\//g, '\\/');
+				searching.then((resultFind) => {
+					res.writeHead(200, {"Content-Type": "application/json"});
+					res.end(resultFind+"\n");
+					var resultloga = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,200,req.connection.remoteAddress,"ES-QUERY executions_status granted to query:"
+						+JSON.stringify(mybody_obj),currentdate,res.user);
+				},(resultReject)=> {
+					res.writeHead(400, {"Content-Type": contentType_text_plain});
+					res.end("es_query: Bad Request "+resultReject +"\n");
+					var resultlogb = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"ES-QUERY executions_status BAD Request on query:"
+						+JSON.stringify(mybody_obj),currentdate,res.user);
+				});
+				return;
+			},(result_idReject)=> {
+				res.writeHead(400, {"Content-Type": contentType_text_plain});
+				res.end( "error requesting Execution history", 'utf-8');
+				return;
+			});
+		}
+	},(resultReject)=> {
+		res.writeHead(400, {"Content-Type": contentType_text_plain});
+		res.end(resultReject + "\n", 'utf-8');//error counting projects in the DB
+		resultlog = LogsModule.register_log( es_servername + ":" + es_port,SERVERDB,400,req.connection.remoteAddress,"ERROR on Update-register executions_status",currentdate,res.user);
+		return;
+	});
+});
+//**********************************************************
+app.get('/es_query_exec', middleware.ensureAuthenticated, function(req, res) {
+	"use strict";
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
+	var QueryBody 	= find_param(req.body.QueryBody, req.query.QueryBody);
+	var pretty 		= find_param(req.body.pretty, req.query.pretty);
+	var mybody_obj	= JSON.parse(QueryBody);
+	//***************************************  
+	//1.1- find id of the existing doc for such path filename JSON.stringify(
+	var searching = ExecsModule.query_exec(es_servername+":"+es_port,SERVERDB, mybody_obj, pretty);//.replace(/\//g, '\\/');
+	searching.then((resultFind) => {
+		res.writeHead(200, {"Content-Type": "application/json"});
+		res.end(resultFind+"\n");
+		var resultloga = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,200,req.connection.remoteAddress,"ES-QUERY executions_status granted to query:"
+			+JSON.stringify(QueryBody),currentdate,res.user);
+	},(resultReject)=> {
+		res.writeHead(400, {"Content-Type": contentType_text_plain});
+		res.end("es_query: Bad Request "+resultReject +"\n");
+		var resultlogb = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"ES-QUERY executions_status BAD Request on query:"
+			+JSON.stringify(QueryBody),currentdate,res.user);
+	});
 });
 //**********************************************************
 //example:
@@ -1247,29 +1429,31 @@ function originIsAllowed(origin) {
 function consolelogjsonws(JSONstring ){
 	var jsonobj = JSON.parse(JSONstring);
 	var keys = Object.keys(jsonobj); 
-	var myres = { user: "", project:  "" , source:  ""};
+	var myres = { user: "", project:  "" , device:  "" , execution:  ""};
 	for (var i = 0; i < keys.length; i++) {
 		var labeltxt=Object.getOwnPropertyNames(jsonobj)[i];
 		if(labeltxt.toLowerCase() == 'user') {
 			myres.user = jsonobj[keys[i]]; 
 		}else if(labeltxt.toLowerCase() == 'project') {
 			myres.project = jsonobj[keys[i]]; 
-		}else if(labeltxt.toLowerCase() == 'source') {
-			myres.source = jsonobj[keys[i]]; 
+		}else if(labeltxt.toLowerCase() == 'device') {
+			myres.device = jsonobj[keys[i]]; 
+		}else if(labeltxt.toLowerCase() == 'execution') {
+			myres.execution = jsonobj[keys[i]]; 
 		}
 	}
 	return myres;
 };
 
-function send_repo_update_to_suscribers(projectname,sourcename, jsontext){
+function send_project_update_to_suscribers(projectname,jsontext){
 	//*******************************************************************
 	if(projectname != undefined){ 
 		//Now we find the suscribed users and we send copy
 		for (var u = 0; u < max_users; u++) {
 			var found_sucrip=false;
 			var i=0; 
-			while(i< total_project_suscriptions[u] && found_sucrip==false){ 
-				if(ProjectSubscriptions[u,i]==projectname){ 
+			while(i< total_project_suscriptions[u] && found_sucrip==false){
+				if(ProjectSubscriptions[u,i]==projectname){
 					found_sucrip=true;
 				}else{
 					i++;
@@ -1280,18 +1464,20 @@ function send_repo_update_to_suscribers(projectname,sourcename, jsontext){
 				console.log("Forwarding to suscribed user: "+user_ids[u] + " Project: "+ projectname);
 				//user_conn[u].send("{\"project modified \":\""+projectname+"\"  }"); 
 				user_conn[u].send(jsontext);
-				return;//then not send the the json two times, in case user also suscribed to the sourcename
 			}
 		}   
 	}  
- 
-	if(sourcename != undefined){ 
+};
+
+function send_device_update_to_suscribers(devicename,jsontext){
+	//*******************************************************************
+	if(devicename != undefined){ 
 		//Now we find the suscribed users and we send copy
 		for (var u = 0; u < max_users; u++) {
 			var found_sucrip=false;
 			var i=0; 
-			while(i< total_source_suscriptions[u] && found_sucrip==false){ 
-				if(SourceSubscriptions[u,i]==sourcename){ 
+			while(i< total_device_suscriptions[u] && found_sucrip==false){ 
+				if(DeviceSubscriptions[u,i]==devicename){  
 					found_sucrip=true;
 				}else{
 					i++;
@@ -1299,8 +1485,32 @@ function send_repo_update_to_suscribers(projectname,sourcename, jsontext){
 			}
 			if(found_sucrip==true){ 
 				//we send the copy because we found the SUSCRIPTION
-				console.log("Forwarding to suscribed user: "+user_ids[u] + " Source: "+ sourcename);
-				//user_conn[u].send("{\"project modified \":\""+sourcename+"\" }"); 
+				console.log("Forwarding to suscribed user: "+user_ids[u] + " Device: "+ devicename);
+				//user_conn[u].send("{\"project modified \":\""+devicename+"\"  }"); 
+				user_conn[u].send(jsontext);
+			}
+		}   
+	}  
+};
+
+function send_exec_update_to_suscribers(execname,jsontext){
+	//*******************************************************************
+	if(execname != undefined){ 
+		//Now we find the suscribed users and we send copy
+		for (var u = 0; u < max_users; u++) {
+			var found_sucrip=false;
+			var i=0; 
+			while(i< total_exec_suscriptions[u] && found_sucrip==false){ 
+				if(ExecSubscriptions[u,i]==execname){ 
+					found_sucrip=true;
+				}else{
+					i++;
+				}
+			}
+			if(found_sucrip==true){ 
+				//we send the copy because we found the SUSCRIPTION
+				console.log("Forwarding to suscribed user: "+user_ids[u] + " Execution: "+ execname);
+				//user_conn[u].send("{\"project modified \":\""+execname+"\"  }"); 
 				user_conn[u].send(jsontext);
 			}
 		}   
@@ -1359,25 +1569,29 @@ app.ws('/', function(ws_connection, req) {
 		if(user_input.project.length > 0){ 
 			update_suscription_msg ["suscribed_to_project"] = user_input.project ;
 		} 
-		if(user_input.source != undefined)
-		if(user_input.source.length > 0){ 
-			update_suscription_msg["suscribed_to_source"] = user_input.source ; 
+		if(user_input.device != undefined)
+		if(user_input.device.length > 0){ 
+			update_suscription_msg["suscribed_to_device"] = user_input.device ; 
+		} 		
+		if(user_input.execution != undefined)
+		if(user_input.execution.length > 0){ 
+			update_suscription_msg ["suscribed_to_execution"] = user_input.execution ; 
 		} 				 
 		
 		console.log(JSON.stringify(update_suscription_msg));
 		
-		ws_connection.send(JSON.stringify(update_suscription_msg)); 
+		ws_connection.send(JSON.stringify( update_suscription_msg)); 
 // 		console.log((new Date()) + ' Received Suscription from ' + user_input.user + ': ' + message );   
-		//**********************************************************************
+		//****************************************************** 
 		//first we need find if the user_id already suscribed, if not then we add the new suscription
 		//**********************************************************************
 		//adding suscriptoin on PROJECTS:
-		var found_susc=false;
+		var found_susc=false; 
 		if(user_input.project.length > 0)
 		if(user_input.project!=undefined){
 			for (var i = 0; i < total_project_suscriptions[user_id]; i++)  
 				if(ProjectSubscriptions[user_id,i]==user_input.project) {
-					found_susc=true;
+					found_susc=true; 
 // 					console.log("found previous suscription adding at "+user_id+" "+i);
 				}
 			if(found_susc==false){
@@ -1385,33 +1599,43 @@ app.ws('/', function(ws_connection, req) {
 				ProjectSubscriptions[user_id,total_project_suscriptions[user_id]]=user_input.project;
 				total_project_suscriptions[user_id]=total_project_suscriptions[user_id]+1;
 			}
-		}
+		} 
 		//**********************************************************************
-		//adding suscriptoin on SOURCEs:
+		//adding suscriptoin on DEVICES:
 		found_susc=false; 
-		if(user_input.source.length > 0)
-		if(user_input.source!=undefined){
-			for (var i = 0; i < total_source_suscriptions[user_id]; i++)  
-				if(SourceSubscriptions[user_id,i]==user_input.source) {
+		if(user_input.device.length > 0)
+		if(user_input.device!=undefined){
+			for (var i = 0; i < total_device_suscriptions[user_id]; i++)  
+				if(DeviceSubscriptions[user_id,i]==user_input.device) {
 					found_susc=true; 
 // 					console.log("found previous suscription adding at "+user_id+" "+i);
 				}
 			if(found_susc==false){
-				console.log("not found previous source suscription adding at "+user_id+" "+total_source_suscriptions[user_id]+ ": "+user_input.source);
-				SourceSubscriptions[user_id,total_source_suscriptions[user_id]]=user_input.source;
-				total_source_suscriptions[user_id]=total_source_suscriptions[user_id]+1;
+				console.log("not found previous device suscription adding at "+user_id+" "+total_device_suscriptions[user_id]+ ": "+user_input.device);
+				DeviceSubscriptions[user_id,total_device_suscriptions[user_id]]=user_input.device;
+				total_device_suscriptions[user_id]=total_device_suscriptions[user_id]+1;
+			}
+		} 
+		//**********************************************************************
+		//adding suscriptoin on EXECs:
+		found_susc=false; 
+		if(user_input.execution.length > 0)
+		if(user_input.execution!=undefined){
+			for (var i = 0; i < total_exec_suscriptions[user_id]; i++)  
+				if(ExecSubscriptions[user_id,i]==user_input.execution) {
+					found_susc=true; 
+// 					console.log("found previous suscription adding at "+user_id+" "+i);
+				}
+			if(found_susc==false){
+				console.log("not found previous exec suscription adding at "+user_id+" "+total_exec_suscriptions[user_id]+ ": "+user_input.execution);
+				ExecSubscriptions[user_id,total_exec_suscriptions[user_id]]=user_input.execution;
+				total_exec_suscriptions[user_id]=total_exec_suscriptions[user_id]+1;
 			}
 		}
 		user_input.project=undefined;
-		user_input.source=undefined;
+		user_input.device=undefined;
+		user_input.execution=undefined;
 	});
-	
-	// EPIPE means that writing of (presumably) the HTTP request failed
-	// because the other end closed the connection.
-	ws_connection.on('error', function(e){	
-		console.log("socket error:"+ e);
-	});
-	  
 	// user disconnected
 	ws_connection.on('close', function(reasonCode, description) {
 // 		console.log((new Date()) + ' Peer: ' + client_address + ' disconnected.'+ 'user is: '+ user_input.user);
@@ -1419,7 +1643,8 @@ app.ws('/', function(ws_connection, req) {
 		if(i<totalusers) { 
 			user_address[i]=undefined;
 			total_project_suscriptions[i]=0;
-			total_source_suscriptions[i]=0; 
+			total_device_suscriptions[i]=0;
+			total_exec_suscriptions[i]=0;
 			// remove user from the list of connected clients
 			clients.splice(user_index[i], 1); 
 		}
@@ -1427,14 +1652,12 @@ app.ws('/', function(ws_connection, req) {
 });
 
 
- 
-   
 // set up error handler
 function errorHandler (err, req, res, next) {
     if(req.ws){
         console.error("ERROR from WS route - ", err);
     } else {
-        console.error("ERROR from WS: " +err);
+        console.error(err);
         res.setHeader('Content-Type', 'text/plain');
         res.status(500).send(err.stack);
     }
