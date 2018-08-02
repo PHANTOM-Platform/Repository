@@ -8,8 +8,8 @@ The purpose of the JAVA files in this folder is to facilitate the use of the Rep
 These files also aim to serve as an example of the authentication and authorization process based on tokens.
 
 <p align="center">
-<a href="https://github.com/PHANTOM-Platform/Repository/blob/master/api_bash_scripts/example.png">
-<img src="https://github.com/PHANTOM-Platform/Repository/blob/master/api_bash_scripts/example.png" align="middle" width="70%" height="70%" title="Schema" alt="Example of Folders and Json files at the Repository">
+<a href="https://github.com/PHANTOM-Platform/Repository/blob/master/repo-domain.png">
+<img src="https://github.com/PHANTOM-Platform/Repository/blob/master/repo-domain.png" align="middle" width="70%" height="70%" title="Schema" alt="Example of Folders and Json files at the Repository">
 </a> </p>
 
 
