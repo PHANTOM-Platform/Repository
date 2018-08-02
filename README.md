@@ -155,9 +155,19 @@ NOTICE: For securoity reasons, users' accounts can be ONLY registered on the ser
 
 ## 6.- Example of use
 
+Notice that the files uploaded require to define their metadata, and their domain of use in case of wish to take advantage/use of the PHANTOM security server. Next figure shows an example of metadata.
+
+ <p align="center">
+<a href="https://github.com/PHANTOM-Platform/Repository/blob/master/repo-domain.png">
+<img src="https://github.com/PHANTOM-Platform/Repository/blob/master/repo-domain.png" align="middle" width="50%" height="50%" title="Schema" alt="Repository Schema">
+</a> </p>
+
+
 The folders [api_command_line][api_command_line], [api_bash_scripts][api_bash_scripts], and [api_java][api_java] shows examples of using the PHANTOM REPOSITORY
 
 Please access to those folders to get more details.
+
+
 
 
 ## Acknowledgment
