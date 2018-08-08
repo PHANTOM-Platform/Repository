@@ -60,7 +60,22 @@ java demo_phantom/repo_put  "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJtb2
 }
 ```
 
- 
+## Examples of running the scripts 
+
+Testing the scripts on a Repository server running on localhost:8000:
+
+```bash
+bash demo_java_localhost.sh 
+```
+
+
+Testing the scripts on a Repository server running on the public server at HLRS http://141.58.0.8:2777:
+
+
+```bash
+bash demo_java_hlrs_server.sh
+```
+
 
 
 
