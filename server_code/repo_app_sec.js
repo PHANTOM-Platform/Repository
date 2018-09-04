@@ -139,73 +139,93 @@ const logsmapping = {
 		}
 	}
 } 
-	var expressWs 		= require('express-ws')(app); 
+	var expressWs 		= require('express-ws')(app);
 	var app = expressWs.app;
 //*******************************************************************
 //********************  VARIABLES FOR WSockets **********************
 	//*** STORAGE OF USERS
-	const max_users=5; 
+	const max_users=50;
 	var totalusers=0;
-	var user_ids = new Array(max_users ); 
+	var user_ids = new Array(max_users );
 	var user_conn = new Array(max_users ); // the connetion of each user
 	
 	var user_address = new Array(max_users ); // the connetion of each user
 	var user_index = new Array(max_users ); // the connetion of each user
 	
 //*** STORAGE OF PROJECT CONTENTS
-	const max_projects= 10;
-	const max_mensages=4;
+	const max_projects= 100;
+	const max_mensages=40;
 	var totalmensages= [max_projects];
 	for (var i = 0; i < max_projects; i++) 
 		totalmensages[i]=0;
 	var ProjectContents = new Array(max_projects,max_mensages); //10 projects,  stack of max_mensages contents
 	
-//*** STORAGE OF SUSCRIPTIONS 
+//*** STORAGE OF SUSCRIPTIONS
 	const max_suscrip=6;
 
 	var total_project_suscriptions= [max_users]; //for each user
-	for (var i = 0; i < max_users; i++) 
+	for (var i = 0; i < max_users; i++)
 		total_project_suscriptions[i]=0;
 	var ProjectSubscriptions = new Array(max_users,max_suscrip); //stack of "max_suscrip" proj suscr for each user
 	
 	var total_source_suscriptions= [max_users]; //for each user
-	for (var i = 0; i < max_users; i++) 
+	for (var i = 0; i < max_users; i++)
 		total_source_suscriptions[i]=0;
 	var SourceSubscriptions = new Array(max_users,max_suscrip); //stack of "max_suscrip" proj suscr for each user
 
-	var clients = [ ];// list of currently connected clients (users) 
+	var clients = [ ];// list of currently connected clients (users)
 //****************************************************
 var zip = require('express-easy-zip');
 //**********************************************************
 //This function removes double quotation marks if present at the beginning and the end of the input string
 function remove_quotation_marks(input_string){
+	if(input_string!=undefined){
 	if(input_string.charAt(0) === '"') {
 		input_string = input_string.substr(1);
 	}
 	if(input_string.length>0){
 	if(input_string.charAt(input_string.length-1) === '"') {
 		input_string = input_string.substring(0, input_string.length - 1); 
-	}}
+	}}}
 	return (input_string);
+}	
+
+
+function lowercase(input_string){
+	var result=""; 
+	for (var j = 0; j < input_string.length; j++) {
+// 		input_string.replaceAt(j, character.toLowerCase());
+        var charCode = input_string.charCodeAt(j);
+        if (charCode < 65 || charCode > 90) {
+            // NOT an uppercase ASCII character
+            // Append the original character
+            result += input_string.substr(j, 1);
+        } else {
+            // Character in the ['A'..'Z'] range
+            // Append the lowercase character
+            result += String.fromCharCode(charCode + 32);
+        }
+	} 
+	return (result);
 }	
 
 function is_defined(variable) {
 	return (typeof variable !== 'undefined');
 }
 //*********************************************************************
-function find_param(body, query){	
+function find_param(body, query){
 	try{
 		if (body != undefined){ //if defined as -F parameter
-			return body ;
+			return body;
 		}else if (query != undefined){ //if defined as ? parameter
 			return query;
 		}
-	}catch(e){ 
+	}catch(e){
 		if (query != undefined){ //if defined as ? parameter
 			return query;
 		}
 	} 
-	return undefined ;
+	return undefined;
 }
 //*********************************************************************
 //report on the screen the list of fields, and values
@@ -222,23 +242,25 @@ function consolelogjson(JSONstring ){
 //*********************************************************************	
 //the purpose is to remove the fields/properties path,path_length, filename,filename_length, if present.
 //and generate thos fields/properties from the input parameters
-function update_filename_path_on_json(JSONstring, filename, path){ 
-	var new_json = {  }  
+function update_filename_path_on_json(JSONstring, filename, path){
+	var new_json = {  }
 	var jsonobj = JSON.parse(JSONstring);
-	var keys = Object.keys(jsonobj); 
+	var keys = Object.keys(jsonobj);
+	if (path == undefined) path="";
+	if (filename == undefined) filename="";
 	new_json['path']		=path;
-	new_json['path'+'_length']	=path.length; //label can not contain points '.' !
+	new_json['path'+'_length'] =path.length; //label can not contain points '.' !
 	new_json['filename']	=filename;
-	new_json['filename'+'_length']=filename.length;	
+	new_json['filename'+'_length']=filename.length;
 	for (var i = 0; i < keys.length; i++) {
 		var label=Object.getOwnPropertyNames(jsonobj)[i];
-		label=label.toLowerCase();
+		label=lowercase(label);
 		if((label != 'path') && (label != 'filename') && (label != 'path_length') && (label != 'filename_length'))
-			new_json[label]=jsonobj[keys[i]];	//add one property  
+			new_json[label]=jsonobj[keys[i]];	//add one property
 		if( typeof jsonobj[keys[i]] == 'string'){
-			new_json[label+'_length']=jsonobj[keys[i]].length;			
+			new_json[label+'_length']=jsonobj[keys[i]].length;
 		}
-	} 
+	}
 	new_json=(JSON.stringify(new_json));
 	return new_json;
 }
@@ -247,50 +269,51 @@ function update_device_length_on_json(JSONstring, device){
 	var new_json = {  } 
 	var jsonobj = JSON.parse(JSONstring);
 	var keys = Object.keys(jsonobj); 
+	if (device == undefined) device="";
 	new_json['device']		=device;
 	new_json['device_length']	=device.length; 	
 	for (var i = 0; i < keys.length; i++) {
 		var label=Object.getOwnPropertyNames(jsonobj)[i];
-		label=label.toLowerCase();
+		label=lowercase(label);
 		if((label != 'device') && (label != 'device_length'))
 		new_json[label]=jsonobj[keys[i]];	//add one property
 		if( typeof jsonobj[keys[i]] == 'string'){
-			new_json[label+'_length']=jsonobj[keys[i]].length;			
-		}		
-	} 
+			new_json[label+'_length']=jsonobj[keys[i]].length;
+		}
+	}
 	new_json=(JSON.stringify(new_json));
 	return new_json;
 }
 
-function update_app_length_on_json(JSONstring, appname){ 
-	var new_json = {  } 
+function update_app_length_on_json(JSONstring, appname){
+	var new_json = {  }
 	var jsonobj = JSON.parse(JSONstring);
-	var keys = Object.keys(jsonobj); 
+	var keys = Object.keys(jsonobj);
+	if (appname== undefined) appname="";
 	new_json['app']		=appname;
-	new_json['app_length']	=appname.length; 	
+	new_json['app_length']	=appname.length;
 	for (var i = 0; i < keys.length; i++) {
 		var label=Object.getOwnPropertyNames(jsonobj)[i];
-		label=label.toLowerCase();
+		label=lowercase(label);
 		if((label != 'app') && (label != 'app_length'))
 		new_json[label]=jsonobj[keys[i]];	//add one property
 		if( typeof jsonobj[keys[i]] == 'string'){
-			new_json[label+'_length']=jsonobj[keys[i]].length;			
-		}		
-	} 
+			new_json[label+'_length']=jsonobj[keys[i]].length;
+		}
+	}
 	new_json=(JSON.stringify(new_json));
 	return new_json;
 }
 
-
-function get_source_project_json(JSONstring){  
+function get_source_project_json(JSONstring){
 	var myres = { source: "", project: "" };
 	var jsonobj = JSON.parse(JSONstring);
-	var keys = Object.keys(jsonobj); 
+	var keys = Object.keys(jsonobj);
 	for (var i = 0; i < keys.length; i++) {
 		var label=Object.getOwnPropertyNames(jsonobj)[i];
-		label=label.toLowerCase();
+		label=lowercase(label);
 		if(label == 'source')
-			myres.source=jsonobj[keys[i]];		
+			myres.source=jsonobj[keys[i]];
 		if(label == 'project')
 			myres.project=jsonobj[keys[i]];
 	} 
@@ -312,9 +335,9 @@ function get_source_project_json(JSONstring){
 //report on the screen the list of fields, and values
 function get_value_json(JSONstring,label){
 	var jsonobj = JSON.parse(JSONstring);
-	var keys = Object.keys(jsonobj); 
+	var keys = Object.keys(jsonobj);
 	var i=0;
-	var myres = {value: undefined, pos: undefined }; 
+	var myres = {value: undefined, pos: undefined };
 	while (i < keys.length) {
 		if(Object.getOwnPropertyNames(jsonobj)[i]==label){
 			myres.pos=i;
@@ -327,33 +350,34 @@ function get_value_json(JSONstring,label){
 }
 
 
-function update_projectname_length_on_json(JSONstring, projectname){ 
-	var new_json = {  } 
+function update_projectname_length_on_json(JSONstring, projectname){
+	var new_json = {  }
 	var jsonobj = JSON.parse(JSONstring);
-	var keys = Object.keys(jsonobj); 
+	var keys = Object.keys(jsonobj);
+	if(projectname==undefined) projectname="";
 	new_json['project']		=projectname;
-	new_json['project_length']	=projectname.length; 	
+	new_json['project_length']	=projectname.length;
 	for (var i = 0; i < keys.length; i++) {
 		var label=Object.getOwnPropertyNames(jsonobj)[i];
-		label=label.toLowerCase();
+		label=lowercase(label);
 		if((label != 'project') && (label != 'project_length'))
 		new_json[label]=jsonobj[keys[i]];	//add one property
 		if( typeof jsonobj[keys[i]] == 'string'){
-			new_json[label+'_length']=jsonobj[keys[i]].length;			
+			new_json[label+'_length']=jsonobj[keys[i]].length;
 		}
-	} 
+	}
 	new_json=(JSON.stringify(new_json));
 	return new_json;
 }
 //**********************************************************
 function validate_parameter(parameter,label,currentdate,user,address){
-	var message_error = "DOWNLOAD Bad Request missing "+label;  
-	if (parameter != undefined){  
+	var message_error = "DOWNLOAD Bad Request missing "+label;
+	if (parameter != undefined){
 		parameter = remove_quotation_marks(parameter);
 		if (parameter.length > 0)
-			return(parameter); 
-	} 
-	resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,address,message_error,currentdate, user );
+			return(parameter);
+	}
+	resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,address,message_error,currentdate, user);
 	return undefined;
 }
 
@@ -546,46 +570,65 @@ app.get('/private',middleware.ensureAuthenticated, function(req, res) {
 });
 //**********************************************************
 app.post('/delete_metadata',middleware.ensureAuthenticated, function(req, res) {
-	"use strict"; 
-	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");  
-	var resultlog ;  
-	const message_missing = "DELETE Bad Request missing "; 
-	var project= find_param(req.body.project, req.query.project); 
-	if ( project == undefined){  
+	"use strict";
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
+	var resultlog;
+	const message_missing = "DELETE Bad Request missing ";
+	var project= find_param(req.body.project, req.query.project);
+	if (project == undefined){
 		res.writeHead(400, { 'Content-Type': contentType_text_plain });
 		res.end("400:"+message_missing+" Project.\n");
-		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,message_no_path,currentdate,res.user); 
-		return;	 
-	} 
-	
-	var source= find_param(req.body.source, req.query.source); 
-	if ( source == undefined){  
+		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,message_no_path,currentdate,res.user);
+		return;
+	}else if(project.length == 0){
+		res.writeHead(400, { 'Content-Type': contentType_text_plain });
+		res.end("400: Empty Project.\n");
+		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,message_no_path,currentdate,res.user);
+		return;
+	}
+
+	var source= find_param(req.body.source, req.query.source);
+	if (source == undefined){
 		res.writeHead(400, { 'Content-Type': contentType_text_plain });
 		res.end("400:"+message_missing+" source.\n");
-		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,message_no_path,currentdate,res.user); 
-		return;	 
-	} 
-	
-	
-	var DestPath= find_param(req.body.Path, req.query.Path); 
-	if ( DestPath == undefined){  
+		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,message_no_path,currentdate,res.user);
+		return;
+	}else if (source.length == 0){
+		res.writeHead(400, { 'Content-Type': contentType_text_plain });
+		res.end("400: Empty source.\n");
+		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,message_no_path,currentdate,res.user);
+		return;
+	}
+
+	var DestPath= find_param(req.body.Path, req.query.Path);
+	if (DestPath == undefined){
 		res.writeHead(400, { 'Content-Type': contentType_text_plain });
 		res.end("400:"+message_missing+" Path.\n");
-		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,message_no_path,currentdate,res.user); 
-		return;	 
-	} 
- 
-	var DestFileName = find_param(req.body.DestFileName, req.query.DestFileName); 
-	if (DestFileName == undefined){  
+		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,message_no_path,currentdate,res.user);
+		return;
+	}else if (DestPath.length == 0){
+		res.writeHead(400, { 'Content-Type': contentType_text_plain });
+		res.end("400: Empty Path.\n");
+		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,message_no_path,currentdate,res.user);
+		return;
+	}
+
+	var DestFileName = find_param(req.body.DestFileName, req.query.DestFileName);
+	if (DestFileName == undefined){
 		res.writeHead(400, { 'Content-Type': contentType_text_plain });
 		res.end("400:"+message_missing+" DestFileName.\n");
 		resultlog = LogsModule.register_log(es_servername+":"+es_port, SERVERDB, 400,req.connection.remoteAddress,message_no_file,currentdate,res.user);
 		return;
-	} 
-	
-	var result= MetadataModule.delete_filename_path_json(es_servername+":"+es_port,SERVERDB, project, source, DestFileName, DestPath); 
+	}else if (DestFileName.length == 0){
+		res.writeHead(400, { 'Content-Type': contentType_text_plain });
+		res.end("400: Empty DestFileName.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port, SERVERDB, 400,req.connection.remoteAddress,message_no_file,currentdate,res.user);
+		return;
+	}
+
+	var result= MetadataModule.delete_filename_path_json(es_servername+":"+es_port,SERVERDB, project, source, DestFileName, DestPath);
 	result.then((resultResolve) => {
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,resultResolve.text,currentdate,res.user); 
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,resultResolve.text,currentdate,res.user);
 		fs.unlink(os.homedir()+ File_Server_Path + '/' + DestPath + '/' + DestFileName, function(err) {
 			if (err) {
 				res.writeHead(400, {"Content-Type": contentType_text_plain});
@@ -601,22 +644,22 @@ app.post('/delete_metadata',middleware.ensureAuthenticated, function(req, res) {
 	},(resultReject)=> {
 		res.writeHead(resultReject.code, {"Content-Type": contentType_text_plain});
 		res.end(resultReject.text+"\n", 'utf-8');
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"Delete Error",currentdate,res.user); 
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"Delete Error",currentdate,res.user);
 		return;
-	});// 
+	});//
 });
 //**********************************************************
-app.get('/verify_es_connection', function(req, res) {	
-	var testhttp = require('http'); 
-	testhttp.get('http://'+es_servername+':'+es_port+'/', function(rescode) { 
-// 		var int_code= parseInt( rescode.statusCode, 10 ); 
+app.get('/verify_es_connection', function(req, res) {
+	var testhttp = require('http');
+	testhttp.get('http://'+es_servername+':'+es_port+'/', function(rescode) {
+// 		var int_code= parseInt( rescode.statusCode, 10 );
 		res.writeHead(rescode.statusCode, { 'Content-Type': contentType_text_plain });
 		res.end(""+rescode.statusCode, 'utf-8');
 	}).on('error', function(e) {
 // 		console.error(e); //if not reply is expected an ECONNREFUSED ERROR, we return 503 as not available service
 		res.writeHead(503, { 'Content-Type': contentType_text_plain });
-		res.end("503", 'utf-8');		
-	}); 
+		res.end("503", 'utf-8');
+	});
 });
 //**********************************************************
 app.get('/drop_db', function(req, res) {
@@ -764,524 +807,311 @@ app.get('/es_query_metadata', middleware.ensureAuthenticated, function(req, res)
 			+JSON.stringify(QueryBody),currentdate,res.user); 
 	}); 
 }); 
-//**********************************************************
-//TODO: falta confirmar que los archivos existen
-//si no existen en el curl parece que se queda esperando indefinidamente
-app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
-	"use strict"; 
-	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");  
-	var message_bad_request = "UPLOAD Bad Request missing ";
-	var resultlog ; 
-	if (!req.files){
-		res.writeHead(400, { 'Content-Type': contentType_text_plain });
-		res.end('No files were uploaded.'); 
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,'No files were uploaded.',currentdate,res.user);
-		return;
-	}  
-	var RawJSON=  find_param(req.body.RawJSON, req.query.RawJSON);
- 
-	
-	var DestPath=find_param(req.body.Path,req.query.Path);
-	if (DestPath == undefined){ 
-		res.writeHead(400, { 'Content-Type': contentType_text_plain });
-		res.end("400:Bad Request, missing Path.\n");
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"Path",currentdate,res.user); 
-		return;
-	} 
-
-	var DestFileName=find_param( req.body.DestFileName , req.query.DestFileName);
-	if (DestFileName == undefined){  
-		res.writeHead(400, { 'Content-Type': contentType_text_plain });
-		res.end("400:Bad Request, missing DestFileName.\n");
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"DestFileName",currentdate,res.user);
-		return;
-	} 
-	// The name of the input field (i.e. "UploadFile") is used to retrieve the uploaded file
-	let UploadFile = req.files.UploadFile; 	
-	var jsontext="";
-	//1.2- Not existing doc, just need to add
-	// process the RAW JSON parameter: upload the info in the ElasticSearch server.
-	if (RawJSON != undefined){
-		jsontext = RawJSON;
-	}else if (req.files.UploadJSON != undefined){
-		jsontext=req.files.UploadJSON.data.toString('utf8'); 
- 	//	if (jsontext.length > 0)
-	//		jsontext = JSON.stringify(jsontext);
-	} 
-	var source_proj= get_source_project_json(jsontext);  
-	jsontext=update_filename_path_on_json(jsontext, DestFileName, DestPath); //this adds the field 
-	
-// 	console.log("send_repo_update_to_suscribers("+source_proj.project + " "+ source_proj.source+")"+jsontext);
-	send_repo_update_to_suscribers(source_proj.project, source_proj.source,jsontext);
-	
-	var storage_path=source_proj.project+"/"+source_proj.source+"/"+DestPath;  
-	var result= MetadataModule.register_update_filename_path_json(es_servername+":"+es_port,SERVERDB, jsontext, source_proj.project, source_proj.source, DestFileName, DestPath); 
-	result.then((resultResolve) => {
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,resultResolve.text,currentdate,res.user); 
-		//after succeed on the upload of themetadata, we proceed to upload the file 
-		var result_upload = upload_file(UploadFile, os.homedir(), File_Server_Path,
-			storage_path,DestFileName, 
-			res.user,req.connection.remoteAddress,currentdate,"false");//debug=false
-		result_upload.then((resultResUp) => {
-			res.writeHead(resultResUp.code, {"Content-Type": contentType_text_plain});
-			res.end(resultResUp.text+"\n", 'utf-8');
-			return;
-		},(resultRejectUp)=> { 
-			console.log("resultRejectUp.code" +resultRejectUp.code);
-			res.writeHead(resultRejectUp.code, {"Content-Type": contentType_text_plain});
-			res.end(resultRejectUp.text+"\n", 'utf-8');
-			return;
-		} );
-	},(resultReject)=> {
-		res.writeHead(resultReject.code, {"Content-Type": contentType_text_plain});
-		res.end(resultReject.text+"\n", 'utf-8')
-		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"Upload Error",currentdate,res.user); 
-		return;
-	});//end   
-});
 
 //**********************************************************
 /* GET home page. */
-const request = require('request'); 
+const request = require('request');
 
-function request_user_domain_permission(user, access, domain,j){ 
+function request_user_domain_permission(user, access, domain,j){
 	return new Promise( (resolve,reject) => {
-		var result = { body: "", j: "" };
+		var result = {body: "", j: "" };
 		result.j=j;
+		domain=lowercase(domain);//domain=domain.toString().toLowerCase();
+		console.log('http://127.0.0.1:8001/pqapi/access?user='+user+'&ar='+access+'&object='+domain);
 		request.get('http://127.0.0.1:8001/pqapi/access?user='+user+'&ar='+access+'&object='+domain, function(err, response, body) {//expected possible responses are "permit\n" or "deny\n"
 			if(body.length>0){
 				if(body.charAt(body.length-1) === '\n') {
-					body = body.substring(0, body.length - 1); 
+					body = body.substring(0, body.length - 1);
 				}
 			}
-			result.body = body.toLowerCase();
+			result.body = lowercase(body);
 			resolve(result);
 		});
 	});
-} 
-
-
-
+}
 
 // function jsontotable(myjson){
 // 	var html ="";
 // 	html += "<div class = 'cat'><table>\n"; // style='width:100%'>";
-// 	count =1;	
-// 	var jsonobj = JSON.parse(myjson); 
+// 	count =1;
+// 	var jsonobj = JSON.parse(myjson);
 // 	console.log(jsonobj);
 // 	if(Object.getOwnPropertyNames(jsonobj)[0] == "hits"){
 // 		jsonobj = jsonobj.hits[0];
-// 		keys = Object.keys(jsonobj); 
-// 	}	
+// 		keys = Object.keys(jsonobj);
+// 	}
 // 	for (var i = 0; i < keys.length; i++) {
 // 		var label=Object.getOwnPropertyNames(jsonobj)[i];
-// 		label=label.toLowerCase(); 
-// 		var value =jsonobj[keys[i]];		 
-// 		if(count == 1) { 
+// 		label=lowercase(label);
+// 		var value =jsonobj[keys[i]];
+// 		if(count == 1) {
 // 			html += "\t<tr align=\"left\"><th><strong>" + label + "</strong>: " + value + "</th></tr>\n";
 // 		} else{
 // 			html += "\t<tr><td><strong> &emsp; " + label + "</strong>: " +value + "</td></tr>\n";
 // 		}
 // 		count = count +1;
-// 	} 
+// 	}
 // 	html += "</table></div><br>";
-// 	return html;	 
+// 	return html;
 // }
 
-
-function findomainjson_first(myjson){ 
-	var jsonobj = JSON.parse(myjson); 
+function findomainjson_first(myjson){
+	var jsonobj = JSON.parse(myjson);
 	if(Object.getOwnPropertyNames(jsonobj)[0] == "hits"){
 		jsonobj = jsonobj.hits[0];
 		if(jsonobj==undefined) return "";
-		keys = Object.keys(jsonobj); 
-	}	
+		keys = Object.keys(jsonobj);
+	}
 	for (var i = 0; i < keys.length; i++) {
 		var label=Object.getOwnPropertyNames(jsonobj)[i];
-		label=label.toLowerCase(); 
+		label=lowercase(label);
 		if(label == "domain"){
-			return(jsonobj[keys[i]]); 
+			return(jsonobj[keys[i]]);
 		}
-	} 
+	}
 	return "";
 }//findomainjson_first
 
-app.get('/permission', function(req, res, next) {
-	//the request is expected to be done internally, same machine on port 8001
-	var user= find_param(req.body.user, req.query.user);//cheptsov@hlrs.de
-	var domain= find_param(req.body.domain, req.query.domain);//domain_hlrs
-	var access= find_param(req.body.access, req.query.access);//w
-	if(user==undefined || domain == undefined || access == undefined){
-		res.writeHead(400, { 'Content-Type': contentType_text_plain });
-		res.end("400 Error, missing parameter");
-	} 
-	var permission = request_user_domain_permission(user, access, domain,0);
-	permission.then((resultFind) => { 
-		if( resultFind.body == "permit"){
-			res.writeHead(200, { 'Content-Type': contentType_text_plain });
-			res.end("200: Access granted");
-		}else if( resultFind.body == "deny"){
-			res.writeHead(403, { 'Content-Type': contentType_text_plain });
-			res.end("403: Access denied");
-		}else {
-			res.writeHead(400, { 'Content-Type': contentType_text_plain });
-			res.end("400 unexpected error "+resultFind.body);
-		} 
-	},(resultReject)=> { 
-			res.writeHead(400, { 'Content-Type': contentType_text_plain });
-			res.end("400 unexpected error "+resultReject);
-	} ); 
-}); 
 
-app.get('/test_metadata', function(req, res) { 
-	"use strict"; 
-	var pretty = find_param(req.body.pretty, req.query.pretty);
-	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
-	//***************************************
-	var project =find_param(req.body.project,req.query.project);
-	if (project != undefined) 
-		project=remove_quotation_marks(project); 
-	//***************************************
-	var source =find_param(req.body.source,req.query.source);
-	if (source != undefined) 
-		source=remove_quotation_marks(source); 
-	var query= MetadataModule.compose_query(project,source,filepath, filename); 
-	//***************************************
-	var filepath =find_param(req.body.Path,req.query.Path);
-	if (filepath != undefined)
-		filepath=remove_quotation_marks(filepath); 
-	//***************************************
-	var filename =find_param(req.body.filename,req.query.filename);
-	if (filename != undefined)
-		filename=remove_quotation_marks(filename); 
-	//1.1- find id of the existing doc for such path filename
-	
-	var searching = MetadataModule.query_metadata(es_servername+":"+es_port,SERVERDB,query, pretty); 
-	searching.then((resultFind) => { 
-		res.writeHead(200, {"Content-Type": "application/json"});
-		var domain =findomainjson_first(resultFind);
-		if(domain.length==0){
-			res.end("The domain of the file is: not defined domain\n");
-		}else{
-			res.end("The domain of the file is: "+domain+"\n");	
-		}
-// 		var resultloga = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,200,req.connection.remoteAddress,"QUERY METADATA granted to query:"
-// 			+JSON.stringify(query),currentdate,res.user);
-	},(resultReject)=> { 
-		res.writeHead(400, {"Content-Type": contentType_text_plain});
-		res.end("querymetadata: Bad Request "+resultReject +"\n");
-// 		var resultlogb = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"QUERY METADATA BAD Request on query:" 
-// 			+JSON.stringify(query),currentdate,res.user); 
-	}); 
-});
-
-
-
-function function_promesas_encadenadas(totalkeys, user, domain,j){ 
+//This function requests the access permissions recursively in the list "domain[]"
+function recursively_confirmation_of_permissions(totalkeys, user, domain,j){
 	return new Promise( (resolve,reject) => {
 		var myresultarray = new Array(totalkeys);
-		if(j< totalkeys-1) {
-			callj= function_promesas_encadenadas(totalkeys, user, domain,j+1); 
+		console.log("user" +user +" permisson zz" + " on j "+ j+ " totalkeys " +totalkeys);
+		if(j< totalkeys-1 ) {// totalkeys -1 ...
+			callj= recursively_confirmation_of_permissions(totalkeys, user, domain,j+1);
 			callj.then((resiltgood) => {
 				myresultarray = resiltgood;
-				var temppermission = request_user_domain_permission( user, 'r', domain[j],j) ; 
+				var temppermission = request_user_domain_permission( user, 'r', domain[j],j);
 				temppermission.then((resultFind) => {
-// 					console.log("permisson "+resultFind.body+ " on j "+ j+ " domain is " +domain[j]);
-					myresultarray [j]=resultFind.body; 
+					console.log("permisson "+resultFind.body+ " on j "+ j+ " domain is " +domain[j]);
+					myresultarray [j]=resultFind.body;
 // 					if(j==0){
 // 						for (var kj = 0; kj < totalkeys; kj++) {
 // 							console.log("                on kj "+ kj+ " myresultarray is " +myresultarray[kj]);
 // 						}
 // 					}
-					resolve(myresultarray ); 
-				},(resultReject)=> {  
+					resolve(myresultarray );
+				},(resultReject)=> {
 					reject("Unexpected error at request_permission");
-				} );  
-			},(resultReject)=> { 
-				reject("unexepected error promesas encadenadas");
+				} );
+			},(resultReject)=> {
+				reject("Unexepected Error recursively_confirmation_of_permissions");
 			});
-		}else{//soy el ultimo 
-			var temppermission = request_user_domain_permission( user, 'r', domain[j],j) ; 
-			temppermission.then((resultFind) => { 
+		}else{//soy el ultimo
+			var temppermission = request_user_domain_permission( user, 'r', domain[j],j) ;
+			temppermission.then((resultFind) => {
 // 				console.log("permisson "+resultFind.body+ " on j "+ j+ " domain is " +domain[j]);
 				myresultarray [j]=resultFind.body;
-				resolve(myresultarray );			
-			},(resultReject)=> {  
-				reject("Unexpected error at request_permission");
-			} ); 
+				resolve(myresultarray );
+			},(resultReject)=> {
+				reject("Unexpected error at request_permission:"+resultReject+"\nUser"+user+"\ndomain"+domain[j]+"\nj"+j+"\ntotalkeys"+totalkeys);
+			} );
 		}
 	});
 }
- 
+
 
 function request_permission( user,pretty, project,source,filepath, filename){
-	return new Promise( (resolve,reject) => {		
-		var query= MetadataModule.compose_query(project,source,filepath, filename); 
-		//1.1- find id of the existing doc for such path filename	
+	return new Promise( (resolve,reject) => {
+		var query= MetadataModule.compose_query(project,source,filepath, filename);
+		//1.1- find id of the existing doc for such path filename
 		var searching = MetadataModule.query_metadata(es_servername+":"+es_port,SERVERDB,query, pretty);
-		searching.then((resultFind) => {  
-			var result = { totalkeys: 1, permission: [''], jsonfilename : [''], domain: [''], label_domain: [''] };
-			result.permission ="permit"; 
-			resultFind = JSON.parse(resultFind); 
-			if(resultFind.hits !=undefined) { 	
-				var totalkeys =  Object.keys(resultFind.hits);
+		searching.then((resultFind) => {
+			var result = {totalkeys: 1, permission: [''], jsonfilename : [''], domain: [''], label_domain: [''] };
+			result.permission ="permit";
+			resultFind = JSON.parse(resultFind);
+			if(resultFind.hits !=undefined) {
+				var totalkeys = Object.keys(resultFind.hits);
 				result.totalkeys = totalkeys.length;
-				result.domain = new Array(totalkeys.length); 
-				result.label_domain = new Array(totalkeys.length); 
+				result.domain = new Array(totalkeys.length);
+				result.label_domain = new Array(totalkeys.length);
 				result.jsonfilename = new Array(totalkeys.length);
 				result.permission = new Array(totalkeys.length);
-				for (var j = 0; j < totalkeys.length; j++) {	 
-					var jsonobj = resultFind.hits[j]; 
-					keys = Object.keys(jsonobj);   
+				for (var j = 0; j < totalkeys.length; j++) {
+					var jsonobj = resultFind.hits[j];
+					keys = Object.keys(jsonobj);
 					for (var i = 0; i < keys.length; i++) {
 						var label=Object.getOwnPropertyNames(jsonobj)[i];
-						label=label.toLowerCase(); 
+						label=lowercase(label);
 						if(label == "domain"){
-							result.domain[j] = jsonobj[keys[i]]; 
+							result.domain[j] = jsonobj[keys[i]];
 						}
-						if(label == "filename"){ 
-							result.jsonfilename[j] = jsonobj[keys[i]];  
-						}	 
-					}  //for i 
-					if( result.domain[j]==undefined )  result.domain[j]="";
+						if(label == "filename"){
+							result.jsonfilename[j] = jsonobj[keys[i]];
+						}
+					} //for i
+					if( result.domain[j]==undefined ) result.domain[j]="";
 					if(result.domain[j].length==0){
-						result.domain[j]= 'domain_public'; 
+						result.domain[j]= 'domain_public';
 						result.label_domain[j] = "not defined domain";
 					}else{
 						result.label_domain[j] = result.domain[j];
-					}   
-				}//anyway the next loop run after the first loop even if we join the loop. Then this coding stile looks mor similar to the execution behaviour. 
-				var kresults= function_promesas_encadenadas(totalkeys.length, user, result.domain,0);
-				kresults.then((resultFind) => { 
-					for (var kj = 0; kj <totalkeys.length;  kj++) {
-						result.permission[kj]=resultFind[kj]; 
 					}
-					resolve(result);
-				},(resultReject)=> {  
-					reject("Unexpected error at function_promesas_encadenadas");
-				} );   
+				}//anyway the next loop run after the first loop even if we join the loop. Then this coding stile looks mor similar to the execution behaviour.
+				if(totalkeys.length>0){
+					var kresults= recursively_confirmation_of_permissions(totalkeys.length, user, result.domain,0);
+					kresults.then((resultFind) => {
+						for (var kj = 0; kj <totalkeys.length; kj++) {
+							result.permission[kj]=resultFind[kj];
+						}
+						resolve(result);
+					},(resultReject)=> {
+						reject("Unexpected error at recursively_confirmation_of_permissions:"+resultReject);
+					} );
+				}else{
+					resolve("permit");
+				}
 			}else{
 				reject("Unexpected error at request_permission");
-			} 
-		},(resultReject)=> { 
+			}
+		},(resultReject)=> {
 			reject("querymetadata: Bad Request "+resultReject +"\n");
 		});
 	});
 }//end request_permission
-		
+
 
 //**********************************************************
-app.get('/test_download',middleware.ensureAuthenticated, function(req, res) {
-	"use strict"; 
+app.get('/permission', function(req, res, next) {
+	//the request is expected to be done internally, same machine on port 8001
+	var user= find_param(req.body.user, req.query.user);//cheptsov@hlrs.de
+	var domain= find_param(req.body.domain, req.query.domain);//domain_hlrs
+	var access= find_param(req.body.access, req.query.access);//write w
+	if(user==undefined || domain == undefined || access == undefined){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("400 Error, missing parameter");
+	}else if(user.length==0 || domain.length == 0 || access.length == 0){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("400 Error, empty parameter");
+	}
+	
+	var permission = request_user_domain_permission(user, access, domain,0);
+	permission.then((resultFind) => {
+		if( resultFind.body == "permit"){
+			res.writeHead(200, {'Content-Type': contentType_text_plain });
+			res.end("200: Access granted");
+		}else if( resultFind.body == "deny"){
+			res.writeHead(403, {'Content-Type': contentType_text_plain });
+			res.end("403: Access denied");
+		}else {
+			res.writeHead(400, {'Content-Type': contentType_text_plain });
+			res.end("400 unexpected error "+resultFind.body);
+		}
+	},(resultReject)=> {
+			res.writeHead(400, {'Content-Type': contentType_text_plain });
+			res.end("400 unexpected error "+resultReject);
+	} );
+});
+
+app.get('/test_metadata', function(req, res) {
+	"use strict";
 	var pretty = find_param(req.body.pretty, req.query.pretty);
-	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
 	//***************************************
 	var project =find_param(req.body.project,req.query.project);
-	if (project != undefined) 
-		project=remove_quotation_marks(project); 
+	if (project != undefined)
+		project=remove_quotation_marks(project);
 	//***************************************
 	var source =find_param(req.body.source,req.query.source);
-	if (source != undefined) 
+	if (source != undefined)
 		source=remove_quotation_marks(source);
-	//***************************************	
+	var query= MetadataModule.compose_query(project,source,filepath, filename);
+	//***************************************
 	var filepath =find_param(req.body.Path,req.query.Path);
 	if (filepath != undefined)
 		filepath=remove_quotation_marks(filepath);
 	//***************************************
 	var filename =find_param(req.body.filename,req.query.filename);
 	if (filename != undefined)
-		filename=remove_quotation_marks(filename); 
+		filename=remove_quotation_marks(filename);
+	//1.1- find id of the existing doc for such path filename
+	
+	var searching = MetadataModule.query_metadata(es_servername+":"+es_port,SERVERDB,query, pretty);
+	searching.then((resultFind) => {
+		res.writeHead(200, {"Content-Type": "application/json"});
+		var domain =findomainjson_first(resultFind);
+		if(domain.length==0){
+			res.end("The domain of the file is: not defined domain\n");
+		}else{
+			res.end("The domain of the file is: "+domain+"\n");
+		}
+//		var resultloga = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,200,req.connection.remoteAddress,"QUERY METADATA granted to query:"
+//			+JSON.stringify(query),currentdate,res.user);
+	},(resultReject)=> {
+		res.writeHead(400, {"Content-Type": contentType_text_plain});
+		res.end("querymetadata: Bad Request "+resultReject +"\n");
+//		var resultlogb = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"QUERY METADATA BAD Request on query:"
+//			+JSON.stringify(query),currentdate,res.user);
+	});
+});
+
+//**********************************************************
+app.get('/test_download',middleware.ensureAuthenticated, function(req, res) {
+	"use strict";
+	var pretty = find_param(req.body.pretty, req.query.pretty);
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
+	//***************************************
+	var project =find_param(req.body.project,req.query.project);
+	if (project != undefined)
+		project=remove_quotation_marks(project);
+	//***************************************
+	var source =find_param(req.body.source,req.query.source);
+	if (source != undefined)
+		source=remove_quotation_marks(source);
+	//***************************************
+	var filepath =find_param(req.body.Path,req.query.Path);
+	if (filepath != undefined)
+		filepath=remove_quotation_marks(filepath);
+	//***************************************
+	var filename =find_param(req.body.filename,req.query.filename);
+	if (filename != undefined)
+		filename=remove_quotation_marks(filename);
 	var query_permission =request_permission(res.user,pretty, project,source,filepath, filename);
-	query_permission.then((result) => {    
-		var rescode=200;  // 200 stands for permit
+	query_permission.then((result) => {
+		var rescode=200; // 200 stands for permit
 		for (var j = 0; j < result.totalkeys; j++) {
 			if(result.permission[j] == "deny"){
 				rescode= 403; //permision denied
 			}else if (result.permission[j] != "permit"){
-				rescode=400;  //error procesing the request
+				rescode=400; //error procesing the request
 			}
-		} 
-		
-		res.writeHead(rescode, { 'Content-Type': contentType_text_plain });
+		}
+
+		res.writeHead(rescode, {'Content-Type': contentType_text_plain });
 		//el bucle anterior no se puede combinar con el siguiente porque necesitamos primger generar la cabecera de respuesta.
 		res.write("    The userid is: "+res.user+"\n");
 		for (var j = 0; j < result.totalkeys; j++) {
 			res.write("    The file is: "+result.jsonfilename[j]+" \n");
 			res.write("    The domain of the file is: "+result.label_domain[j]+" \n");
-			res.write("    The access to the file is: "+result.permission[j]+"\n");  
+			res.write("    The access to the file is: "+result.permission[j]+"\n");
 		}
 		var resend="";
-		if( rescode =200){ 
+		if( rescode =200){
 			resend="Access granted";
-		}else if( rescode=403){ 
+		}else if( rescode=403){
 			resend="Access denied";
-		}else { 
+		}else {
 			resend="unexpected error "+result.permission;
 		}
-		res.end(" \n Global Permission: "+rescode+": "+resend); 
+		res.end(" \n Global Permission: "+rescode+": "+resend);
 // 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,200,req.connection.remoteAddress,"QUERY METADATA granted to query:"
 // 			+JSON.stringify(query),currentdate,res.user);
-	},(resultReject)=> { 
+	},(resultReject)=> {
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end(resultReject);
-// 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"QUERY METADATA BAD Request on query:" 
-// 			+JSON.stringify(query),currentdate,res.user); 
-	}); 
-});
-
-//**********************************************************
-app.get('/download',middleware.ensureAuthenticated, function(req, res) {
-	var fs = require('fs');
-	var path = require('path'); 
-	var pretty = find_param(req.body.pretty, req.query.pretty);
-	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
-	//******************************************* 
-	var project= find_param(req.body.project, req.query.project);
-	project= validate_parameter(project,"project",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (project.length == 0){ 
-		res.writeHead(400, { 'Content-Type': contentType_text_plain });
-		res.end("\n400: Bad Request, missing "+"project"+".\n");
-		return;}
-	//******************************************* 
-	var source= find_param(req.body.source, req.query.source);
-	source= validate_parameter(source,"source",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (source.length == 0){ 
-		res.writeHead(400, { 'Content-Type': contentType_text_plain });
-		res.end("\n400: Bad Request, missing "+"source"+".\n");
-		return;}			
-	//*******************************************
-	var filepath= find_param(req.body.filepath, req.query.filepath);
-	filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (filepath.length == 0){ 
-		res.writeHead(400, { 'Content-Type': contentType_text_plain });
-		res.end("\n400: Bad Request, missing "+"filepath"+".\n");
-		return;}	
-	//*******************************************
-	var filename=  find_param(req.body.filename, req.query.filename);
-	filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (filename.length == 0){ 
-		res.writeHead(400, { 'Content-Type': contentType_text_plain });
-		res.end("\n400: Bad Request, missing "+"filename"+".\n");
-		return;}
-	//******************************************* 
-	var myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath + '/' + filename;  
- 	
-	var query= MetadataModule.compose_query(project,source,filepath, filename); 
-	//1.1- find id of the existing doc for such path filename	
-	var searching = MetadataModule.query_metadata(es_servername+":"+es_port,SERVERDB,query, pretty);
-// 	var resultlog="";
-	searching.then((resultFind) => { 
-		var domain =findomainjson_first(resultFind); 
-		if(domain.length==0){
-			domain= 'domain_public'; 
-			var label_domain = "not defined domain";
-		}else{
-			var label_domain = domain;
-		}
-		var permission = request_user_domain_permission(res.user, 'r', domain,0); 
-		permission.then((resultFind) => { 
-			var rescode=0;
-			var resend="";
-			if( resultFind.body == "permit"){ 
-
-				
-				
-	try{ 
-				
-				// Check if file specified by the filePath exists
-				fs.stat(myPath, function(err, stat) {
-					if(err == null) {
-						console.log('File exists');
-						console.log("myPath "+myPath);
-						// Content-type is very interesting part that guarantee that
-						// Web browser will handle response in an appropriate manner.
-						//fs.createReadStream(myPath).pipe(response);
-						var resolvedBase = path.resolve(myPath);
-						var stream = fs.createReadStream(resolvedBase);
-						//stream.setEncoding('UTF8');
-						// Handle non-existent file 
-						stream.on('error', function(error) {
-							console.log("Stream error: "+error); 
-							res.writeHead(404, {"Content-Type": contentType_text_plain});
-							res.write("\n400: stream error.\n");
-							res.end("path: "+myPath+"\n");
-							return;
-						});
-						
-						// File exists, stream it to user 
-						res.writeHead(200, {
-							"Content-Type": "application/octet-stream",
-							"Content-Disposition": "attachment; filename=" + filename
-						});  
-						stream.pipe(res);
-						var resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,"DONWLOAD granted to file: "+myPath,currentdate,res.user);
-						return;
-					} else if(err.code == 'ENOENT') {
-						// file does not exist
-			// 			console.log('file does not exist\n');
-						varresultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,404,req.connection.remoteAddress,"DOWNLOAD error: File not found: "+myPath ,currentdate,res.user);
-						//res.setHeader(name.value); //only before writeHeader 
-						res.writeHead(404, {"Content-Type": contentType_text_plain});
-						res.write("\n404: Bad Request, file not found.\n");
-						res.end("ERROR File does not exist: "+myPath+"\n");	
-						return; 
-					} else {
-			// 			console.log('Some other error: ', err.code);
-						res.writeHead(404, {"Content-Type": contentType_text_plain});
-						res.write("\n404: Bad Request, file not found.\n");
-						res.end("ERROR File does not exist: "+myPath+"\n");	
-						return;
-					}
-				});
-	}catch(e){ 
-							console.log("Stream error: "+e); 
-							res.writeHead(404, {"Content-Type": contentType_text_plain});
-							res.write("\n400: stream e.\n");
-							res.end("path: "+myPath+"\n");
-							return;		
-	} 					
-				
-			}else if( resultFind.body == "deny"){
-				rescode=403;
-				resend="Access denied";
-				res.writeHead(rescode, { 'Content-Type': contentType_text_plain });
-				res.write("    The userid is: "+res.user+"\n");
-				res.write("    The domain of the file is: "+label_domain+" \n");
-				res.write("    The access to the file is: "+resultFind.body+"\n");							
-				res.end("    "+rescode+": "+resend);				
-			}else {
-				rescode=400;
-				resend="unexpected error "+resultFind.body;
-				res.writeHead(rescode, { 'Content-Type': contentType_text_plain });
-				res.write("    The userid is: "+res.user+"\n");
-				res.write("    The domain of the file is: "+label_domain+" \n");
-				res.write("    The access to the file is: "+resultFind.body+"\n");							
-				res.end("    "+rescode+": "+resend);
-			}
-		},(resultReject)=> { 
-			res.writeHead(400, { 'Content-Type': contentType_text_plain });
-			res.end("400 unexpected error "+resultReject);
-		} );
-// 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,200,req.connection.remoteAddress,"QUERY METADATA granted to query:"
+// 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"QUERY METADATA BAD Request on query:"
 // 			+JSON.stringify(query),currentdate,res.user);
-	},(resultReject)=> { 
-		res.writeHead(400, {"Content-Type": contentType_text_plain});
-		res.end("querymetadata: Bad Request "+resultReject +"\n");
-// 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"QUERY METADATA BAD Request on query:" 
-// 			+JSON.stringify(query),currentdate,res.user); 
-	}); 
-	
-	
-				
+	});
 });
 //**********************************************************
 function list_of_files(myPath){
 	var path = path || require('path');
 	var fs = fs || require('fs');
-	var filelist = ""; 
-	files = fs.readdirSync(myPath); 
-	files.forEach(function(file) { 
-		if (fs.statSync(path.join(myPath, file)).isDirectory()) { 
+	var filelist = "";
+	files = fs.readdirSync(myPath);
+	files.forEach(function(file) {
+		if (fs.statSync(path.join(myPath, file)).isDirectory()) {
 			filelist= filelist+list_of_files(path.join(myPath, file));
 		}else{
 			filelist= filelist+path.join(myPath, file)+"\n";
@@ -1293,10 +1123,10 @@ function list_of_files(myPath){
 function list_of_files_metadata(project,source, filepath, filename){
 	var path = path || require('path');
 	var fs = fs || require('fs');
-	var filelist = ""; 
-	files = fs.readdirSync(myPath); 
-	files.forEach(function(file) { 
-		if (fs.statSync(path.join(myPath, file)).isDirectory()) { 
+	var filelist = "";
+	files = fs.readdirSync(myPath);
+	files.forEach(function(file) {
+		if (fs.statSync(path.join(myPath, file)).isDirectory()) {
 			filelist= filelist+list_of_files(path.join(myPath, file));
 		}else{
 			filelist= filelist+path.join(myPath, file)+"\n";
@@ -1306,46 +1136,276 @@ function list_of_files_metadata(project,source, filepath, filename){
 }//list_of_files_metadata
 
 //**********************************************************
-function json_list_of_files(myPath,filelist){ 
+function json_list_of_files(myPath,filelist){
 	var path = path || require('path');
-	var fs = fs || require('fs');  
-	files = fs.readdirSync(myPath); 
-	filelist= "{ \"path\": \"" + myPath +"\", \"name\": \""+ myPath + "\" }" ; 
-// 	files.forEach(function(file) { 
-// 		if (fs.statSync(path.join(myPath, file)).isDirectory()) { 
+	var fs = fs || require('fs');
+	files = fs.readdirSync(myPath);
+	filelist= "{\"path\": \"" + myPath +"\", \"name\": \""+ myPath + "\" }" ;
+// 	files.forEach(function(file) {
+// 		if (fs.statSync(path.join(myPath, file)).isDirectory()) {
 // 			filelist= filelist+json_list_of_files(path.join(myPath, file),filelist);
 // 		}else{
 // 			if(registered_path==false){
-// 			console.log(" path " +  myPath + " file "+file);
+// 			console.log(" path " + myPath + " file "+file);
 // 			if(filelist!=undefined ){
-// 				filelist= filelist +  ", { \"path\": \"" + myPath + "\" , \"name\": \""+ file +"\" }" ;
+// 				filelist= filelist + ", {\"path\": \"" + myPath + "\" , \"name\": \""+ file +"\" }" ;
 // 			}else{
-// 				filelist= "{ \"path\": \"" + myPath +"\", \"name\": \""+ file+ "\" }" ;
+// 				filelist= "{\"path\": \"" + myPath +"\", \"name\": \""+ file+ "\" }" ;
 // 			}
-// 			console.log("xxx "+ filelist  );}
+// 			console.log("xxx "+ filelist );}
 // 		}
 // 	});
 	return(filelist);
 }
 
+//**********************************************************
+//TODO: falta confirmar que los archivos existen
+//si no existen en el curl parece que se queda esperando indefinidamente
+app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
+	"use strict";
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
+	var message_bad_request = "UPLOAD Bad Request missing ";
+	var resultlog;
+	if (!req.files){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end('No files were uploaded.');
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,'No files were uploaded.',currentdate,res.user);
+		return;
+	}
+	var RawJSON= find_param(req.body.RawJSON, req.query.RawJSON);
+
+	var DestPath=find_param(req.body.Path,req.query.Path);
+	if (DestPath == undefined){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("400:Bad Request, missing Path.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"Path",currentdate,res.user);
+		return;
+	}
+
+	var DestFileName=find_param( req.body.DestFileName, req.query.DestFileName);
+	if (DestFileName == undefined){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("400:Bad Request, missing DestFileName.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"DestFileName",currentdate,res.user);
+		return;
+	}else if (DestFileName.length == 0){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("400:Bad Request, Empty DestFileName.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"DestFileName",currentdate,res.user);
+		return;
+	}
+	// The name of the input field (i.e. "UploadFile") is used to retrieve the uploaded file
+	let UploadFile = req.files.UploadFile;
+	var jsontext="";
+	//1.2- Not existing doc, just need to add
+	// process the RAW JSON parameter: upload the info in the ElasticSearch server.
+	if (RawJSON != undefined){
+		jsontext = RawJSON;
+	}else if (req.files.UploadJSON != undefined){
+		jsontext=req.files.UploadJSON.data.toString('utf8');
+	//	if (jsontext.length > 0)
+	//		jsontext = JSON.stringify(jsontext);
+	} 
+	var source_proj= get_source_project_json(jsontext);
+	jsontext=update_filename_path_on_json(jsontext, DestFileName, DestPath); //this adds the field
+// 	console.log("send_repo_update_to_suscribers("+source_proj.project + " "+ source_proj.source+")"+jsontext);
+	send_repo_update_to_suscribers(source_proj.project, source_proj.source,jsontext);
+
+	var storage_path=source_proj.project+"/"+source_proj.source+"/"+DestPath;
+	var result= MetadataModule.register_update_filename_path_json(es_servername+":"+es_port,SERVERDB, jsontext, source_proj.project, source_proj.source, DestFileName, DestPath);
+	result.then((resultResolve) => {
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,resultResolve.text,currentdate,res.user);
+		//after succeed on the upload of themetadata, we proceed to upload the file
+		var result_upload = upload_file(UploadFile, os.homedir(), File_Server_Path,
+			storage_path,DestFileName,
+			res.user,req.connection.remoteAddress,currentdate,"false");//debug=false
+		result_upload.then((resultResUp) => {
+			res.writeHead(resultResUp.code, {"Content-Type": contentType_text_plain});
+			res.end(resultResUp.text+"\n", 'utf-8');
+			return;
+		},(resultRejectUp)=> {
+			console.log("resultRejectUp.code" +resultRejectUp.code);
+			res.writeHead(resultRejectUp.code, {"Content-Type": contentType_text_plain});
+			res.end(resultRejectUp.text+"\n", 'utf-8');
+			return;
+		} );
+	},(resultReject)=> {
+		res.writeHead(resultReject.code, {"Content-Type": contentType_text_plain});
+		res.end(resultReject.text+"\n", 'utf-8')
+		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"Upload Error",currentdate,res.user);
+		return;
+	});//end
+});
+
+//**********************************************************
+app.get('/download',middleware.ensureAuthenticated, function(req, res) {
+	var fs = require('fs');
+	var path = require('path');
+	var pretty = find_param(req.body.pretty, req.query.pretty);
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
+	//*******************************************
+	var project= find_param(req.body.project, req.query.project);
+	project= validate_parameter(project,"project",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
+	if (project == undefined) project = "";
+	if (project.length == 0){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("\n400: Bad Request, missing "+"project"+".\n");
+		return;}
+	//*******************************************
+	var source= find_param(req.body.source, req.query.source);
+	source= validate_parameter(source,"source",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
+	if (source == undefined) source = "";
+	if (source.length == 0){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("\n400: Bad Request, missing "+"source"+".\n");
+		return;}
+	//*******************************************
+	var filepath= find_param(req.body.filepath, req.query.filepath);
+	filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
+	if (filepath == undefined) filepath = "";
+	if (filepath.length == 0){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("\n400: Bad Request, missing "+"filepath"+".\n");
+		return;}
+	//*******************************************
+	var filename= find_param(req.body.filename, req.query.filename);
+	filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
+	if (filename == undefined) filename = "";
+	if (filename.length == 0){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("\n400: Bad Request, missing "+"filename"+".\n");
+		return;}
+	//******************************************* 
+	var myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath + '/' + filename;
+
+	// look for NGAC policy here, then decide if continue or not !!	
+// 	var query= MetadataModule.compose_query(project,source,filepath, filename);
+// 	//1.1- find id of the existing doc for such path filename
+// 	var searching = MetadataModule.query_metadata(es_servername+":"+es_port,SERVERDB,query, pretty);
+// 	searching.then((resultFind) => {
+// 		var domain =findomainjson_first(resultFind);
+// 		if(domain.length==0){
+// 			domain= 'domain_public';
+// 			var label_domain = "not defined domain";
+// 		}else{
+// 			var label_domain = domain;
+// 		}
+// 		var permission = request_user_domain_permission(res.user, 'r', domain,0);
+// 		permission.then((resultFind) => {
+// 			var rescode=0;
+// 			if( resultFind.body == "permit"){
+			var query_permission =request_permission(res.user,pretty, project,source,filepath, filename);
+			query_permission.then((result) => {
+				for (var j = 0; j < 1; j++) {// 1 insted of result.totalkeys for considering only the first entry
+// 					console.log("Permission "+j+" "+result.permission[j]);
+					if(result.permission[j] == "deny"){//permision denied
+						res.writeHead(403, {"Content-Type": contentType_text_plain});
+						res.end("Access DENY: You may not have permission to download some file in the folder\n");
+						return;
+					}else if (result.permission[j] != "permit"){//error procesing the request
+						res.writeHead(400, {"Content-Type": contentType_text_plain});
+						res.end("ERROR processing the permissions\n");
+						return;
+					}
+				}
+
+				try{
+					// Check if file specified by the filePath exists
+					fs.stat(myPath, function(err, stat) {
+						if(err == null) {
+// 							console.log('File exists');
+// 							console.log("myPath "+myPath);
+							// Content-type is very interesting part that guarantee that
+							// Web browser will handle response in an appropriate manner.
+							//fs.createReadStream(myPath).pipe(response);
+							var resolvedBase = path.resolve(myPath);
+							var stream = fs.createReadStream(resolvedBase);
+							//stream.setEncoding('UTF8');
+							// Handle non-existent file
+							stream.on('error', function(error) {
+								console.log("Stream error: "+error);
+								res.writeHead(404, {"Content-Type": contentType_text_plain});
+								res.write("\n400: stream error.\n");
+								res.end("path: "+myPath+"\n");
+								return;
+							});
+							// File exists, stream it to user
+							res.writeHead(200, {
+								"Content-Type": "application/octet-stream",
+								"Content-Disposition": "attachment; filename=" + filename
+							});
+							stream.pipe(res);
+							var resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,"DONWLOAD granted to file: "+myPath,currentdate,res.user);
+							return;
+						} else if(err.code == 'ENOENT') {
+				//			console.log('file does not exist\n');
+							varresultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,404,req.connection.remoteAddress,"DOWNLOAD error: File not found: "+myPath ,currentdate,res.user);
+							//res.setHeader(name.value); //only before writeHeader
+							res.writeHead(404, {"Content-Type": contentType_text_plain});
+							res.write("\n404: Bad Request, file not found.\n");
+							res.end("ERROR File does not exist: "+myPath+"\n");	
+							return;
+						} else {
+				// 			console.log('Some other error: ', err.code);
+							res.writeHead(404, {"Content-Type": contentType_text_plain});
+							res.write("\n404: Bad Request, file not found.\n");
+							res.end("ERROR File does not exist: "+myPath+"\n");
+							return;
+						}
+					});
+
+				}catch(e){
+					console.log("Stream error: "+e);
+					res.writeHead(404, {"Content-Type": contentType_text_plain});
+					res.write("\n400: stream e.\n");
+					res.end("path: "+myPath+"\n");
+					return;
+				}
+// 			}else {
+// 				var rescode=400;
+// 				var resend="unexpected error "+resultFind.body;
+// 				if( resultFind.body == "deny"){
+// 					rescode=403;
+// 					resend="Access denied";
+// 				}
+// 				res.writeHead(rescode, {'Content-Type': contentType_text_plain });
+// 				res.write("    The userid is: "+res.user+"\n");
+// 				res.write("    The domain of the file is: "+label_domain+" \n");
+// 				res.write("    The access to the file is: "+resultFind.body+"\n");
+// 				res.end("    "+rescode+": "+resend);
+// 			}
+			},(resultReject)=> {
+				res.writeHead(400, {'Content-Type': contentType_text_plain });
+				res.end("400 unexpected error "+resultReject);
+				return;
+			} );
+// 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,200,req.connection.remoteAddress,"QUERY METADATA granted to query:"
+// 			+JSON.stringify(query),currentdate,res.user);
+// 	},(resultReject)=> {
+// 		res.writeHead(400, {"Content-Type": contentType_text_plain});
+// 		res.end("querymetadata: Bad Request "+resultReject +"\n");
+// // 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"QUERY METADATA BAD Request on query:" 
+// // 			+JSON.stringify(query),currentdate,res.user);
+// 	});
+});
+
 //*****
-// quiero que de la lista de los dominios de cada ficherlo en la lista
-// si no tiene dominio imprimimos dominio_public*
-// si no tiene metadata imprimimos dominio_public?
-//
+// quiero que de la lista de los dominios de cada fichero en la lista
+// si no tiene dominio imprimimos dominio_public
+// si no tiene metadata imprimimos dominio_public
 //**********************************************************
 app.get('/downloadlist',middleware.ensureAuthenticated, function(req, res) {
 	var fs = require('fs');
-	var path = require('path'); 
-	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
+	var path = require('path');
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
 	var filename = undefined;
 	var filepath = undefined;
 	//******************************************* 
 	var project= find_param(req.body.project, req.query.project);
 	project= validate_parameter(project,"project",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
 	if (project != undefined)
-	if (project.length == 0){ 
-		res.writeHead(400, { 'Content-Type': contentType_text_plain });
+	if (project.length == 0){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
 		res.end("\n400: Bad Request, missing "+"project"+".\n");
 		return;}
 	var myPath = os.homedir()+ File_Server_Path + '/' + project ;
@@ -1353,40 +1413,40 @@ app.get('/downloadlist',middleware.ensureAuthenticated, function(req, res) {
 	var source= find_param(req.body.source, req.query.source);
 	source= validate_parameter(source,"source",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
 	if (source != undefined)
-	if (source.length != 0){ 
-		myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source ;   
+	if (source.length != 0){
+		myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source ;
 		//*******************************************
 		filepath= find_param(req.body.filepath, req.query.filepath);
 		filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
 		if (filepath != undefined)
-		if (filepath.length != 0){ 
-			myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath ; 
+		if (filepath.length != 0){
+			myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath ;
 			//*******************************************
-			filename=  find_param(req.body.filename, req.query.filename);
-			filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined 
+			filename= find_param(req.body.filename, req.query.filename);
+			filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
 		}
-	}  
-	
-//Maybe look for NGAC policy here, then decide if continue or not !!	
- 
+	}
+
+//Maybe look for NGAC policy here, then decide if continue or not !!
+
 	// Check if file specified by the filePath exists
 	fs.stat(myPath, function(err, stat) {
 		if(err == null) {
-			res.end(list_of_files(myPath));				
+			res.end(list_of_files(myPath));
 // 			res.end(list_of_files_metadata(project,source, filepath, filename));
 		} else if(err.code == 'ENOENT') {
-			// file does not exist 
+			// file does not exist
 			varresultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,404,req.connection.remoteAddress,"DOWNLOAD-LIST error: File not found: "+myPath ,currentdate,res.user);
-			//res.setHeader(name.value); //only before writeHeader 
+			//res.setHeader(name.value); //only before writeHeader
 			res.writeHead(404, {"Content-Type": contentType_text_plain});
 			res.write("\n404: Bad Request, file not found.\n");
-			res.end("ERROR File does not exist: "+myPath+"\n");	
-			return; 
-		} else { 
+			res.end("ERROR File does not exist: "+myPath+"\n");
+			return;
+		} else {
 			res.writeHead(404, {"Content-Type": contentType_text_plain});
 			res.write("\n404: Bad Request, file not found.\n");
-			res.end("ERROR File does not exist: "+myPath+"\n");	
-			return; 
+			res.end("ERROR File does not exist: "+myPath+"\n");
+			return;
 		}
 	});
 });
@@ -1395,49 +1455,47 @@ app.get('/downloadlist',middleware.ensureAuthenticated, function(req, res) {
 app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 	var fs = require('fs');
 	var path = require('path');
-
 	var pretty = find_param(req.body.pretty, req.query.pretty);
-	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
 	var filepath=undefined;
 	var filename=undefined;
 	//******************************************* 
 	var project= find_param(req.body.project, req.query.project);
 	project= validate_parameter(project,"project",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
 	if (project != undefined)
-	if (project.length == 0){ 
-		res.writeHead(400, { 'Content-Type': contentType_text_plain });
+	if (project.length == 0){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
 		res.end("\n400: Bad Request, missing "+"project"+".\n");
 		return;}
 	var myPath = os.homedir()+ File_Server_Path + '/' + project ;
-	var myDest =  project ;  
+	var myDest = project ;
 	//******************************************* 
 	var source= find_param(req.body.source, req.query.source);
 	source= validate_parameter(source,"source",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
 	if (source != undefined)
-	if (source.length != 0){ 
-		myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source ;   
-		myDest = project +'/' + source ; 
+	if (source.length != 0){
+		myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source ;
+		myDest = project +'/' + source ;
 		//*******************************************
 		filepath= find_param(req.body.filepath, req.query.filepath);
 		filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
 		if (filepath != undefined)
-		if (filepath.length != 0){ 
-			myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath ; 
-			myDest =  project +'/' + source +'/' + filepath ; 
+		if (filepath.length != 0){
+			myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath ;
+			myDest = project +'/' + source +'/' + filepath;
 			//*******************************************
 			filename= find_param(req.body.filename, req.query.filename);
-			filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined 
+			filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
 		}
 	}
-	
-console.log("pretty "+pretty); 
-console.log("project "+project); 
-console.log("myPath "+myPath); 
-console.log("source "+source); 
-console.log("filepath "+filepath); 
-console.log("myDest "+myDest); 
-console.log("filename "+filename); 
-console.log("res.user "+res.user);
+// console.log("pretty "+pretty);
+// console.log("project "+project);
+// console.log("myPath "+myPath);
+// console.log("source "+source);
+// console.log("filepath "+filepath);
+// console.log("myDest "+myDest);
+// console.log("filename "+filename);
+// console.log("res.user "+res.user);
 // project example7
 // myPath /nas_home//hpcjmont/phantom_servers/phantom_repository/example7/user
 // source user
@@ -1451,98 +1509,113 @@ console.log("res.user "+res.user);
 	query_permission.then((result) => {
 		for (var j = 0; j < result.totalkeys; j++) {
 			console.log("permission "+j+" "+result.permission[j]);
-			
-			if(result.permission[j] == "deny"){ //permision denied
-				res.writeHead(403, {"Content-Type": contentType_text_plain}); 
-				res.end("Access DENY: You may not have permission to download some file in the folder\n"); 
-			}else if (result.permission[j] != "permit"){ //error procesing the request
-				res.writeHead(400, {"Content-Type": contentType_text_plain}); 
-				res.end("ERROR processing the permissions\n");	
-				return; 
+			if(result.permission[j] == "deny"){//permision denied
+				res.writeHead(403, {"Content-Type": contentType_text_plain});
+				res.end("Access DENY: You may not have permission to download some file in the folder\n");
+			}else if (result.permission[j] != "permit"){//error procesing the request
+				res.writeHead(400, {"Content-Type": contentType_text_plain});
+				res.end("ERROR processing the permissions\n");
+				return;
 			}
 		}
+
 		var zipfile ="download_repo_zip";
 		// Check if file specified by the filePath exists
-try{
-		fs.stat(myPath, function(err, stat) {
-			if(err == null) {
-				var filelist=undefined;
-	// 			filelist=json_list_of_files(myPath,filelist);
-				var path = path || require('path');
-				var fs = fs || require('fs');  
-				files = fs.readdirSync(myPath); 
-				filelist= "{ \"path\": \""  + myPath +"\", \"name\": \""+ myDest + "\" }" ; 
-				console.log(JSON.stringify(JSON.parse("[" + filelist+ "]"), null, 4 ));
-				if(filelist!=undefined ){
-					try{
-						console.log("res.zip try" );	 
-						res.zip({
-							files:   JSON.parse("[" + 
-								{ content: 'content',
-								name: 'file-name',
-								mode: 0755,
-								comment: 'comment-for-the-file',
-								date: new Date(),
-								type: 'file' },
-							+filelist+ "]"),
-							filename: zipfile+'.zip'
-						})
-						.then(function(obj){
-							console.log(" succeeed");	//if zip failed
-							var zipFileSizeInBytes = obj.size;
-							var ignoredFileArray = obj.ignored;
-						})
-						.catch(function(err){
-							console.log("res.zip " +err);	//if zip failed
-						});
-						
-					}catch(eb){ 
-						console.log("Stream-2 error: "+eb); 
-						res.writeHead(404, {"Content-Type": contentType_text_plain});
-						res.write("\n400: stream-2: "+eb+" \n");
-						res.end("path: "+myPath+"\n");
-						return;		
-					} 					
-				}else{ 
-					res.end("files not found in that directory");
+		try{
+			fs.stat(myPath, function(err, stat) {
+				if(err == null) {
+					var filelist=undefined;
+		// 			filelist=json_list_of_files(myPath,filelist);
+					var path = path || require('path');
+					var fs = fs || require('fs');
+					files = fs.readdirSync(myPath);
+					filelist= { path :  myPath  ,  name :   myDest   };
+	// 				console.log(JSON.stringify(JSON.parse("[" + filelist+ "]"), null, 4 ));
+					if(filelist!=undefined ){
+						try{
+// 							res.zip({
+// 								files: [
+// 									{content: 'content',
+// 									name: 'description.txt',
+// 									mode: 0755,
+// 									comment: 'File-Downloaded-From-Repository',
+// 									date: new Date(),
+// 									type: 'file' },
+// 								filelist],
+// 								filename: zipfile+'.zip'
+// 							})
+// 							.then(function(obj){
+// 								console.log(" succeeed");//if zip failed
+// 								var zipFileSizeInBytes = obj.size;
+// 								var ignoredFileArray = obj.ignored;
+// 							})
+							res.zip({
+								files: [
+									filelist],
+								filename: zipfile+'.zip'
+							})
+							.then(function(obj){
+// 								console.log(" succeeed");//if zip failed
+								var zipFileSizeInBytes = obj.size;
+								var ignoredFileArray = obj.ignored;
+							})
+							.catch(function(err){
+								console.log("res.zip " +err);	//if zip failed
+							});
+						}catch(eb){
+// 							console.log("Stream-2 Error: "+eb);
+							
+// 							console.log("date:"+ new Date()+" \nfilelist"+filelist+"\nfilename"+zipfile);
+							
+							
+							
+							res.writeHead(404, {"Content-Type": contentType_text_plain});
+							res.write("\n400: stream-2: "+eb+" \n");
+							res.end("path: "+myPath+"\n"+zipfile+'.zip'+"\n");
+							return;
+						}
+					}else{
+						res.end("files not found in that directory");
+						return;
+					}
+				} else if(err.code == 'ENOENT') {
+					// file does not exist 
+					varresultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,404,req.connection.remoteAddress,"DOWNLOAD-LIST error: File not found: "+myPath ,currentdate,res.user);
+					//res.setHeader(name.value); //only before writeHeader
+					res.writeHead(404, {"Content-Type": contentType_text_plain});
+					res.write("\n404: Bad Request, file not found.\n");
+					res.end("ERROR File does not exist: "+myPath+"\n");
+					return;
+				} else {
+					res.writeHead(404, {"Content-Type": contentType_text_plain});
+					res.write("\n404: Bad Request, file not found.\n");
+					res.end("ERROR File does not exist: "+myPath+"\n");
+					return;
 				}
-			} else if(err.code == 'ENOENT') {
-				// file does not exist 
-				varresultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,404,req.connection.remoteAddress,"DOWNLOAD-LIST error: File not found: "+myPath ,currentdate,res.user);
-				//res.setHeader(name.value); //only before writeHeader 
-				res.writeHead(404, {"Content-Type": contentType_text_plain});
-				res.write("\n404: Bad Request, file not found.\n");
-				res.end("ERROR File does not exist: "+myPath+"\n");	
-				return; 
-			} else { 
-				res.writeHead(404, {"Content-Type": contentType_text_plain});
-				res.write("\n404: Bad Request, file not found.\n");
-				res.end("ERROR File does not exist: "+myPath+"\n");	
-				return; 
-			}
-		});
-}catch(e){ 
-	console.log("Stream-2 error: "+e); 
-	res.writeHead(404, {"Content-Type": contentType_text_plain});
-	res.write("\n400: stream-2: "+e+" \n");
-	res.end("path: "+myPath+"\n");
-	return;		
-} 			
-	},(resultReject)=> { 
-		res.writeHead(400, {"Content-Type": contentType_text_plain}); 
-		res.end("ERROR: "+resultReject+"\n");	
-		return;
-	}); 
+			});
+		}catch(e){
+			console.log("Stream-2 error: "+e);
+			res.writeHead(404, {"Content-Type": contentType_text_plain});
+			res.write("\n400: stream-2: "+e+" \n");
+			res.end("path: "+myPath+"\n");
+			return;
+		}
 	
-	//*******************************************  
-// 	res.zip({ files: [ {   content: 'downloaded from the PHANTOM REPOSITORY', name: 'test-file', mode: 0755, comment: zipfile, date: new Date(), type: 'file' }, 
-// 			{ path: myPath, name: 'uploads' }    ], filename: zipfile+'.zip' });
-// 	res.zip({ 
-// 		files: [  
-// 			{ path: myPath, name: zipfile }    
-// 		], 
+	},(resultReject)=> {
+		res.writeHead(400, {"Content-Type": contentType_text_plain});
+		res.end("ERROR: "+resultReject+"\n");
+		return;
+	});
+
+	//*******************************************
+// 	res.zip({files: [ {content: 'downloaded from the PHANTOM REPOSITORY', name: 'test-file', mode: 0755, comment: zipfile, date: new Date(), type: 'file' },
+// 			{path: myPath, name: 'uploads' } ], filename: zipfile+'.zip' });
+// 	res.zip({
+// 		files: [
+// 			{path: myPath, name: zipfile }
+// 		],
 // 		filename: zipfile+'.zip'
-// 	});	
+// 	});
 });
 //**********************************************************
 //example:
@@ -1553,20 +1626,30 @@ app.post('/signup', function(req, res) {
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
 	var name= find_param(req.body.userid, req.query.userid);
 	var email= find_param(req.body.email, req.query.email);
-	var pw=find_param(req.body.pw, req.query.pw); 
+	var pw=find_param(req.body.pw, req.query.pw);
 	var resultlog ;
-	if (pw == undefined){ 
+	if (pw == undefined){
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("\n400: SIGNUP Bad Request, missing Passwd.\n");
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"SIGNUP Bad Request, missing Passwd",currentdate,""); 
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"SIGNUP Bad Request, missing Passwd",currentdate,"");
 		return ;
-	} 
+	}else if(pw.length == 0){
+		res.writeHead(400, {"Content-Type": contentType_text_plain});
+		res.end("\n400: SIGNUP Bad Request, empty Passwd.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"SIGNUP Bad Request, Empty Passwd",currentdate,"");
+		return ;
+	}
 	if (email == undefined){
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("\n400: Bad Request, missing Email.\n");
-		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"SIGNUP Bad Request, missing Email",currentdate,""); 
+		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"SIGNUP Bad Request, missing Email",currentdate,"");
 		return ;
-	} 	     
+	}else if (email.length == 0){
+		res.writeHead(400, {"Content-Type": contentType_text_plain});
+		res.end("\n400: Bad Request, Empty Email.\n");
+		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"SIGNUP Bad Request, Empty Email",currentdate,"");
+		return ;
+	}
 	console.log("[LOG]: REGISTER USER+PW"); 
 	console.log("   " +colours.FgYellow + colours.Bright + " user: " + colours.Reset + email );
 	console.log("   " +colours.FgYellow + colours.Bright + " request from IP: " + req.connection.remoteAddress + colours.Reset);
@@ -1581,22 +1664,22 @@ app.post('/signup', function(req, res) {
 	var result = UsersModule.register_new_user(es_servername+":"+es_port,SERVERDB, name, email, pw);
 	result.then((resultreg) => {
 		var messageb = "REGISTER USER '"+ email + "' GRANTED";
-		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,resultreg.code, req.connection.remoteAddress, messageb,currentdate,""); 
+		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,resultreg.code, req.connection.remoteAddress, messageb,currentdate,"");
 		var verify_flush = CommonModule.my_flush( req.connection.remoteAddress,es_servername+':'+es_port, SERVERDB);
 		verify_flush.then((resolve_result) => {
 			res.writeHead(resultreg.code, {"Content-Type": contentType_text_plain});
-			res.end("Succeed\n");	
+			res.end("Succeed\n");
 		},(reject_result)=> {
 			res.writeHead(reject_result.code, {"Content-Type": contentType_text_plain});
 			res.end(reject_result.text+": ERROR FLUSH\n", 'utf-8');
 			resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, reject_result.code, req.connection.remoteAddress, reject_result.text+"ERROR FLUSH",currentdate,"");
 		});//
-	},(resultReject)=> { 
+	},(resultReject)=> {
 		res.writeHead(resultReject.code, {"Content-Type": contentType_text_plain});
 		res.end(resultReject.code+": Bad Request "+resultReject.text+"\n");
 		var messagec = "REGISTER USER '"+ email + "' BAD REQUEST";
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, resultReject.code, req.connection.remoteAddress, messagec,currentdate,"");
-	} ); 
+	} );
 });
 
 //**********************************************************
@@ -1605,33 +1688,43 @@ app.post('/signup', function(req, res) {
 // app.post('/signup',ipfilter(ips, {mode: 'allow'}), function(req, res) {
 app.post('/update_user', function(req, res) {
 	"use strict";
-	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
 	var name= find_param(req.body.userid, req.query.userid);
 	var email= find_param(req.body.email, req.query.email);
 	var pw=find_param(req.body.pw, req.query.pw); 
 	if (pw == undefined){ 
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("\n400: SIGNUP Bad Request, missing Email.\n");
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"SIGNUP Bad Request, missing Email",currentdate,""); 
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"SIGNUP Bad Request, missing Email",currentdate,"");
 		return ;
-	} 
+	}else if (pw.length == 0){
+		res.writeHead(400, {"Content-Type": contentType_text_plain});
+		res.end("\n400: SIGNUP Bad Request, Empty Email.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"SIGNUP Bad Request, Empty Email",currentdate,"");
+		return ;
+	}
 	if (email == undefined){
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("\n400: Bad Request, missing Email.\n");
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"SIGNUP Bad Request, missing Email",currentdate,""); 
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"SIGNUP Bad Request, missing Email",currentdate,"");
 		return ;
-	}  
-	if(( req.connection.remoteAddress!= ips[0] ) &&( req.connection.remoteAddress!=ips[1])&&( req.connection.remoteAddress!=ips[2])){ 
+	}else if (email.length == 0){
+		res.writeHead(400, {"Content-Type": contentType_text_plain});
+		res.end("\n400: Bad Request, Empty Email.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"SIGNUP Bad Request, Empty Email",currentdate,"");
+		return ;
+	}
+	if(( req.connection.remoteAddress!= ips[0] ) &&( req.connection.remoteAddress!=ips[1])&&( req.connection.remoteAddress!=ips[2])){
 		var messagea = "REGISTER USER '"+ email + "' FORBIDDEN access from external IP";
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 403,req.connection.remoteAddress,messagea,currentdate,"");
 		res.writeHead(403, {"Content-Type": contentType_text_plain});
 		res.end("\n403: FORBIDDEN access from external IP.\n");
 		return ;
-	}	 
-	var result = UsersModule.update_user(es_servername+":"+es_port,SERVERDB,  name, email, pw);
-	result.then((resultreg) => { 
+	}
+	var result = UsersModule.update_user(es_servername+":"+es_port,SERVERDB, name, email, pw);
+	result.then((resultreg) => {
 		var messageb = "UPDATE USER '"+ email + "' GRANTED";
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, resultreg.code, req.connection.remoteAddress, messageb,currentdate,""); 
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, resultreg.code, req.connection.remoteAddress, messageb,currentdate,"");
 		var verify_flush = CommonModule.my_flush( req.connection.remoteAddress,es_servername+':'+es_port, SERVERDB);
 		verify_flush.then((resolve_result) => {
 			res.writeHead(resultreg.code, {"Content-Type": contentType_text_plain});
@@ -1640,12 +1733,12 @@ app.post('/update_user', function(req, res) {
 			res.writeHead(reject_result.code, {"Content-Type": contentType_text_plain});
 			res.end(reject_result.text+"\n", 'utf-8');
 		});//
-	},(resultReject)=> { 
+	},(resultReject)=> {
 		res.writeHead(resultReject.code, {"Content-Type": contentType_text_plain});
 		res.end("updateuser: Bad Request "+resultReject.text+"\n");
 		var messagec = "UPDATE USER '"+ email + "' BAD REQUEST";
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, resultreg.code, req.connection.remoteAddress, messagec,currentdate,"");
-	} ); 
+	} );
 });
 
 //**********************************************************
@@ -1656,20 +1749,30 @@ app.get('/login', function(req, res) {
 	var resultlog ;
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
 	var email= find_param(req.body.email, req.query.email);
-	var pw=find_param(req.body.pw, req.query.pw); 	
+	var pw=find_param(req.body.pw, req.query.pw);
 	if (pw == undefined){
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("400: Bad Request, missing Passwd\n");
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400, req.connection.remoteAddress, "400: Bad Request, missing Passwd",currentdate,"");
 		return;
+	}else if (pw.length == 0){
+		res.writeHead(400, {"Content-Type": contentType_text_plain});
+		res.end("400: Bad Request, Empty Passwd\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400, req.connection.remoteAddress, "400: Bad Request, Empty Passwd",currentdate,"");
+		return;
 	}
 	if (email == undefined){
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
-		res.end("400: Bad Request, missing Email\n"); 
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400, req.connection.remoteAddress, "400: Bad Request, missing Email",currentdate,"");		
+		res.end("400: Bad Request, missing Email\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400, req.connection.remoteAddress, "400: Bad Request, missing Email",currentdate,"");
 		return;
-	}  
-	var result = UsersModule.query_count_user_pw( es_servername+":"+es_port,SERVERDB,  email, pw); //returns the count of email-pw, if !=1 then we consider not registered.
+	}else if (email.lenth == 0){
+		res.writeHead(400, {"Content-Type": contentType_text_plain});
+		res.end("400: Bad Request, Empty Email\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400, req.connection.remoteAddress, "400: Bad Request, Empty Email",currentdate,"");
+		return;
+	}
+	var result = UsersModule.query_count_user_pw( es_servername+":"+es_port,SERVERDB, email, pw); //returns the count of email-pw, if !=1 then we consider not registered.
 	result.then((resultCount) => {
 		if(resultCount==1){
 			var mytoken= auth.emailLogin(email); 
@@ -1679,10 +1782,10 @@ app.get('/login', function(req, res) {
 		}else{
 			res.writeHead(401, {"Content-Type": contentType_text_plain});
 			res.end("401 (Unauthorized) Autentication failed, incorrect user " +" or passwd " +"\n"); 
-			resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 401, req.connection.remoteAddress, 
+			resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 401, req.connection.remoteAddress,
 				"401: Bad Request of Token, incorrect user or passwd "+email+"or passwd ",currentdate,"");
 		}
-	},(resultReject)=> { 
+	},(resultReject)=> {
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("\n400: Bad Request "+resultReject+"\n");
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400, req.connection.remoteAddress, 
@@ -1697,16 +1800,17 @@ function originIsAllowed(origin) {
 //report on the screen the list of fields, and values
 function consolelogjsonws(JSONstring ){
 	var jsonobj = JSON.parse(JSONstring);
-	var keys = Object.keys(jsonobj); 
-	var myres = { user: "", project:  "" , source:  ""};
+	var keys = Object.keys(jsonobj);
+	var myres = { user: "", project: "" , source: ""};
 	for (var i = 0; i < keys.length; i++) {
 		var labeltxt=Object.getOwnPropertyNames(jsonobj)[i];
-		if(labeltxt.toLowerCase() == 'user') {
-			myres.user = jsonobj[keys[i]]; 
-		}else if(labeltxt.toLowerCase() == 'project') {
-			myres.project = jsonobj[keys[i]]; 
-		}else if(labeltxt.toLowerCase() == 'source') {
-			myres.source = jsonobj[keys[i]]; 
+		labeltxt=lowercase(labeltxt);
+		if(labeltxt == 'user') {
+			myres.user = jsonobj[keys[i]];
+		}else if(labeltxt == 'project') {
+			myres.project = jsonobj[keys[i]];
+		}else if(labeltxt == 'source') {
+			myres.source = jsonobj[keys[i]];
 		}
 	}
 	return myres;
@@ -1714,48 +1818,50 @@ function consolelogjsonws(JSONstring ){
 
 function send_repo_update_to_suscribers(projectname,sourcename, jsontext){
 	//*******************************************************************
-	if(projectname != undefined){ 
+	if(projectname != undefined)
+	if(projectname.length > 0){
 		//Now we find the suscribed users and we send copy
 		for (var u = 0; u < max_users; u++) {
 			var found_sucrip=false;
-			var i=0; 
-			while(i< total_project_suscriptions[u] && found_sucrip==false){ 
-				if(ProjectSubscriptions[u,i]==projectname){ 
+			var i=0;
+			while(i< total_project_suscriptions[u] && found_sucrip==false){
+				if(ProjectSubscriptions[u,i]==projectname){
 					found_sucrip=true;
 				}else{
 					i++;
 				}
 			}
-			if(found_sucrip==true){ 
+			if(found_sucrip==true){
 				//we send the copy because we found the SUSCRIPTION
 				console.log("Forwarding to suscribed user: "+user_ids[u] + " Project: "+ projectname);
-				//user_conn[u].send("{\"project modified \":\""+projectname+"\"  }"); 
+				//user_conn[u].send("{\"project modified \":\""+projectname+"\" }");
 				user_conn[u].send(jsontext);
 				return;//then not send the the json two times, in case user also suscribed to the sourcename
 			}
-		}   
-	}  
- 
-	if(sourcename != undefined){ 
+		}
+	}
+
+	if(sourcename != undefined)
+	if(sourcename.length > 0){
 		//Now we find the suscribed users and we send copy
 		for (var u = 0; u < max_users; u++) {
 			var found_sucrip=false;
-			var i=0; 
-			while(i< total_source_suscriptions[u] && found_sucrip==false){ 
-				if(SourceSubscriptions[u,i]==sourcename){ 
+			var i=0;
+			while(i< total_source_suscriptions[u] && found_sucrip==false){
+				if(SourceSubscriptions[u,i]==sourcename){
 					found_sucrip=true;
 				}else{
 					i++;
 				}
 			}
-			if(found_sucrip==true){ 
+			if(found_sucrip==true){
 				//we send the copy because we found the SUSCRIPTION
 				console.log("Forwarding to suscribed user: "+user_ids[u] + " Source: "+ sourcename);
-				//user_conn[u].send("{\"project modified \":\""+sourcename+"\" }"); 
+				//user_conn[u].send("{\"project modified \":\""+sourcename+"\" }");
 				user_conn[u].send(jsontext);
 			}
-		}   
-	}  
+		}
+	}
 };
 
 function find_pos_user_address(client_address){
@@ -1774,14 +1880,14 @@ app.ws('/', function(ws_connection, req) {
 		req.reject();
 		console.log((new Date()) + ' Connection rejected from origin '+ client_address);
 		return;
-	} 	
-	console.log((new Date()) + ' Connection accepted from ' + client_address); 
+	}
+	console.log((new Date()) + ' Connection accepted from ' + client_address);
 	// we need to know client index to remove them on 'close' event
-	var index = clients.push(ws_connection) - 1;  
-	var user_id = max_users;  //no valid value to represent not defined
+	var index = clients.push(ws_connection) - 1;
+	var user_id = max_users; //no valid value to represent not defined
 	//******************************************
 	// received a message from the user 
-	ws_connection.on('message', function(message) { //received message is message  
+	ws_connection.on('message', function(message) { //received message is message
 		user_input = consolelogjsonws( message );
 		user_id=find_pos_user_address(client_address);
 		if(user_id==totalusers){//address not registered, we add it at the end of the list
@@ -1802,31 +1908,28 @@ app.ws('/', function(ws_connection, req) {
 		user_index[user_id]=index;
 		user_ids[user_id]=user_input.user;//only for debuging
 		user_conn[user_id]=ws_connection;
-		
-		//compose the message describing the update of suscription 
+		//compose the message describing the update of suscription
 		var update_suscription_msg = {};
-		update_suscription_msg["user"]= user_input.user ; 
+		update_suscription_msg["user"]= user_input.user;
 		if(user_input.project != undefined)
-		if(user_input.project.length > 0){ 
-			update_suscription_msg ["suscribed_to_project"] = user_input.project ;
-		} 
+		if(user_input.project.length > 0){
+			update_suscription_msg ["suscribed_to_project"] = user_input.project;
+		}
 		if(user_input.source != undefined)
-		if(user_input.source.length > 0){ 
-			update_suscription_msg["suscribed_to_source"] = user_input.source ; 
-		} 				 
-		
+		if(user_input.source.length > 0){
+			update_suscription_msg["suscribed_to_source"] = user_input.source;
+		}
 		console.log(JSON.stringify(update_suscription_msg));
-		
-		ws_connection.send(JSON.stringify(update_suscription_msg)); 
-// 		console.log((new Date()) + ' Received Suscription from ' + user_input.user + ': ' + message );   
+		ws_connection.send(JSON.stringify(update_suscription_msg));
+// 		console.log((new Date()) + ' Received Suscription from ' + user_input.user + ': ' + message );
 		//**********************************************************************
 		//first we need find if the user_id already suscribed, if not then we add the new suscription
 		//**********************************************************************
 		//adding suscriptoin on PROJECTS:
 		var found_susc=false;
-		if(user_input.project.length > 0)
-		if(user_input.project!=undefined){
-			for (var i = 0; i < total_project_suscriptions[user_id]; i++)  
+		if(user_input.project!=undefined)
+		if(user_input.project.length > 0){
+			for (var i = 0; i < total_project_suscriptions[user_id]; i++)
 				if(ProjectSubscriptions[user_id,i]==user_input.project) {
 					found_susc=true;
 // 					console.log("found previous suscription adding at "+user_id+" "+i);
@@ -1839,12 +1942,12 @@ app.ws('/', function(ws_connection, req) {
 		}
 		//**********************************************************************
 		//adding suscriptoin on SOURCEs:
-		found_susc=false; 
-		if(user_input.source.length > 0)
-		if(user_input.source!=undefined){
-			for (var i = 0; i < total_source_suscriptions[user_id]; i++)  
+		found_susc=false;
+		if(user_input.source!=undefined)
+		if(user_input.source.length > 0){
+			for (var i = 0; i < total_source_suscriptions[user_id]; i++)
 				if(SourceSubscriptions[user_id,i]==user_input.source) {
-					found_susc=true; 
+					found_susc=true;
 // 					console.log("found previous suscription adding at "+user_id+" "+i);
 				}
 			if(found_susc==false){
@@ -1859,50 +1962,47 @@ app.ws('/', function(ws_connection, req) {
 	
 	// EPIPE means that writing of (presumably) the HTTP request failed
 	// because the other end closed the connection.
-	ws_connection.on('error', function(e){	
+	ws_connection.on('error', function(e){
 		console.log("socket error:"+ e);
 	});
-	  
+
 	// user disconnected
 	ws_connection.on('close', function(reasonCode, description) {
 // 		console.log((new Date()) + ' Peer: ' + client_address + ' disconnected.'+ 'user is: '+ user_input.user);
 		var i=find_pos_user_address(client_address);
-		if(i<totalusers) { 
+		if(i<totalusers) {
 			user_address[i]=undefined;
 			total_project_suscriptions[i]=0;
-			total_source_suscriptions[i]=0; 
+			total_source_suscriptions[i]=0;
 			// remove user from the list of connected clients
-			clients.splice(user_index[i], 1); 
+			clients.splice(user_index[i], 1);
 		}
 	});
 });
 
-
- 
-   
 // set up error handler
 function errorHandler (err, req, res, next) {
-    if(req.ws){
-        console.error("ERROR from WS route - ", err);
-    } else {
-        console.error("ERROR from WS: " +err);
-        res.setHeader('Content-Type', 'text/plain');
-        res.status(500).send(err.stack);
-    }
+	if(req.ws){
+		console.error("ERROR from WS route - ", err);
+	} else {
+		console.error("ERROR from WS: " +err);
+		res.setHeader('Content-Type', 'text/plain');
+		res.status(500).send(err.stack);
+	}
 }
 app.use(errorHandler);
 
 // app.use(function (err, req, res) {
-//     log.error('Error on path %s\n%s\n', req.url, err.stack);
-//     res.status(500).send((process.env.NODE_ENV == 'production') ? 'Internal Server Error' : err.stack.replace(/(?:\r\n|\r|\n)/g, '<br />'));
+//	log.error('Error on path %s\n%s\n', req.url, err.stack);
+//	res.status(500).send((process.env.NODE_ENV == 'production') ? 'Internal Server Error' : err.stack.replace(/(?:\r\n|\r|\n)/g, '<br />'));
 // });
-//********************************************************** 
-app.all("*", function(req, res) { 
-	const url = require('url'); 
+//**********************************************************
+app.all("*", function(req, res) {
+	const url = require('url');
 	res.writeHead(400, {"Content-Type": contentType_text_plain});
 	//req.method  used for indentify the request method GET, PUT, POST, DELETE
-	res.end("[ERROR]: the requested path: \""+ url.parse(req.url).pathname +"\" for the method \""+ req.method +"\" is not implemented in the current version.\n", 'utf-8'); 
-	return; 
+	res.end("[ERROR]: the requested path: \""+ url.parse(req.url).pathname +"\" for the method \""+ req.method +"\" is not implemented in the current version.\n", 'utf-8');
+	return;
 });
 //**********************************************************
 var tryToOpenServer = function(port)
@@ -1915,7 +2015,7 @@ var tryToOpenServer = function(port)
 		if (err.code === 'EADDRINUSE') {
 			// port is currently in use
 			console.log(colours.FgRed + colours.Bright + 'server error, port ' + port + ' is busy' + colours.Reset);
-		} else { 
+		} else {
 			console.log(err);
 		}
 	});
