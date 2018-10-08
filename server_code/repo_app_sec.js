@@ -216,7 +216,7 @@ function is_defined(variable) {
 function find_param(body, query){
 	try{
 		if (body != undefined){ //if defined as -F parameter
-			return body;
+			return body ;
 		}else if (query != undefined){ //if defined as ? parameter
 			return query;
 		}
@@ -225,7 +225,7 @@ function find_param(body, query){
 			return query;
 		}
 	} 
-	return undefined;
+	return undefined ;
 }
 //*********************************************************************
 //report on the screen the list of fields, and values
@@ -247,11 +247,11 @@ function update_filename_path_on_json(JSONstring, filename, path){
 	var jsonobj = JSON.parse(JSONstring);
 	var keys = Object.keys(jsonobj);
 	if (path == undefined) path="";
-	if (filename == undefined) filename="";
+	if (filename == undefined) filename="";	
 	new_json['path']		=path;
-	new_json['path'+'_length'] =path.length; //label can not contain points '.' !
+	new_json['path'+'_length']	=path.length; //label can not contain points '.' !
 	new_json['filename']	=filename;
-	new_json['filename'+'_length']=filename.length;
+	new_json['filename'+'_length']=filename.length;	
 	for (var i = 0; i < keys.length; i++) {
 		var label=Object.getOwnPropertyNames(jsonobj)[i];
 		label=lowercase(label);
@@ -260,7 +260,7 @@ function update_filename_path_on_json(JSONstring, filename, path){
 		if( typeof jsonobj[keys[i]] == 'string'){
 			new_json[label+'_length']=jsonobj[keys[i]].length;
 		}
-	}
+	} 
 	new_json=(JSON.stringify(new_json));
 	return new_json;
 }
@@ -268,7 +268,7 @@ function update_filename_path_on_json(JSONstring, filename, path){
 function update_device_length_on_json(JSONstring, device){ 
 	var new_json = {  } 
 	var jsonobj = JSON.parse(JSONstring);
-	var keys = Object.keys(jsonobj); 
+	var keys = Object.keys(jsonobj);
 	if (device == undefined) device="";
 	new_json['device']		=device;
 	new_json['device_length']	=device.length; 	
@@ -371,13 +371,13 @@ function update_projectname_length_on_json(JSONstring, projectname){
 }
 //**********************************************************
 function validate_parameter(parameter,label,currentdate,user,address){
-	var message_error = "DOWNLOAD Bad Request missing "+label;
-	if (parameter != undefined){
+	var message_error = "DOWNLOAD Bad Request missing "+label;  
+	if (parameter != undefined){  
 		parameter = remove_quotation_marks(parameter);
 		if (parameter.length > 0)
 			return(parameter);
 	}
-	resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,address,message_error,currentdate, user);
+	resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,address,message_error,currentdate, user );
 	return undefined;
 }
 
@@ -588,12 +588,12 @@ app.post('/delete_metadata',middleware.ensureAuthenticated, function(req, res) {
 	}
 
 	var source= find_param(req.body.source, req.query.source);
-	if (source == undefined){
+	if ( source == undefined){
 		res.writeHead(400, { 'Content-Type': contentType_text_plain });
 		res.end("400:"+message_missing+" source.\n");
 		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,message_no_path,currentdate,res.user);
 		return;
-	}else if (source.length == 0){
+	}else if ( source.length == 0){
 		res.writeHead(400, { 'Content-Type': contentType_text_plain });
 		res.end("400: Empty source.\n");
 		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,message_no_path,currentdate,res.user);
@@ -601,12 +601,12 @@ app.post('/delete_metadata',middleware.ensureAuthenticated, function(req, res) {
 	}
 
 	var DestPath= find_param(req.body.Path, req.query.Path);
-	if (DestPath == undefined){
+	if ( DestPath == undefined){
 		res.writeHead(400, { 'Content-Type': contentType_text_plain });
 		res.end("400:"+message_missing+" Path.\n");
 		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,message_no_path,currentdate,res.user);
 		return;
-	}else if (DestPath.length == 0){
+	}else if ( DestPath.length == 0){
 		res.writeHead(400, { 'Content-Type': contentType_text_plain });
 		res.end("400: Empty Path.\n");
 		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,message_no_path,currentdate,res.user);
@@ -815,7 +815,6 @@ const request = require('request');
 function request_user_domain_permission(user, access, domain,j){
 	return new Promise( (resolve,reject) => {
 		var result = {body: "", j: "" };
-		result.j=j;
 		domain=lowercase(domain);//domain=domain.toString().toLowerCase();
 		console.log('http://127.0.0.1:8001/pqapi/access?user='+user+'&ar='+access+'&object='+domain);
 		request.get('http://127.0.0.1:8001/pqapi/access?user='+user+'&ar='+access+'&object='+domain, function(err, response, body) {//expected possible responses are "permit\n" or "deny\n"
@@ -1246,7 +1245,7 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 	//*******************************************
 	var project= find_param(req.body.project, req.query.project);
 	project= validate_parameter(project,"project",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (project == undefined) project = "";
+	if (project == undefined) project ="";
 	if (project.length == 0){
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
 		res.end("\n400: Bad Request, missing "+"project"+".\n");
@@ -1254,7 +1253,7 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 	//*******************************************
 	var source= find_param(req.body.source, req.query.source);
 	source= validate_parameter(source,"source",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (source == undefined) source = "";
+	if (source == undefined) source ="";
 	if (source.length == 0){
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
 		res.end("\n400: Bad Request, missing "+"source"+".\n");
@@ -1262,7 +1261,7 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 	//*******************************************
 	var filepath= find_param(req.body.filepath, req.query.filepath);
 	filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (filepath == undefined) filepath = "";
+	if (filepath == undefined) filepath ="";
 	if (filepath.length == 0){
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
 		res.end("\n400: Bad Request, missing "+"filepath"+".\n");
@@ -1270,7 +1269,7 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 	//*******************************************
 	var filename= find_param(req.body.filename, req.query.filename);
 	filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (filename == undefined) filename = "";
+	if (filename == undefined) filename ="";
 	if (filename.length == 0){
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
 		res.end("\n400: Bad Request, missing "+"filename"+".\n");
@@ -1384,8 +1383,8 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 // 	},(resultReject)=> {
 // 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 // 		res.end("querymetadata: Bad Request "+resultReject +"\n");
-// // 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"QUERY METADATA BAD Request on query:" 
-// // 			+JSON.stringify(query),currentdate,res.user);
+// // 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"QUERY METADATA BAD Request on query:"
+// //			+JSON.stringify(query),currentdate,res.user);
 // 	});
 });
 
@@ -1531,49 +1530,46 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 					files = fs.readdirSync(myPath);
 					filelist= { path :  myPath  ,  name :   myDest   };
 	// 				console.log(JSON.stringify(JSON.parse("[" + filelist+ "]"), null, 4 ));
-					if(filelist!=undefined ){
-						try{
-// 							res.zip({
-// 								files: [
-// 									{content: 'content',
-// 									name: 'description.txt',
-// 									mode: 0755,
-// 									comment: 'File-Downloaded-From-Repository',
-// 									date: new Date(),
-// 									type: 'file' },
-// 								filelist],
-// 								filename: zipfile+'.zip'
-// 							})
-// 							.then(function(obj){
-// 								console.log(" succeeed");//if zip failed
-// 								var zipFileSizeInBytes = obj.size;
-// 								var ignoredFileArray = obj.ignored;
-// 							})
-							res.zip({
-								files: [
-									filelist],
-								filename: zipfile+'.zip'
-							})
-							.then(function(obj){
-// 								console.log(" succeeed");//if zip failed
-								var zipFileSizeInBytes = obj.size;
-								var ignoredFileArray = obj.ignored;
-							})
-							.catch(function(err){
-								console.log("res.zip " +err);	//if zip failed
-							});
-						}catch(eb){
-// 							console.log("Stream-2 Error: "+eb);
-							
-// 							console.log("date:"+ new Date()+" \nfilelist"+filelist+"\nfilename"+zipfile);
-							
-							
-							
-							res.writeHead(404, {"Content-Type": contentType_text_plain});
-							res.write("\n400: stream-2: "+eb+" \n");
-							res.end("path: "+myPath+"\n"+zipfile+'.zip'+"\n");
+					if(filelist!=undefined ){ 
+// 						var algo= new Promise( (resolve,reject) => {
+								try{
+		// 							res.zip({
+		// 								files: [
+		// 									{content: 'content',
+		// 									name: 'description.txt',
+		// 									mode: 0755,
+		// 									comment: 'File-Downloaded-From-Repository',
+		// 									date: new Date(),
+		// 									type: 'file' },
+		// 								filelist],
+		// 								filename: zipfile+'.zip'
+		// 							}) 
+									res.zip({
+										files: [
+											filelist],
+										filename: zipfile+'.zip'
+									})
+									.then(function(obj){
+										resolve(" succeeed");//if zip failed
+		// 								var zipFileSizeInBytes = obj.size;
+		// 								var ignoredFileArray = obj.ignored;
+									})
+									.catch(function(err){
+										reject (err); //if zip failed
+									});
+								}catch(eb){
+									reject("Stream-2 error: "+eb);
+								}
+// 						});
+// 						algo.then((resultResolve) => {
+// 							console.log(resultResolve);
 							return;
-						}
+// 						},(resultReject)=> {
+// 							res.writeHead(400, {"Content-Type": contentType_text_plain});
+// 							res.write( "[Error]: "+resultReject, 'utf-8');
+// 							res.end("path: "+myPath+"\n"+zipfile+'.zip'+"\n");
+// 							return;
+// 						});
 					}else{
 						res.end("files not found in that directory");
 						return;
@@ -1600,7 +1596,6 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 			res.end("path: "+myPath+"\n");
 			return;
 		}
-	
 	},(resultReject)=> {
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("ERROR: "+resultReject+"\n");

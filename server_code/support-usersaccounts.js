@@ -15,9 +15,9 @@
 //     See the License for the specific language governing permissions and
 //     limitations under the License.
 
-var my_type = 'users' 
+var my_type = 'users'
 
-module.exports = { 
+module.exports = {
 	//****************************************************
 	//This function is used to confirm that an user exists or not in the DataBase.
 	//We first counted if existence is >0
@@ -74,7 +74,7 @@ module.exports = {
 				} 
 			});
 		});
-	},//end query_count_user		
+	},//end query_count_user
 //**********************************************************
 	//This function is used to verify the User and Password is registered
 	query_count_user_pw: function(es_server, my_index, email,pw){
@@ -118,7 +118,7 @@ module.exports = {
 			var clientb = new elasticsearch.Client({
 				host: es_server,
 				log: 'error'
-			});  
+			});
 			var myres = { code: "", text: "" };
 			var count_users = this.query_count_user(es_server, my_index, email);
 			count_users.then((resultCount) => {
@@ -151,38 +151,38 @@ module.exports = {
 					});//end query client.index
 					myres.code="200";
 					myres.text="succeed";
-					resolve(myres); 
-				}				
+					resolve(myres);
+				}
 			},(resultReject)=> {
 					myres.code="418";
 					myres.text= resultReject; 
 					reject (myres);
-			});//end count_users 
+			});//end count_users
 		});//end promise
-	}, //end register 	
+	}, //end register
 //****************************************************
 	//This function is used to register new users
-	//example of use: 
+	//example of use:
 	update_user: function(es_server, my_index, name, email,pw,res) {
 		return new Promise( (resolve,reject) => {
 			var elasticsearch = require('elasticsearch');
 			var clientb = new elasticsearch.Client({
 				host: es_server,
 				log: 'error'
-			});    
+			});
 			var myres = { code: "", text: "" };
 			var count_users = this.query_count_user(es_server, my_index, email);
 			count_users.then((resultCount) => { 
 				if(resultCount==0){
 					myres.code="409";
 					myres.text= "User don't found."+"\n";
-					reject(myres); 
-				}else{ 
+					reject(myres);
+				}else{
 					var id_users = this.find_user_id(es_server, my_index, email);
-					id_users.then((user_id) => { 
+					id_users.then((user_id) => {
 						clientb.index({
 							index: my_index,
-							type: my_type, 
+							type: my_type,
 							id: user_id,
 							body: {
 								"email":email,
@@ -194,7 +194,7 @@ module.exports = {
 							if (error !== 'undefined') { 
 								myres.code="409";
 								myres.text=error;
-								reject (myres); 
+								reject (myres);
 							} else {
 								myres.code="409";
 								myres.text="Could not register the user/pw." ;

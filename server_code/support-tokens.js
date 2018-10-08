@@ -1,25 +1,25 @@
- 
-var my_type = 'tokens' 
 
-module.exports = {  
+var my_type = 'tokens'
+
+module.exports = {
 //**********************************************************
 	//This function is used to register new users
-	//example of use: 
+	//example of use:
 	register_token: function(es_server, my_index, user_id, currenttime, expirationtime) {
 		return new Promise( (resolve,reject) => {
 			var elasticsearch = require('elasticsearch');
 			var clientb = new elasticsearch.Client({
 				host: es_server,
 				log: 'error'
-			});     
+			});
 			var count_tokens = this.query_tokens(es_server, my_index,user_id, currenttime, expirationtime);
-			count_tokens.then((resultCount) => {  
+			count_tokens.then((resultCount) => {
 				if(resultCount!=0){
 					resolve ("Could not register an existing token.");
 				}else{
 					clientb.index({
 						index: my_index,
-						type: my_type, 
+						type: my_type,
 						body: {
 							"user_id":user_id,
 							"currenttime": currenttime,
@@ -33,14 +33,13 @@ module.exports = {
 						}
 					});//end query client.index 
 					resolve ("succeed");
-				}				
+				}
 			},(resultReject)=> {
-					reject (resultReject); 			
-			});//end count_users 
+				reject (resultReject);
+			});//end count_users
 		});//end promise
-	}, //end register 	
+	}, //end register
 //****************************************************
-
 	//This function is used to confirm that an user exists or not in the DataBase.
 	query_tokens: function(es_server, my_index, user_id, currenttime, expirationtime){ 
 		return new Promise( (resolve,reject) => {
@@ -55,13 +54,13 @@ module.exports = {
 				type:  my_type, 
 				body: {
 					query:{bool:{must:[
-							{match:{"user_id":user_id }},
-							{match:{"currenttime": currenttime }},
-							{match:{"expirationtime": expirationtime }} 
+						{match:{"user_id":user_id }},
+						{match:{"currenttime": currenttime }},
+						{match:{"expirationtime": expirationtime }} 
 					]}}
 				}
 			}, function(error, response) {
-				if (error) { 
+				if (error) {
 					reject (error);
 				}
 				if (response.count !== undefined) {
@@ -72,5 +71,5 @@ module.exports = {
 				resolve (size); 
 			});
 		});
-	}//end query_user	
+	}//end query_user
 }//end module.exports

@@ -10,13 +10,13 @@ module.exports = {
 			var clientlog = new elasticsearch.Client({
 				host: es_server,
 				log: 'error'
-			});  
+			});
 			var error="";
 			var response="";
 			var myres = { code: "", text:  "" };
 			clientlog.index({
 				index: my_index,
-				type: 'logs', 
+				type: 'logs',
 				body: {
 					"user":user,
 					"code":code,
@@ -28,19 +28,19 @@ module.exports = {
 				if (error !== 'undefined') { 
 					myres.code="409";
 					myres.text=error;
-					reject (myres); 
+					reject (myres);
 				} else {
 					myres.code="400";
 					myres.text="Could not register the log." ;
 					reject (myres); 
-					return;					
+					return;
 				}
-			});//end query client.index   
+			});//end query client.index
 			myres.code="200";
 			myres.text="succeed";
 			resolve(myres);
 		});//end promise
-	}  //end register  
+	}  //end register
 }//end module.exports
  
 // Example of use:

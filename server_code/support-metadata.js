@@ -1,20 +1,20 @@
 // Author: J.M.Montañana HLRS 2018
 // If you find any bug, please notify to hpcjmont@hlrs.de
-// 
+//
 // Copyright (C) 2018 University of Stuttgart
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 // 	http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
- 
+
 var my_type = 'metadata'; 
 
 function add_query_term(mquery, mylabel , value ){
@@ -40,7 +40,7 @@ function add_query_term(mquery, mylabel , value ){
 		mquery[key].push(xquery); 
 	} 
 	return mquery;
-} 
+}
 
 module.exports = {
 compose_query: function(project,source,filepath, filename){ 
@@ -51,10 +51,10 @@ compose_query: function(project,source,filepath, filename){
 	mquery = add_query_term(mquery,"filename",filename ); 
 	if(mquery!=undefined ){
 		mquery= { query: { bool:  mquery } };
-	}else{ 
+	}else{
 		mquery= { query: { "match_all": {} }};
-	} 
-// 	console.log("query is: "+JSON.stringify(mquery)); 
+	}
+// 	console.log("query is: "+JSON.stringify(mquery));
 	return mquery;
 },
 //**********************************************************
@@ -110,7 +110,7 @@ find_metadata_id: function(es_server ,my_index, project,source,filename,path){
 		var client = new elasticsearch.Client({
 			host: es_server,
 			log: 'error'
-		}); 
+		});
 		var search_query = this.compose_query(project,source, path, filename);
 		client.search({
 			index: my_index,
@@ -161,7 +161,7 @@ register_update_filename_path_json: function(es_server, my_index, body, project,
 		var clientb = new elasticsearch.Client({
 			host: es_server,
 			log: 'error'
-		}); 
+		});
 		//we need to find the fields filename, filename_length, path, path_length in the body
 		//if there, then we remove them
 		//and update with new fields from the variables filename, path 
@@ -185,25 +185,25 @@ register_update_filename_path_json: function(es_server, my_index, body, project,
 				new_reg.then((resultReg) => {
 					myres.code="200";
 					myres.text="succeed, new register";
-					resolve(myres); 			
+					resolve(myres);
 				},(resultReject)=> {
 					myres.code="420";
 					myres.text="Could not register the filename/path.\n"+body+"\n"+resultReject.text;
 					reject (myres);
 				});//end new_reg
-			}else{ 
+			}else{
 				var id_metadata = this.find_metadata_id(es_server, my_index,project,source, filename,path);
 				id_metadata.then((resultId) => { 
 					clientb.index({
 						index: my_index,
-						type: my_type, 
+						type: my_type,
 						id: resultId,
 						body: body // contains the json
 					}, function(error, response) {
-						if (error !== 'undefined') { 
+						if (error !== 'undefined') {
 							myres.code="409";
 							myres.text=error;
-							reject (myres); 
+							reject (myres);
 						} else {
 							myres.code="409";
 							myres.text="Could not update the filename/path.";
@@ -212,14 +212,14 @@ register_update_filename_path_json: function(es_server, my_index, body, project,
 					});//end query client.index
 					myres.code="200";
 					myres.text="updated succeed";
-					resolve(myres); 
+					resolve(myres);
 				},(resultReject)=> {
 					myres.code="409";
-					myres.text= "error finding id "+resultReject; 
+					myres.text= "error finding id "+resultReject;
 					reject (myres);
 				});//end find id_metadata
 			}
-		},(resultReject)=> { 
+		},(resultReject)=> {
 				myres.code="409";
 				myres.text= "error counting "+ resultReject; 
 				reject (myres);
@@ -238,20 +238,20 @@ delete_filename_path_json: function(es_server, my_index,project,source, filename
 		});
 		var myres = { code: "", text: "" };
 		var count_metadata = this.query_count_filename_path(es_server, my_index, project,source,filename,path);
-		count_metadata.then((resultCount) => { 
-			if(resultCount==0){ //File+path don't found, proceed to register new entry. 
+		count_metadata.then((resultCount) => {
+			if(resultCount==0){ //File+path don't found, proceed to register new entry.
 				myres.code="420";
 				myres.text="Could not DELETE an not existing register.\n";
-				reject (myres); 
-			}else{ 
+				reject (myres);
+			}else{
 				var id_metadata = this.find_metadata_id(es_server, my_index,project,source, filename,path);
 				id_metadata.then((resultId) => { 
 					clientb.delete({
 						index: my_index,
-						type: my_type, 
-						id: resultId 
+						type: my_type,
+						id: resultId
 					}, function(error, response) {
-						if (error !== 'undefined') { 
+						if (error !== 'undefined') {
 							myres.code="409";
 							myres.text=error;
 							reject (myres); 
@@ -263,10 +263,10 @@ delete_filename_path_json: function(es_server, my_index,project,source, filename
 					});//end query client.index
 					myres.code="200";
 					myres.text="deleted succeed";
-					resolve(myres); 
+					resolve(myres);
 				},(resultReject)=> {
-					myres.code="409";	
-					myres.text= "error finding id "+resultReject; 
+					myres.code="409";
+					myres.text= "error finding id "+resultReject;
 					reject (myres);
 				});//end find id_metadata
 			}
@@ -284,12 +284,12 @@ delete_filename_path_json: function(es_server, my_index,project,source, filename
 // 			var elasticsearch = require('elasticsearch');
 // 			var client = new elasticsearch.Client({
 // 				host: es_server,
-// 				log: 'error' 
+// 				log: 'error'
 // 				//plugins: [ deleteByQuery ]
-// 			}); 
+// 			});
 // 			client.deleteByQuery({
 // 				index: my_index,
-// 				type: my_type, 
+// 				type: my_type,
 // 				body: {
 // 					query: {
 // 						match: { _id: 'id' }
@@ -298,10 +298,10 @@ delete_filename_path_json: function(es_server, my_index,project,source, filename
 // 			}, function(error, response) {
 // 				//response ={"found":true,"_index":"repository_db","_type":"metadata","_id":"AWIAfT2KfLZhK4r7Ht3I","_version":2,"_shards":{"total":2,"successful":1,"failed":0}}
 // 				if (error !== 'undefined') {
-// 					reject("error"); 
+// 					reject("error");
 // 				} else {
 // 					resolve(response._shards.successful);
-// 				} 
+// 				}
 // 			});
 // 			resolve( "succeed");
 // 		});
@@ -391,11 +391,11 @@ new_db: function( es_server, my_index) {
 			log: 'error'
 		});
 		client.indices.create({
-			index: my_index 
+			index: my_index
 		},function (error, response,status) {
 			if (error){
 				reject("creation error: "+error)
-			} else { 
+			} else {
 				var result =" "+(JSON.stringify(response));
 				resolve(result);
 			}
@@ -474,7 +474,7 @@ query_metadata: function(es_server, my_index, bodyquery, pretty) {
 			log: 'error'
 		});
 		var result="";
-		var item = ""; 
+		var item = "";
 		client.search({
 			index: my_index,
 			type: my_type,
