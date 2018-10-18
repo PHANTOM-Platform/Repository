@@ -1503,7 +1503,6 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 // filename undefined
 // res.user gtzanettis@wings-ict-solutions.eu
 
-
 	var query_permission =request_permission(res.user,pretty, project,source,filepath, filename);
 	query_permission.then((result) => {
 		for (var j = 0; j < result.totalkeys; j++) {
@@ -1528,9 +1527,9 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 					var path = path || require('path');
 					var fs = fs || require('fs');
 					files = fs.readdirSync(myPath);
-					filelist= { path :  myPath  ,  name :   myDest   };
+					filelist= { path : myPath , name : myDest };
 	// 				console.log(JSON.stringify(JSON.parse("[" + filelist+ "]"), null, 4 ));
-					if(filelist!=undefined ){ 
+					if(filelist!=undefined ){
 // 						var algo= new Promise( (resolve,reject) => {
 								try{
 		// 							res.zip({

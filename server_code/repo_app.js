@@ -1250,7 +1250,7 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 								}catch(eb){
 									reject("Stream-2 error: "+eb);
 								}
-						});
+// 						});
 // 						algo.then((resultResolve) => {
 // 							console.log(resultResolve);
 							return;
