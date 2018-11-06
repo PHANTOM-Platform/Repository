@@ -167,7 +167,11 @@ The folders [api_command_line][api_command_line], [api_bash_scripts][api_bash_sc
 
 Please access to those folders to get more details.
 
+## Video: Examples of use
 
+There are some video tutorials available at Youtube and this channel:
+
+[Youtube PHANTOM Channel][youtube_phantom_channel]
 
 
 ## Acknowledgment
@@ -210,4 +214,10 @@ Copyright (C) 2018 University of Stuttgart
 [api_bash_scripts]: https://github.com/PHANTOM-Platform/Repository/tree/master/api_bash_scripts
 [api_command_line]: https://github.com/PHANTOM-Platform/Repository/tree/master/api_command_line
 [api_java]: https://github.com/PHANTOM-Platform/Repository/tree/master/api_java
-[phantom]: http://www.phantom-project.org 
+
+[youtube_phantom_channel]: https://www.youtube.com/channel/UCtl2wQYh_Nj3HbyFoM1XHqQ/videos
+[client]: https://github.com/PHANTOM-Platform/Monitoring/tree/master/Monitoring_client
+[server]: https://github.com/PHANTOM-Platform/Monitoring/tree/master/Monitoring_server
+[excess]: http://www.excess-project.eu
+[phantom]: http://www.phantom-project.org
+
