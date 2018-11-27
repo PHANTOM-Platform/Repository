@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta name="description" content="Main page of the PHANTOM Repository-Server">
+	<meta name="keywords" content="HTML,CSS,JavaScript">
+	<meta name="author" content="José Miguel Montañana, hpcjmont@hlrs.de">
+	<meta name="reply-to" content="hpcjmont@hlrs.de">
+	<meta name="copyright" content="Copyright (C) 2018 University of Stuttgart">
+	<meta name="language" content="EN">
+	<meta name="revised" content="July 4, 2018" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="robots" content="noindex">
+	<meta name="googlebot" content="noindex">
+	<meta charset="utf-8">
+	<title>PHANTOM REPOSITORY-Server</title>
+	<link rel="stylesheet" type="text/css" href="phantom.css"/>
+	<script src="phantom.js"></script> 
+	<script>
+	function submitform(e, frm) {
+		var demoreplaceb = document.getElementById("demoreplaceb");
+		var debug_phantom = document.getElementById("debug_phantom");
+		var phantom_operation = document.getElementById("phantom_operation");
+		if((sessionStorage.token !== undefined) && (sessionStorage.token.length>0)) {
+			var xhr = new XMLHttpRequest();
+			var formData = new FormData();
+			var UploadJSON=document.getElementById('UploadJSON');
+			formData.append("UploadJSON", UploadJSON.files[0]);
+			formData.append("UploadFile", UploadFile.files[0]);
+			formData.append("Path", document.getElementById("Path").value);
+			formData.append("DestFileName", document.getElementById("DestFileName").value);
+			formData.append("RawJSON", JSON.stringify(document.getElementById("RawJSON").value));
+			xhr.open('POST', 'upload', true);
+			xhr.setRequestHeader("Authorization", "JWT " + sessionStorage.token);
+			xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
+// 			xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8'); mal
+// 			xhr.onload = function(e) {
+// 			xhr.addEventListener('load', function() {
+			xhr.onreadystatechange = function () {
+				if (xhr.readyState == 4) {
+	// 				var responseObject = (xhr.responseText);
+	// 				demoreplaceb.innerHTML = responseObject + " status: " +xhr.status;
+					var r = "";
+					if (xhr.status == 200 || xhr.status == 0) {
+						r = "Uploaded succedd!<br/>";
+					} else {
+						r = "Error " + xhr.status + " occurred uploading form.<br/>";
+					}
+					if(demoreplaceb) document.getElementById("demoreplaceb").innerHTML = r;
+					if(debug_phantom) document.getElementById("debug_phantom").style.display = "block";
+					if(phantom_operation) document.getElementById("phantom_operation").style.display = "none";
+				}
+			};
+			xhr.send(formData);//may fault code appear here
+		}else {
+			if(demoreplaceb) demoreplaceb.innerHTML = "Sorry, try login again, missing token...";
+			if(debug_phantom) debug_phantom.style.display = "block";
+		}
+		return false;
+	}
+	</script>
+</head>
+
+<body onload="start_page_new()">
+	<div id="menu_phantom"></div>
+	
+	<div id="menu_login" style="display:none"></div>
+
+	<div id="phantom_operation" style="display:block">
+		<h1><b>UPLOAD FILE TO THE REPOSITORY</b></h1>
+		<hr> <h2><b> Online formular: </b></h2>
+		<form ref='uploadForm' id='uploadForm'
+		method='post'
+		encType="multipart/form-data">
+			<!--<fieldset><legend></legend>  -->
+			Destination Path:  <input type="text" id="Path" name="Path" value="mypath/"> try a single folder<br>
+			Destination Filename: <input type="text" id="DestFileName" name="DestFileName" value="main.c"><br>
+			&emsp; Metadata in JSON format: <input type="text" id="RawJSON" name="RawJSON" value=
+			'{ "project": "phantom_tools_on_HPC", "type":"Usercase", "name":"NeuralNet", "content":"src", "domain":"domain_HLRS" }'
+			style="font-size:11pt;height:20px;width:800px;">
+			<br><b>OR</b><br>
+			&emsp; Json File <input type="file" id="UploadJSON" name="UploadJSON" /><br>
+			File to upload (REQUIRED) <input type="file" id="UploadFile" name="UploadFile"/><br>
+			<center> <input type='submit' onclick="return submitform(event, this)"  value='Upload File!'/></center>
+			<!--</fieldset>-->
+		</form>
+
+		<hr> <h2><b> CAUTION:<b></h2>
+		<ul style="list-style-type:disc">
+			<li> A new upload will delete the previous metadata with the new one !!</li>
+			<li> Field names in the json must be lower-case</li>
+			<li> The path and the fileName are case sensitive (put the correct uper or lower case)</li>
+			<li> Current version is MANDATORY that the json specifies the path and the filename</li>
+			<!-- #if not provided any json, then it is registered only the path and the filename-->
+		</ul>
+
+		<hr> <b>Tested command line example with curl:</b>
+		<p style="color:DodgerBlue;">
+			curl -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST -F "http://localhost:8000/UploadFile=@/home/jmontana/test.c" -F "RawJSON={ \"path\":\"mypath/\", \"filename\":\"main.c\", \"data_type\":\"Usercase\", \"name\":\"NeuralNet\", \"content\":\"src\" }" http://localhost:8000/upload?DestFileName=main.c\&'Path=mypath/'
+		</p>
+
+		<b>OR</b> <br>
+
+		<p style="color:DodgerBlue;">
+			curl -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST -F "http://localhost:8000/UploadFile=@/home/jmontana/test.c" -F "UploadJSON=@/home/jmontana/example.json" http://localhost:8000/upload?DestFileName=main.c\&'Path=mypath/'
+		</p>
+	</div>
+
+	<div id="debug_phantom"> <p id="demoreplaceb"></p></div>
+
+	<div id="foot_phantom"></div>
+	<script> repo_load_header_footer();</script>
+</body>
+</html>
