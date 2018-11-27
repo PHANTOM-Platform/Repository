@@ -216,7 +216,7 @@ function is_defined(variable) {
 function find_param(body, query){
 	try{
 		if (body != undefined){ //if defined as -F parameter
-			return body ;
+			return body;
 		}else if (query != undefined){ //if defined as ? parameter
 			return query;
 		}
@@ -224,8 +224,8 @@ function find_param(body, query){
 		if (query != undefined){ //if defined as ? parameter
 			return query;
 		}
-	} 
-	return undefined ;
+	}
+	return undefined;
 }
 //*********************************************************************
 //report on the screen the list of fields, and values
@@ -415,7 +415,7 @@ function retrieve_file(filePath,res){
 			if(error.code == 'ENOENT'){
 				fs.readFile('./404.html', function(error, content) {
 					res.writeHead(404, { 'Content-Type': contentType });
-					res.end(content, 'utf-8');
+					res.end(content+ "../web-resourcemanager/phantom.css", 'utf-8');
 				});
 			} else {
 				res.writeHead(500);
@@ -537,31 +537,62 @@ app.get('/', function(req, res, next) {
 app.get('/servername', function(req, res, next) {
 	res.end(SERVERNAME);
 });
-//**********************************************************
-app.get('/upload_file.html', function(req, res) {
-	var filePath = '../web/upload_file.html';
+//*******************************
+app.get('/favicon.ico', function(req, res) {
+	var filePath = '../web-appmanager/favicon.ico';
+	retrieve_file(filePath,res);
+});
+
+app.get('/phantom.css', function(req, res) {
+	var filePath = '../web-repository/phantom.css';
+	retrieve_file(filePath,res);
+});
+
+app.get('/phantom.gif', function(req, res) {
+	var filePath = '../web-repository/phantom.gif';
+	retrieve_file(filePath,res);
+});
+app.get('/javascript_howto.html', function(req, res) {
+	var filePath = '../web-repository/javascript_howto.html';
+	retrieve_file(filePath,res);
+});
+app.get('/PleaseEnableJavascript.html', function(req, res) {
+	var filePath = '../web-repository/PleaseEnableJavascript.html';
 	retrieve_file(filePath,res);
 });
 //**********************************************************
+app.get('/repository.html', function(req, res) {
+	var filePath = '../web-repository/repository.html';
+	retrieve_file(filePath,res);
+});
+app.get('/phantom.js', function(req, res) {
+	var filePath = '../web-repository/phantom.js';
+	retrieve_file(filePath,res);
+});
+
 app.get('/upload_file.html', function(req, res) { 
-	var filePath = '../web/upload_file.html';
+	var filePath = '../web-repository/upload_file.html';
 	retrieve_file(filePath,res);
 });
-//*******************************
+
 app.get('/download_file.html', function(req, res) { 
-	var filePath = '../web/download_file.html';
+	var filePath = '../web-repository/download_file.html';
 	retrieve_file(filePath,res);
 });
-//*******************************
+app.get('/download_zip.html', function(req, res) { 
+	var filePath = '../web-repository/download_zip.html';
+	retrieve_file(filePath,res);
+});
 app.get('/examplec.json', function(req, res) { 
-	var filePath = '../web/examplec.json';
+	var filePath = '../web-repository/examplec.json';
+	retrieve_file(filePath,res);
+});
+
+app.get('/query_metadata.html', function(req, res) { 
+	var filePath = '../web-repository/query_metadata.html';
 	retrieve_file(filePath,res);
 });
 //*******************************
-app.get('/query_metadata.html', function(req, res) { 
-	var filePath = '../web/query_metadata.html';
-	retrieve_file(filePath,res);
-});
 // Path only accesible when Authenticated
 app.get('/private',middleware.ensureAuthenticated, function(req, res) {
 	var message = "\n\nAccess to restricted content !!!.\n\n"
@@ -747,11 +778,11 @@ app.get('/_flush', function(req, res) {
 		res.end(reject_result.text+"\n", 'utf-8'); 
 	});
 });
-//****************************************************************************** 
-app.get('/query_metadata',middleware.ensureAuthenticated, function(req, res) { 
-	"use strict";   
+//**********************************************************
+app.get('/query_metadata',middleware.ensureAuthenticated, function(req, res) {
+	"use strict";
 	var pretty = find_param(req.body.pretty, req.query.pretty);
-	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
 	//***************************************
 	var filepath =find_param(req.body.Path,req.query.Path);
 	if (filepath != undefined)
@@ -770,18 +801,18 @@ app.get('/query_metadata',middleware.ensureAuthenticated, function(req, res) {
 		source=remove_quotation_marks(source); 
 	var query= MetadataModule.compose_query(project,source,filepath, filename); 
 	//1.1- find id of the existing doc for such path filename
-	
+
 	var searching = MetadataModule.query_metadata(es_servername+":"+es_port,SERVERDB,query, pretty);
 	var resultlog="";
 	searching.then((resultFind) => { 
 		res.writeHead(200, {"Content-Type": "application/json"});
-		res.end(resultFind+"\n");
+		res.end(JSON.stringify(JSON.parse(resultFind).hits));
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,200,req.connection.remoteAddress,"QUERY METADATA granted to query:"
 			+JSON.stringify(query),currentdate,res.user);
 	},(resultReject)=> { 
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("querymetadata: Bad Request "+resultReject +"\n");
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"QUERY METADATA BAD Request on query:" 
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"QUERY METADATA BAD Request on query:"
 			+JSON.stringify(query),currentdate,res.user); 
 	}); 
 });
@@ -843,7 +874,7 @@ function json_list_of_files(myPath,filelist){
 	var path = path || require('path');
 	var fs = fs || require('fs');
 	files = fs.readdirSync(myPath);
-	filelist= "{\"path\": \"" + myPath +"\", \"name\": \""+ myPath + "\" }" ;
+	filelist= "{\"path\": \"" + myPath +"\", \"name\": \""+ myPath + "\" }";
 // 	files.forEach(function(file) {
 // 		if (fs.statSync(path.join(myPath, file)).isDirectory()) {
 // 			filelist= filelist+json_list_of_files(path.join(myPath, file),filelist);
@@ -851,9 +882,9 @@ function json_list_of_files(myPath,filelist){
 // 			if(registered_path==false){
 // 			console.log(" path " + myPath + " file "+file);
 // 			if(filelist!=undefined ){
-// 				filelist= filelist + ", {\"path\": \"" + myPath + "\" , \"name\": \""+ file +"\" }" ;
+// 				filelist= filelist + ", {\"path\": \"" + myPath + "\" , \"name\": \""+ file +"\" }";
 // 			}else{
-// 				filelist= "{\"path\": \"" + myPath +"\", \"name\": \""+ file+ "\" }" ;
+// 				filelist= "{\"path\": \"" + myPath +"\", \"name\": \""+ file+ "\" }";
 // 			}
 // 			console.log("xxx "+ filelist );}
 // 		}
@@ -867,7 +898,7 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 	"use strict";
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
 	var message_bad_request = "UPLOAD Bad Request missing ";
-	var resultlog ;
+	var resultlog;
 	if (!req.files){
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
 		res.end('No files were uploaded.');
@@ -875,16 +906,14 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 		return;
 	}
 	var RawJSON= find_param(req.body.RawJSON, req.query.RawJSON);
-
-	var DestPath=find_param(req.body.Path,req.query.Path);
+	var DestPath=find_param(req.body.Path, req.query.Path);
 	if (DestPath == undefined){
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
 		res.end("400:Bad Request, missing Path.\n");
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"Path",currentdate,res.user);
 		return;
 	}
-
-	var DestFileName=find_param( req.body.DestFileName , req.query.DestFileName);
+	var DestFileName=find_param(req.body.DestFileName, req.query.DestFileName);
 	if (DestFileName == undefined){
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
 		res.end("400:Bad Request, missing DestFileName.\n");
@@ -948,7 +977,7 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 	//*******************************************
 	var project= find_param(req.body.project, req.query.project);
 	project= validate_parameter(project,"project",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (project == undefined) project = "";
+	if (project == undefined) project="";
 	if (project.length == 0){
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
 		res.end("\n400: Bad Request, missing "+"project"+".\n");
@@ -956,7 +985,7 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 	//*******************************************
 	var source= find_param(req.body.source, req.query.source);
 	source= validate_parameter(source,"source",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (source == undefined) source = "";
+	if (source == undefined) source="";
 	if (source.length == 0){
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
 		res.end("\n400: Bad Request, missing "+"source"+".\n");
@@ -964,7 +993,7 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 	//*******************************************
 	var filepath= find_param(req.body.filepath, req.query.filepath);
 	filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (filepath == undefined) filepath = "";
+	if (filepath == undefined) filepath="";
 	if (filepath.length == 0){
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
 		res.end("\n400: Bad Request, missing "+"filepath"+".\n");
@@ -972,7 +1001,7 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 	//*******************************************
 	var filename= find_param(req.body.filename, req.query.filename);
 	filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (filename == undefined) filename = "";
+	if (filename == undefined) filename="";
 	if (filename.length == 0){
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
 		res.end("\n400: Bad Request, missing "+"filename"+".\n");
@@ -981,7 +1010,7 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 	var myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath + '/' + filename;
 
 // START ADDTIONAL FOR SECURED VERSION
-// 	// look for NGAC policy here, then decide if continue or not !!	
+// 	// look for NGAC policy here, then decide if continue or not !!
 // 	var query= MetadataModule.compose_query(project,source,filepath, filename);
 // 	//1.1- find id of the existing doc for such path filename
 // 	var searching = MetadataModule.query_metadata(es_servername+":"+es_port,SERVERDB,query, pretty);
@@ -995,8 +1024,21 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 // 		}
 // 		var permission = request_user_domain_permission(res.user, 'r', domain,0);
 // 		permission.then((resultFind) => {
-// 			var rescode=0; 
-// 			if( resultFind.body == "permit"){
+// 			var rescode=0;
+// 			if(resultFind.body == "permit"){
+// 			var query_permission =request_permission(res.user,pretty, project,source,filepath, filename);
+// 			query_permission.then((result) => {
+// 				for (var j = 0; j < 1; j++) {// 1 insted of result.totalkeys for considering only the first entry
+// 					if(result.permission[j] == "deny"){//permision denied
+// 						res.writeHead(403, {"Content-Type": contentType_text_plain});
+// 						res.end("Access DENY: You may not have permission to download some file in the folder\n");
+// 						return;
+// 					}else if (result.permission[j] != "permit"){//error procesing the request
+// 						res.writeHead(400, {"Content-Type": contentType_text_plain});
+// 						res.end("ERROR processing the permissions\n");
+// 						return;
+// 					}
+// 				}
 // 				try{
 // END ADDTIONAL FOR SECURED VERSION
 					// Check if file specified by the filePath exists
@@ -1027,7 +1069,7 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 							var resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,"DONWLOAD granted to file: "+myPath,currentdate,res.user);
 							return;
 						} else if(err.code == 'ENOENT') {
-				// 			console.log('file does not exist\n');
+				//			console.log('file does not exist\n');
 							varresultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,404,req.connection.remoteAddress,"DOWNLOAD error: File not found: "+myPath ,currentdate,res.user);
 							//res.setHeader(name.value); //only before writeHeader
 							res.writeHead(404, {"Content-Type": contentType_text_plain});
@@ -1066,6 +1108,7 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 // 		},(resultReject)=> {
 // 			res.writeHead(400, {'Content-Type': contentType_text_plain });
 // 			res.end("400 unexpected error "+resultReject);
+//			return;
 // 		} );
 // // 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,200,req.connection.remoteAddress,"QUERY METADATA granted to query:"
 // // 			+JSON.stringify(query),currentdate,res.user);
@@ -1097,19 +1140,19 @@ app.get('/downloadlist',middleware.ensureAuthenticated, function(req, res) {
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
 		res.end("\n400: Bad Request, missing "+"project"+".\n");
 		return;}
-	var myPath = os.homedir()+ File_Server_Path + '/' + project ;
+	var myPath = os.homedir()+ File_Server_Path + '/' + project;
 	//******************************************* 
 	var source= find_param(req.body.source, req.query.source);
 	source= validate_parameter(source,"source",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
 	if (source != undefined)
 	if (source.length != 0){
-		myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source ;
+		myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source;
 		//*******************************************
 		filepath= find_param(req.body.filepath, req.query.filepath);
 		filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
 		if (filepath != undefined)
 		if (filepath.length != 0){
-			myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath ;
+			myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath;
 			//*******************************************
 			filename= find_param(req.body.filename, req.query.filename);
 			filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
@@ -1163,28 +1206,20 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 	source= validate_parameter(source,"source",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
 	if (source != undefined)
 	if (source.length != 0){
-		myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source ;
+		myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source;
 		myDest = project +'/' + source ;
 		//*******************************************
 		filepath= find_param(req.body.filepath, req.query.filepath);
 		filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
 		if (filepath != undefined)
 		if (filepath.length != 0){
-			myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath ;
+			myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath;
 			myDest = project +'/' + source +'/' + filepath;
 			//*******************************************
 			filename= find_param(req.body.filename, req.query.filename);
 			filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
 		}
 	}
-// console.log("pretty "+pretty);
-// console.log("project "+project);
-// console.log("myPath "+myPath);
-// console.log("source "+source);
-// console.log("filepath "+filepath);
-// console.log("myDest "+myDest);
-// console.log("filename "+filename);
-// console.log("res.user "+res.user);
 // project example7
 // myPath /nas_home//hpcjmont/phantom_servers/phantom_repository/example7/user
 // source user
@@ -1193,7 +1228,7 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 // filename undefined
 // res.user gtzanettis@wings-ict-solutions.eu
 
-//	//START OF SECURED VERSION CODE	
+//	//START OF SECURED VERSION CODE
 // 	var query_permission =request_permission(res.user,pretty, project,source,filepath, filename);
 // 	query_permission.then((result) => {
 // 		for (var j = 0; j < result.totalkeys; j++) {
@@ -1218,7 +1253,7 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 					var path = path || require('path');
 					var fs = fs || require('fs');
 					files = fs.readdirSync(myPath);
-					filelist= "{\"path\": \"" + myPath +"\", \"name\": \""+ myDest + "\" }";
+					filelist= { path : myPath , name : myDest };
 	// 				console.log(JSON.stringify(JSON.parse("[" + filelist+ "]"), null, 4 ));
 					if(filelist!=undefined ){
 // 						var algo= new Promise( (resolve,reject) => {
@@ -1245,7 +1280,7 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 		// 								var ignoredFileArray = obj.ignored;
 									})
 									.catch(function(err){
-										reject (err ); //if zip failed
+										reject (err); //if zip failed
 									});
 								}catch(eb){
 									reject("Stream-2 error: "+eb);
@@ -1286,7 +1321,6 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 			res.end("path: "+myPath+"\n");
 			return;
 		}
-
 // //START OF SECURED CODE
 // 	},(resultReject)=> {
 // 		res.writeHead(400, {"Content-Type": contentType_text_plain});
@@ -1294,7 +1328,6 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 // 		return;
 // 	});
 // //END OF SECURED CODE
-		
 	//*******************************************
 // 	res.zip({files: [ {content: 'downloaded from the PHANTOM REPOSITORY', name: 'test-file', mode: 0755, comment: zipfile, date: new Date(), type: 'file' },
 // 			{path: myPath, name: 'uploads' } ], filename: zipfile+'.zip' });
@@ -1470,6 +1503,7 @@ app.get('/login', function(req, res) {
 		}else{
 			res.writeHead(401, {"Content-Type": contentType_text_plain});
 			res.end("401 (Unauthorized) Autentication failed, incorrect user " +" or passwd " +"\n"); 
+// 			console.log("resultCount "+resultCount);
 			resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 401, req.connection.remoteAddress,
 				"401: Bad Request of Token, incorrect user or passwd "+email+"or passwd ",currentdate,"");
 		}
