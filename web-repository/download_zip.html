@@ -23,22 +23,30 @@
 	
 	<div id="menu_login" style="display:none"></div>
 
-	<div id="phantom_operation">
+<div id="phantom_operation">
 	<h1><b>DOWNLOAD FILE FROM THE REPOSITORY</b> </h1>
 
-	<hr> <h2><b>Online formular: Retrieve File </b></h2>
+	<h2><b>Online formular: Retrieve ZIP File </b></h2>
 		<form ref='downloadFormFile' id='downloadFormFile'
-		action='download'
 		method='get'>
 		<!-- 	encType="multipart/form-data"> this is only for post requests-->
-		Path:  <input type="text" name="filepath" value="mypath">  value<br>
-		Filename: <input type="text" name="filename" value="main.c"><br>
-		<br><center><input type='submit' value='Download File!' /></center> 
+		Project (MANDATORY):  <input type="text" name="project_f" id="project_f" value="phantom_tools_on_HPC"/><br>
+		Source (optional):  <input type="text" name="source" id="source_f"  value="user"/><br>
+		Path (only if source provided, optional):  <input type="text" name="filepath" id="filepath_f" value="mypath"/> <br>
+		Filename (only if source provided, optional): <input type="text" name="filename" id="filename_f" value="main.c"/><br>
+		<br><center>
+		<input type='submit' onclick="return downloadzip_file_repo( document.getElementById('project_f').value,
+		document.getElementById('source_f').value,
+		document.getElementById('filepath_f').value,
+		document.getElementById('filename_f').value )" value='Download File!'/>
+		</center>
 		</form>
-		
-	<hr> <b>Tested command line example with curl:</b>
-	<p style="color:DodgerBlue;">
-	curl -H "Content-Type: multipart/form-data" -XGET http://localhost:8000/download?filepath=mypath\&filename=main.c  --output main.c
+	<hr>
+	<b>Tested command line example with curl:</b>
+	<p style="color:DodgerBlue;"><b>
+	curl -H "Authorization: OAuth ${mytoken}" -XGET http://localhost:8000/downloadzip?project=phantom_tools_on_HPC\&source=user\&filepath=mypath\&filename=main.c   --output main.c;
+<!-- 	 -H "Content-Type: multipart/form-data"  -->
+	</b>
 	</p>
 
 	<hr>
@@ -57,7 +65,7 @@
 	curl -H "Content-Type: multipart/form-data" -XGET get_metadata?filepath=mypath\&filename=main.c 
 	</p>-->
 
-	<h2><b> Online formular: Retrieve Metadata</b></h2>
+<!--	<h2><b> Online formular: Retrieve Metadata</b></h2>
 		<form ref='queryForm'
 		id='queryForm'
 		action='query_metadata'
@@ -77,10 +85,11 @@
 
 	<hr> <b>Tested command line example with curl:</b>
 	<p style="color:DodgerBlue;">
-		curl -XGET 'http://localhost:8000/query_metadata?Path=mypath%2F&filename=main.c';
-	</p>
+		curl -XGET 'http://localhost:8000/query_metadata?Path=mypath%2F\&filename=main.c';
+	</p>-->
+</div>
 
-	<div id="debug_phantom"> <p id="demoreplaceb"></p> </div>
+	<div id="debug_phantom"> <p id="demoreplaceb"></p></div>
 
 	<div id="foot_phantom"></div>
 	<script> repo_load_header_footer(); </script>

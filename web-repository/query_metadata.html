@@ -15,64 +15,6 @@
 	<title>PHANTOM REPOSITORY-Server</title>
 	<link rel="stylesheet" type="text/css" href="phantom.css"/>
 	<script src="phantom.js"></script>
-	<script>
-	function download(content, fileName, contentType) {
-		var a = document.createElement("a");
-		var file = new Blob([content], {type: contentType});
-		a.href = URL.createObjectURL(file);
-		a.download = fileName;
-		a.click();
-	}
-
-	function submitform(e, frm, url) {
-		var demoreplaceb = document.getElementById("demoreplaceb");
-		var debug_phantom = document.getElementById("debug_phantom");
-		var phantom_operation = document.getElementById("phantom_operation");
-		if((sessionStorage.token !== undefined) && (sessionStorage.token.length>0)) {
-			var xhr = new XMLHttpRequest();
-			xhr.open('GET', url, true);
-			xhr.setRequestHeader("Authorization", "JWT " + sessionStorage.token);
-			xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
-// 			xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8'); mal
-			xhr.addEventListener('load', function() {
-				if (xhr.readyState == 4) {
-					var r = "";
-					if (xhr.status == 200 || xhr.status == 0) {
-						download(xhr.responseText, 'metadata.json', 'text/plain');
-						r = "Server response:<br/><br/>"+xhr.responseText+"<br/>";
-					} else {
-						r = "Error " + xhr.status + " occurred requesting for Metatada.<br/>";
-					}
-					if(demoreplaceb) document.getElementById("demoreplaceb").innerHTML = r;
-					if(debug_phantom) document.getElementById("debug_phantom").style.display = "block";
-					if(phantom_operation) document.getElementById("phantom_operation").style.display = "none";
-				}
-			});
-			xhr.send(null);//may fault code appear here
-		}else {
-			if(demoreplaceb) demoreplaceb.innerHTML = "Sorry, try login again, missing token...";
-			if(debug_phantom) debug_phantom.style.display = "block";
-		}
-		return false;
-	}
-	
-	function submitform_qr(e, frm) {
-		var filepath = document.getElementById("Path").value;
-		var filename = document.getElementById("filename").value;
-		var project= document.getElementById("project").value;
-		var source = document.getElementById("source").value;
-		var url = "query_metadata?project=" + project + "&source=" + source + "&filepath=" + filepath + "&filename=" + filename;
-		submitform(e, frm, url);
-		return false;
-	}
-
-	function es_submitform(e, frm) {
-		var QueryBody = document.getElementById("QueryBody").value;
-		var url = "es_query_metadata?QueryBody=" + QueryBody;
- 		submitform(e, frm, url);
-		return false;
-	}
-	</script>
 </head>
 
 <body onload="start_page_new()">
@@ -90,7 +32,7 @@
 				Destination Path (optional): <input type="text" id="Path" name="Path" value="mypath/"> leave empty if not wish to filter by path<br>
 				Destination Filename (optional):<input type="text" id="filename" name="filename" value="main.c"> leave empty if not wish to filter by file-name<br>
 				<input type="hidden" name="pretty" value="true">
-			<center> <input type='submit' onclick="return submitform_qr(event, this)" value='Perform query!'/></center>
+			<center> <input type='submit' onclick="return submitform_qr_metatada(event, this)" value='Perform query!'/></center>
 			</form>
 		<hr> <h2><b> CAUTION:<b></h2>
 		<ul style="list-style-type:disc"> 
@@ -109,7 +51,7 @@
 				ES Query (MANDATORY): 
 				<input type="text" id="QueryBody" name="QueryBody" value='{ "query": { "bool": { "must": [ { "match": { "path": "mypath/" }}, { "match": { "filename" : "main.c" } } ] }}}' style="font-size:11pt;height:20px;width:700px;">
 				<input type="hidden" name="pretty" value="true">
-				<center> <input type='submit' onclick="return es_submitform(event, this)" value='Perform query!'/> </center>
+				<center> <input type='submit' onclick="return submitform_qr_metatada_es(event, this)" value='Perform query!'/> </center>
 			</form>
 		<hr> <b>Tested command line example with curl (warning: not put empty spaces in the query):</b>
 		<p style="color:DodgerBlue;">

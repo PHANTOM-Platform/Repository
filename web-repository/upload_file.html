@@ -16,7 +16,7 @@
 	<link rel="stylesheet" type="text/css" href="phantom.css"/>
 	<script src="phantom.js"></script> 
 	<script>
-	function submitform(e, frm) {
+	function submitform_upload(e, frm) {
 		var demoreplaceb = document.getElementById("demoreplaceb");
 		var debug_phantom = document.getElementById("debug_phantom");
 		var phantom_operation = document.getElementById("phantom_operation");
@@ -24,11 +24,14 @@
 			var xhr = new XMLHttpRequest();
 			var formData = new FormData();
 			var UploadJSON=document.getElementById('UploadJSON');
+			var UploadFile=document.getElementById('UploadFile');
 			formData.append("UploadJSON", UploadJSON.files[0]);
 			formData.append("UploadFile", UploadFile.files[0]);
+			formData.append("project", document.getElementById("project").value);
+			formData.append("source", document.getElementById("source").value);
 			formData.append("Path", document.getElementById("Path").value);
 			formData.append("DestFileName", document.getElementById("DestFileName").value);
-			formData.append("RawJSON", JSON.stringify(document.getElementById("RawJSON").value));
+			formData.append("RawJSON", document.getElementById("RawJSON").value);
 			xhr.open('POST', 'upload', true);
 			xhr.setRequestHeader("Authorization", "JWT " + sessionStorage.token);
 			xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
@@ -72,15 +75,18 @@
 		method='post'
 		encType="multipart/form-data">
 			<!--<fieldset><legend></legend>  -->
-			Destination Path:  <input type="text" id="Path" name="Path" value="mypath/"> try a single folder<br>
-			Destination Filename: <input type="text" id="DestFileName" name="DestFileName" value="main.c"><br>
-			&emsp; Metadata in JSON format: <input type="text" id="RawJSON" name="RawJSON" value=
-			'{ "project": "phantom_tools_on_HPC", "type":"Usercase", "name":"NeuralNet", "content":"src", "domain":"domain_HLRS" }'
+			Project:  <input type="text" id="project" name="project" value="phantom_tools_on_HPC"> MANDATORY<br>
+			Source:  <input type="text" id="source" name="source" value="user"> MANDATORY<br>
+			Destination Path:  <input type="text" id="Path" name="Path" value="mypath/"> optional <br>
+			Destination Filename: <input type="text" id="DestFileName" name="DestFileName" value="main.c"> MANDATORY<br>
+			File to upload (MANDATORY) <input type="file" id="UploadFile" name="UploadFile"/><br>
+			Metadata in JSON format (MANDATORY) chose one of the next 2 options: <br>
+			&emsp; <input type="text" id="RawJSON" name="RawJSON" value=
+			'{  "domain":"domain_HLRS", "any_other_user_defined_label":"user_defined_value" }'
 			style="font-size:11pt;height:20px;width:800px;">
 			<br><b>OR</b><br>
 			&emsp; Json File <input type="file" id="UploadJSON" name="UploadJSON" /><br>
-			File to upload (REQUIRED) <input type="file" id="UploadFile" name="UploadFile"/><br>
-			<center> <input type='submit' onclick="return submitform(event, this)"  value='Upload File!'/></center>
+			<center> <input type='submit' onclick="return submitform_upload(event, this)" value='Upload File!'/></center>
 			<!--</fieldset>-->
 		</form>
 
@@ -95,13 +101,13 @@
 
 		<hr> <b>Tested command line example with curl:</b>
 		<p style="color:DodgerBlue;">
-			curl -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST -F "http://localhost:8000/UploadFile=@/home/jmontana/test.c" -F "RawJSON={ \"path\":\"mypath/\", \"filename\":\"main.c\", \"data_type\":\"Usercase\", \"name\":\"NeuralNet\", \"content\":\"src\" }" http://localhost:8000/upload?DestFileName=main.c\&'Path=mypath/'
+			curl -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST -F "http://localhost:8000/UploadFile=@/home/jmontana/test.c" -F "RawJSON={ \"domain\":\"domain_HLRS\", \"any_other_user_defined_label\":\"user_defined_value\" }" http://localhost:8000/upload?project=phantom_tools_on_HPC\&source=user\&DestFileName=main.c\&'Path=mypath/'
 		</p>
 
 		<b>OR</b> <br>
 
 		<p style="color:DodgerBlue;">
-			curl -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST -F "http://localhost:8000/UploadFile=@/home/jmontana/test.c" -F "UploadJSON=@/home/jmontana/example.json" http://localhost:8000/upload?DestFileName=main.c\&'Path=mypath/'
+			curl -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST -F "http://localhost:8000/UploadFile=@/home/jmontana/test.c" -F "UploadJSON=@/home/jmontana/example.json" http://localhost:8000/upload?project=phantom_tools_on_HPC\&source=user\&DestFileName=main.c\&'Path=mypath/'
 		</p>
 	</div>
 
