@@ -242,16 +242,22 @@ function consolelogjson(JSONstring ){
 //*********************************************************************	
 //the purpose is to remove the fields/properties path,path_length, filename,filename_length, if present.
 //and generate thos fields/properties from the input parameters
-function update_filename_path_on_json(JSONstring, filename, path){
+function update_filename_path_on_json(JSONstring, project,source, filename, path){
 	var new_json = {  }
 	var jsonobj = JSON.parse(JSONstring);
 	var keys = Object.keys(jsonobj);
+	if (project == undefined) project="";
+	if (source == undefined) source="";
 	if (path == undefined) path="";
-	if (filename == undefined) filename="";	
+	if (filename == undefined) filename="";
+	new_json['project']		=project;
+	new_json['project'+'_length']		=project.length;
+	new_json['source']		=source;
+	new_json['source'+'_length']		=source.length;	
 	new_json['path']		=path;
 	new_json['path'+'_length']	=path.length; //label can not contain points '.' !
 	new_json['filename']	=filename;
-	new_json['filename'+'_length']=filename.length;	
+	new_json['filename'+'_length']=filename.length;
 	for (var i = 0; i < keys.length; i++) {
 		var label=Object.getOwnPropertyNames(jsonobj)[i];
 		label=lowercase(label);
@@ -590,6 +596,10 @@ app.get('/examplec.json', function(req, res) {
 
 app.get('/query_metadata.html', function(req, res) { 
 	var filePath = '../web-repository/query_metadata.html';
+	retrieve_file(filePath,res);
+});
+app.get('/file_list.html', function(req, res) { 
+	var filePath = '../web-repository/file_list.html';
 	retrieve_file(filePath,res);
 });
 //*******************************
@@ -949,7 +959,7 @@ function request_permission( user,pretty, project,source,filepath, filename){
 		var searching = MetadataModule.query_metadata(es_servername+":"+es_port,SERVERDB,query, pretty);
 		searching.then((resultFind) => {
 			var result = {totalkeys: 1, permission: [''], jsonfilename : [''], domain: [''], label_domain: [''] };
-			result.permission ="permit";
+// 			result.permission ="permit";
 			resultFind = JSON.parse(resultFind);
 			if(resultFind.hits !=undefined) {
 				var totalkeys = Object.keys(resultFind.hits);
@@ -990,7 +1000,7 @@ function request_permission( user,pretty, project,source,filepath, filename){
 						reject("Unexpected error at recursively_confirmation_of_permissions:"+resultReject);
 					} );
 				}else{
-					resolve("permit");
+					resolve(result);
 				}
 			}else{
 				reject("Unexpected error at request_permission");
@@ -1202,6 +1212,24 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 		return;
 	}
 	var RawJSON= find_param(req.body.RawJSON, req.query.RawJSON);
+	
+	var source_proj = {totalkeys: 1, project: [''], source: [''] };
+	source_proj.project=find_param(req.body.project, req.query.project);
+	if (source_proj.project == undefined){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("400:Bad Request, missing Path.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"Path",currentdate,res.user);
+		return;
+	}
+	
+	source_proj.source=find_param(req.body.source, req.query.source);
+	if (source_proj.source == undefined){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("400:Bad Request, missing Path.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"Path",currentdate,res.user);
+		return;
+	}
+	
 	var DestPath=find_param(req.body.Path, req.query.Path);
 	if (DestPath == undefined){
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
@@ -1233,8 +1261,8 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 	//	if (jsontext.length > 0)
 	//		jsontext = JSON.stringify(jsontext);
 	} 
-	var source_proj= get_source_project_json(jsontext);
-	jsontext=update_filename_path_on_json(jsontext, DestFileName, DestPath); //this adds the field
+// 	var source_proj= get_source_project_json(jsontext);
+	jsontext=update_filename_path_on_json(jsontext,source_proj.project, source_proj.source, DestFileName, DestPath); //this adds the field
 // 	console.log("send_repo_update_to_suscribers("+source_proj.project + " "+ source_proj.source+")"+jsontext);
 	send_repo_update_to_suscribers(source_proj.project, source_proj.source,jsontext);
 
@@ -1324,6 +1352,9 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 // 			if(resultFind.body == "permit"){
 			var query_permission =request_permission(res.user,pretty, project,source,filepath, filename);
 			query_permission.then((result) => {
+				if(result.totalkeys==0){
+					//permisson granted, not files found
+				}else{
 				for (var j = 0; j < 1; j++) {// 1 insted of result.totalkeys for considering only the first entry
 					if(result.permission[j] == "deny"){//permision denied
 						res.writeHead(403, {"Content-Type": contentType_text_plain});
@@ -1334,7 +1365,7 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 						res.end("ERROR processing the permissions\n");
 						return;
 					}
-				}
+				}}
 				try{
 // END ADDTIONAL FOR SECURED VERSION
 					// Check if file specified by the filePath exists
@@ -1478,7 +1509,7 @@ app.get('/downloadlist',middleware.ensureAuthenticated, function(req, res) {
 		}
 	});
 });
-
+const contentType_zip = 'application/zip';
 //**********************************************************
 app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 	var fs = require('fs');
@@ -1492,7 +1523,7 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 	project= validate_parameter(project,"project",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
 	if (project != undefined)
 	if (project.length == 0){
-		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.writeHead(400, {'Content-Type': contentType_text_plain }); 
 		res.end("\n400: Bad Request, missing "+"project"+".\n");
 		return;}
 	var myPath = os.homedir()+ File_Server_Path + '/' + project ;
@@ -1527,17 +1558,21 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 //	//START OF SECURED VERSION CODE
 	var query_permission =request_permission(res.user,pretty, project,source,filepath, filename);
 	query_permission.then((result) => {
+		if(result.totalkeys==0){
+			//permisson granted, not files found
+		}else{
 		for (var j = 0; j < result.totalkeys; j++) {
 			console.log("permission "+j+" "+result.permission[j]);
 			if(result.permission[j] == "deny"){//permision denied
 				res.writeHead(403, {"Content-Type": contentType_text_plain});
 				res.end("Access DENY: You may not have permission to download some file in the folder\n");
+				return;
 			}else if (result.permission[j] != "permit"){//error procesing the request
 				res.writeHead(400, {"Content-Type": contentType_text_plain});
 				res.end("ERROR processing the permissions\n");
 				return;
 			}
-		}
+		}}
 // 	//END OF SECURED VERSION CODE
 		var zipfile ="download_repo_zip";
 		// Check if file specified by the filePath exists
@@ -1571,14 +1606,21 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 										filename: zipfile+'.zip'
 									})
 									.then(function(obj){
-										resolve(" succeeed");//if zip failed
+// 										res.writeHead(200, {"Content-Type": contentType_zip});
+// 										res.setHeader('Content-Type', 'application/zip');
+// 										res.set('Content-Disposition', 'attachment; filename=file.zip');
+// 										res.set('Content-Length', data.length);
+// 										res.end(data, 'binary');
+										resolve(" succeeed");
 		// 								var zipFileSizeInBytes = obj.size;
 		// 								var ignoredFileArray = obj.ignored;
 									})
 									.catch(function(err){
+// 										res.writeHead(400, {"Content-Type": contentType_text_plain});
 										reject (err); //if zip failed
 									});
 								}catch(eb){
+// 									res.writeHead(400, {"Content-Type": contentType_text_plain});
 									reject("Stream-2 error: "+eb);
 								}
 // 						});
