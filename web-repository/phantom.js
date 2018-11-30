@@ -476,7 +476,7 @@ function applogin(user,password){
 			checktoken();
 		}else{
 			var serverResponse = xhr.responseText;
-			if(demoreplaceb) demoreplaceb.innerHTML = "Error: "+ serverResponse;
+			if(demoreplaceb) demoreplaceb.innerHTML = "<pre>Error: "+ serverResponse+ "</pre>";
 			console.log("Error: "+ serverResponse);
 			if(debug_phantom) debug_phantom.style.display = "block";
 			app_logout();
@@ -510,7 +510,7 @@ function rm_login(user,password){
 			if(menu_login) menu_login.style.display = "block";
 			var serverResponse = xhr.responseText;
 			if(menu_phantom) menu_phantom.style.display = "none";
-			if(demoreplaceb) demoreplaceb.innerHTML = "Error: "+ serverResponse;
+			if(demoreplaceb) demoreplaceb.innerHTML = "<pre>Error: "+ serverResponse+ "</pre>";
 			if(debug_phantom) debug_phantom.style.display = "block";
 		}
 	};
@@ -541,7 +541,7 @@ function repo_login(user,password){
 			if(menu_login) menu_login.style.display = "block";
 			var serverResponse = xhr.responseText;
 			if(menu_phantom) menu_phantom.style.display = "none";
-			if(demoreplaceb) demoreplaceb.innerHTML = "Error: "+ serverResponse;
+			if(demoreplaceb) demoreplaceb.innerHTML = "<pre>Error: "+ serverResponse+ "</pre>";
 			if(debug_phantom) debug_phantom.style.display = "block";
 		}
 	};
@@ -562,7 +562,7 @@ function exec_login(user,password){
 			checktoken();
 		}else{
 			var serverResponse = xhr.responseText;
-			if(demoreplaceb) demoreplaceb.innerHTML = "Error: "+ serverResponse;
+			if(demoreplaceb) demoreplaceb.innerHTML = "<pre>Error: "+ serverResponse+ "</pre>";
 			if(debug_phantom) debug_phantom.style.display = "block";
 			exec_logout();
 			checktoken();
@@ -801,7 +801,7 @@ function upload_with_token( UploadJSON, url ) {
 		xhr.setRequestHeader("Authorization", "JWT " + sessionStorage.token);
 		xhr.addEventListener('load', function() {
 			var responseObject = (xhr.responseText);
-			if(demoreplaceb) demoreplaceb.innerHTML = responseObject + " status: " +xhr.status;
+			if(demoreplaceb) demoreplaceb.innerHTML = "<pre>"+ responseObject + " status: " +xhr.status+ "</pre>";
 			if(debug_phantom) debug_phantom.style.display = "block";
 		});
 		formData.append("UploadJSON", UploadJSON.files[0]);
@@ -813,10 +813,6 @@ function upload_with_token( UploadJSON, url ) {
 	}
 	return false;
 }
-
-		
-
-
 
 
 function str2bytes (str) {
@@ -907,11 +903,11 @@ function request_download(url, outputfile, type){
 			var responseObject = [ xhr.responseText ];
 			if(outputfile.length>0)
 				download_file(xhr.response, outputfile, type);
-			if (demoreplaceb) demoreplaceb.innerHTML = responseObject; // + " status: " +xhr.status;
+			if (demoreplaceb) demoreplaceb.innerHTML = "<pre>" + responseObject+ "</pre>"; // + " status: " +xhr.status;
 			if (debug_phantom) debug_phantom.style.display = "block";
 			if(phantom_operation) phantom_operation.style.display="none";
 		}else{
-			if (demoreplaceb) demoreplaceb.innerHTML = responseObject + " status: " +xhr.status;
+			if (demoreplaceb) demoreplaceb.innerHTML = "<pre>"+responseObject + " status: " +xhr.status + "</pre>";
 			if (debug_phantom) debug_phantom.style.display = "block";
 		}
 	});
@@ -949,10 +945,10 @@ function list_results(mytype,url,fields_toshow,filtered_fields){
 				}else if (mytype == 2){
 					html += jsontohtml(myjson,1,true,1,false,filtered_fields);
 				}else{
-					html += JSON.stringify(myjson);
+					html += "<pre>"+ JSON.stringify(myjson)+ "</pre>";
 				}
 			}
-			if (demoreplaceb) demoreplaceb.innerHTML = html; //+responseObject + " status: " +xhr.status;
+			if (demoreplaceb) demoreplaceb.innerHTML =  html; //+responseObject + " status: " +xhr.status;
 			if (debug_phantom) debug_phantom.style.display = "block";
 			//demoreplaceb.innerHTML = JSON.stringify(myjson) + "<br>" + html;// myjson[0].project;
 		}
@@ -1024,9 +1020,6 @@ function list_results_with_token( mytype ,url,fields_toshow, filtered_fields) {
 }
 
 
-
-
-
 function list_apps(mytype,appname){
 	var url = build_appman_path() + "/get_app_list?project=\""+appname+"\"";//?pretty='true'";
 	list_results(mytype,url,["host"],["_length"]);
@@ -1082,7 +1075,7 @@ function submitform(url, operation, outputfile) {
 				} else {
 					r = "Error " + xhr.status + " occurred requesting for Metatada.<br/>";
 				}
-				if(demoreplaceb) document.getElementById("demoreplaceb").innerHTML = r;
+				if(demoreplaceb) document.getElementById("demoreplaceb").innerHTML = "<pre>"+r+"</pre>";
 				if(debug_phantom) document.getElementById("debug_phantom").style.display = "block";
 				if(phantom_operation) document.getElementById("phantom_operation").style.display = "none";
 			}
