@@ -864,21 +864,6 @@ function list_of_files(myPath){
 	return(filelist);
 }
 
-function list_of_files_metadata(project,source, filepath, filename){
-	var path = path || require('path');
-	var fs = fs || require('fs');
-	var filelist = "";
-	files = fs.readdirSync(myPath);
-	files.forEach(function(file) {
-		if (fs.statSync(path.join(myPath, file)).isDirectory()) {
-			filelist= filelist+list_of_files(path.join(myPath, file));
-		}else{
-			filelist= filelist+path.join(myPath, file)+"\n";
-		}
-	});
-	return(filelist);
-}//list_of_files_metadata
-
 //**********************************************************
 function json_list_of_files(myPath,filelist){
 	var path = path || require('path');
@@ -918,7 +903,6 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 	var RawJSON= find_param(req.body.RawJSON, req.query.RawJSON);
 	
 	var source_proj = {totalkeys: 1, project: [''], source: [''] };
-
 	source_proj.project=find_param(req.body.project, req.query.project);
 	if (source_proj.project == undefined){
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
@@ -1192,11 +1176,14 @@ app.get('/downloadlist',middleware.ensureAuthenticated, function(req, res) {
 	}
 
 //Maybe look for NGAC policy here, then decide if continue or not !!
-
 	// Check if file specified by the filePath exists
 	fs.stat(myPath, function(err, stat) {
 		if(err == null) {
-			res.end(list_of_files(myPath));
+			var full_list = list_of_files(myPath);
+			var string_to_replace = os.homedir()+ File_Server_Path + '/';
+			while( full_list.indexOf(string_to_replace) != '-1')
+				full_list = full_list.replace(string_to_replace,'');
+			res.end(full_list);
 // 			res.end(list_of_files_metadata(project,source, filepath, filename));
 		} else if(err.code == 'ENOENT') {
 			// file does not exist
@@ -1272,6 +1259,7 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 // 				res.writeHead(403, {"Content-Type": contentType_text_plain});
 // 				res.end("Access DENY: You may not have permission to download some file in the folder\n");
 // 			}else if (result.permission[j] != "permit"){//error procesing the request
+//				return;
 // 				res.writeHead(400, {"Content-Type": contentType_text_plain});
 // 				res.end("ERROR processing the permissions\n");
 // 				return;
@@ -1310,14 +1298,21 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 										filename: zipfile+'.zip'
 									})
 									.then(function(obj){
-										resolve(" succeeed");//if zip failed
+// 										res.writeHead(200, {"Content-Type": contentType_zip});
+// 										res.setHeader('Content-Type', 'application/zip');
+// 										res.set('Content-Disposition', 'attachment; filename=file.zip');
+// 										res.set('Content-Length', data.length);
+// 										res.end(data, 'binary');
+										resolve(" succeeed");
 		// 								var zipFileSizeInBytes = obj.size;
 		// 								var ignoredFileArray = obj.ignored;
 									})
 									.catch(function(err){
-										reject (err); //if zip failed
+// 										res.writeHead(400, {"Content-Type": contentType_text_plain});
+										reject (err);
 									});
 								}catch(eb){
+// 									res.writeHead(400, {"Content-Type": contentType_text_plain});
 									reject("Stream-2 error: "+eb);
 								}
 // 						});

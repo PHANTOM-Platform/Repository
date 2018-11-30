@@ -1160,21 +1160,6 @@ function list_of_files(myPath){
 	return(filelist);
 }
 
-function list_of_files_metadata(project,source, filepath, filename){
-	var path = path || require('path');
-	var fs = fs || require('fs');
-	var filelist = "";
-	files = fs.readdirSync(myPath);
-	files.forEach(function(file) {
-		if (fs.statSync(path.join(myPath, file)).isDirectory()) {
-			filelist= filelist+list_of_files(path.join(myPath, file));
-		}else{
-			filelist= filelist+path.join(myPath, file)+"\n";
-		}
-	});
-	return(filelist);
-}//list_of_files_metadata
-
 //**********************************************************
 function json_list_of_files(myPath,filelist){
 	var path = path || require('path');
@@ -1487,11 +1472,14 @@ app.get('/downloadlist',middleware.ensureAuthenticated, function(req, res) {
 	}
 
 //Maybe look for NGAC policy here, then decide if continue or not !!
-
 	// Check if file specified by the filePath exists
 	fs.stat(myPath, function(err, stat) {
 		if(err == null) {
-			res.end(list_of_files(myPath));
+			var full_list = list_of_files(myPath);
+			var string_to_replace = os.homedir()+ File_Server_Path + '/';
+			while( full_list.indexOf(string_to_replace) != '-1')
+				full_list = full_list.replace(string_to_replace,'');
+			res.end(full_list);
 // 			res.end(list_of_files_metadata(project,source, filepath, filename));
 		} else if(err.code == 'ENOENT') {
 			// file does not exist
@@ -1617,7 +1605,7 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 									})
 									.catch(function(err){
 // 										res.writeHead(400, {"Content-Type": contentType_text_plain});
-										reject (err); //if zip failed
+										reject (err);
 									});
 								}catch(eb){
 // 									res.writeHead(400, {"Content-Type": contentType_text_plain});
