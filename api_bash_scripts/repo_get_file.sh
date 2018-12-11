@@ -56,7 +56,7 @@ if [ ! $# -eq 0 ]; then
 				echo -e "${yellow}Script for DOWNLOADING a new FILE plus METADATA${reset}";
 				echo -e "${yellow}Syntax ${app}:${reset}";
 				echo -e "${yellow}   Required fields:${reset}";
-				echo -e "${yellow}      authorization token  [ -t f7vglñerghpq3ghwoghw ] ${reset}";
+				echo -e "${yellow}      authentication token  [ -t f7vglñerghpq3ghwoghw ] ${reset}";
 				echo -e "${yellow}      project at the repo  [ -project 1234 ] ${reset}";   # ../web/exampleh.json  json_file
 				echo -e "${yellow}      source at the repo   [ -source 1234 ] ${reset}";   # ../web/exampleh.json  json_file				
 				echo -e "${yellow}      path at the repo     [ -path 1234 ] ${reset}";   # ../web/exampleh.json  json_file

@@ -53,7 +53,7 @@ if [ ! $# -eq 0 ]; then
 				echo -e "${yellow}Script for DELETING a FILE and its METADATA${reset}";
 				echo -e "${yellow}Syntax ${app}:${reset}";
 				echo -e "${yellow}   Required fields:${reset}";
-				echo -e "${yellow}      authorization token  [-t f7vglñerghpq3ghwoghw] ${reset}";  
+				echo -e "${yellow}      authentication token  [-t f7vglñerghpq3ghwoghw] ${reset}";  
 				echo -e "${yellow}      filename_at_the_repository [-df 1234] ${reset}\n"; # mypath/  dst_path
 				echo -e "${yellow}      path_at_the_repository     [-dp 1234] ${reset}";   # main.h dst_file
 				echo -e "${yellow}   Optional fields:${reset}";

@@ -22,6 +22,8 @@ repository_port="8000";
 app=`basename $0`;
 cd `dirname $0`;
 source colors.sh;
+user="hpcjmont@hlrs.de";#"bob@example.com";
+pw="12345678";
 ################### Testing connectivity with the PHANTOM Repository server: #############
 	source verify_connectivity.sh -s ${server} -port ${repository_port};
 	conectivity=$?;
@@ -44,9 +46,9 @@ source colors.sh;
 	fi;
 # 6. ################## GET A NEW TOKEN FOR A REGISTERED USER ###################################
 	echo -e "\n${LIGHT_BLUE}";
-	echo "bash get_token.sh -e bob@example.com -pw 1234 -s ${server} -port ${repository_port} ;";
+	echo "bash get_token.sh -e ${user} -pw ${pw} -s ${server} -port ${repository_port} ;";
 	read -p $'Press [Enter] key to run the script for \033[1;37mOBTAINING\033[1;34m a new token'; echo -ne "${NO_COLOUR}";
-	newtoken=`bash get_token.sh -e bob@example.com -pw 1234 -s ${server} -port ${repository_port} ;` ;
+	newtoken=`bash get_token.sh -e ${user} -pw ${pw} -s ${server} -port ${repository_port} ;` ;
 	echo -e "the newtoken is:\n${newtoken}\n";
 # 8. ################## TEST IF A TOKEN IS VALID OR NOT, this is useful when we don't know if the token has expired ####### 
 	echo -e "\n${LIGHT_BLUE}";
@@ -59,14 +61,14 @@ source colors.sh;
 	echo -e "We are currently defining the project and the source in the json file !!!"
 	echo "bash repo_put.sh -t ${newtoken} -sfp \"../web/example.h\" -sjp \"../web/exampleh.json\" -dp \"mypath/\" -df \"main.h\" -s ${server} -port ${repository_port} ";
 	read -p $'Press [Enter] key to run the script for \033[1;37mUPLOADING\033[1;34m a file with metadata'; echo -ne "${NO_COLOUR}";
-	bash repo_put.sh -t ${newtoken} -sfp "../web/example.h" -sjp "../web/exampleh.json" -dp "mypath/" -df "main.h" -s ${server} -port ${repository_port} 
+	bash repo_put.sh -t ${newtoken} -sfp "../web/example.h" -sjp "../web/exampleh.json" -pr "phantom_tools_on_HPC" -sr "user" -dp "mypath/" -df "main.h" -s ${server} -port ${repository_port};
 # 14. ################## TEST OF DOWNLOADING A FILE WITH A VALID TOKEN, access must be accepted : 200 ###### 
 	echo -e "\n${LIGHT_BLUE}";
 	echo "bash repo_get_file.sh -t ${newtoken} -project \"phantom_tools_on_HPC\" -source \"user\" -path \"mypath/\" -file \"main.h\" -s ${server} -port ${repository_port} ";
 	read -p $'Press [Enter] key to run the script for \033[1;37mDOWNLOADING\033[1;34m a file from the REPOSITORY'; echo -ne "${NO_COLOUR}";
-	bash repo_get_file.sh -t ${newtoken} -project "phantom_tools_on_HPC" -source "user" -path "mypath/" -file "main.h" -s ${server} -port ${repository_port} 
+	bash repo_get_file.sh -t ${newtoken} -project "phantom_tools_on_HPC" -source "user" -path "mypath/" -file "main.h" -s ${server} -port ${repository_port};
 # 17. ######## TEST OF DOWNLOADING METADATA WITH A VALID TOKEN for files in a path, access must be accepted : 200 ########
 	echo -e "\n${LIGHT_BLUE}";
 	echo "bash repo_get_metadata.sh -t ${newtoken} -project \"phantom_tools_on_HPC\" -source \"user\" -path \"mypath/\" -file \"main.h\" -s ${server} -port ${repository_port} ";
 	read -p $'Press [Enter] key to run the script for \033[1;37mDOWNLOADING\033[1;34m metadata from the REPOSITORY'; echo -ne "${NO_COLOUR}";
-	bash repo_get_metadata.sh -t ${newtoken} -project "phantom_tools_on_HPC" -source "user" -path "mypath/" -file "main.h" -s ${server} -port ${repository_port} 
+	bash repo_get_metadata.sh -t ${newtoken} -project "phantom_tools_on_HPC" -source "user" -path "mypath/" -file "main.h" -s ${server} -port ${repository_port};

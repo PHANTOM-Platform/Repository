@@ -1,5 +1,5 @@
 #!/bin/bash
-#Script for obtaining a token for a especific user. 
+#Script for obtaining a token for a especific user.
 #Author: J.M.Montañana HLRS 2018
 #  If you find any bug, please notify to hpcjmont@hlrs.de
 
@@ -8,22 +8,40 @@
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
 #    You may obtain a copy of the License at
-# 
+#
 #      http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #    Unless required by applicable law or agreed to in writing, software
 #    distributed under the License is distributed on an "AS IS" BASIS,
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
+report_usage(){
+	echo -e "${yellow}Script for RECEIVING a new token${reset}";
+	echo -e "${yellow}Syntax ${app}:${reset}";
+	echo -e "${yellow}   Required fields:${reset}";
+	echo -e "${yellow}      email_of_the_user [-e bob@example.com] ${reset}";
+	echo -e "${yellow}      Password [-pw 1234] ${reset}";
+	echo -e "${yellow}   Optional fields:${reset}";
+	echo -e "${yellow}      Server [-s phantom.com] ${reset}";
+	echo -e "${yellow}      Port [-port 8000] ${reset}";	
+	echo -e "${yellow}   Help [--help] to get this help.${reset}";
+	echo -e "\n${yellow} Example of use:\n     ${app} -e bob@example.com -pw 1234${reset}";
+}
+
 ###################   Global Variables' Definition #############################
-server="localhost"; 
+server="localhost";
 repository_port="8000";
 app=`basename $0`;
 cd `dirname $0`;
 source colors.sh;
 ################ Parse of the input parameters #################################
+if [ $# -eq 0 ]; then
+    echo "[ERROR]: missing parameters."
+    report_usage;
+    exit 0;
+fi
 if [ ! $# -eq 0 ]; then
 	nuevo=true;
 	last="";
@@ -37,21 +55,12 @@ if [ ! $# -eq 0 ]; then
 				nuevo=false;
 			elif [ "$last" = "-port" ] || [ "$last" = "-PORT" ]; then
 				repository_port=$i;
-				nuevo=false;  
+				nuevo=false;
 			elif [ "$last" = "-pw" ] || [ "$last" = "-PW" ]; then
 				password=$i;
 				nuevo=false;  
 			elif [ "$i" = "-h" ] || [ "$i" = "-H" ]; then
-				echo -e "${yellow}Script for RECEIVING a new token${reset}";
-				echo -e "${yellow}Syntax ${app}:${reset}";
-				echo -e "${yellow}   Required fields:${reset}";
-				echo -e "${yellow}      email_of_the_user [-e bob@example.com] ${reset}";
-				echo -e "${yellow}      Password [-pw 1234] ${reset}";
-				echo -e "${yellow}   Optional fields:${reset}";
-				echo -e "${yellow}      Server [-s phantom.com] ${reset}";
-				echo -e "${yellow}      Port [-port 8000] ${reset}";	
-				echo -e "${yellow}   Help [--help] to get this help.${reset}";
-				echo -e "\n${yellow} Example of use:\n     ${app} -e bob@example.com -pw 1234${reset}";
+				report_usage;
 				exit 0;
 			elif [ "$last" != "" ]; then
 				echo "error de sintaxis" $last "."
@@ -63,8 +72,8 @@ if [ ! $# -eq 0 ]; then
 			nuevo=true;
 			last=$i;
 		fi;
-	done; 
-fi;  
+	done;
+fi;
 ################### Testing connectivity with the PHANTOM Repository server: #############
 	source verify_connectivity.sh -s ${server} -port ${repository_port};
 	conectivity=$?;
@@ -86,7 +95,6 @@ fi;
 		exit 1;
 	fi;
 ######## Register of the new user ###################################################
-
 	resp=$(curl -s -H "Content-Type: text/plain" -XGET  --write-out "\n%{http_code}" http://${server}:${repository_port}/login?email="${email}"\&pw="${password}");
 	HTTP_STATUS="${resp##*$'\n'}";
 	content="${resp%$'\n'*}";

@@ -17,7 +17,7 @@
 #    limitations under the License.
 
 ################### Global Variables' Definition #############################
-server="localhost"; 
+server="localhost";
 repository_port="8000";
 app=`basename $0`;
 cd `dirname $0`;
@@ -46,7 +46,7 @@ source colors.sh;
 	echo -e "\n${LIGHT_BLUE}";
 	echo "bash delete_db.sh -s ${server} -port ${repository_port} ;"
 	read -p $'Press [Enter] key to run the script for \033[1;37mDELETING\033[1;34m the Repository'; echo -ne "${NO_COLOUR}";
-	bash delete_db.sh -s ${server} -port ${repository_port} ;
+	bash delete_db.sh -s ${server} -port ${repository_port};
 # 4. ################## CREATE A NEW DATABASE ###################################
 	echo -e "\n${LIGHT_BLUE}";
 	echo "bash create_db.sh -s ${server} -port ${repository_port} ;";
@@ -55,5 +55,5 @@ source colors.sh;
 # 5. ################## REGISTER A NEW USER ###################################
 	echo -e "\n${LIGHT_BLUE}";
 	echo "bash register_user.sh -e bob@example.com -pw 1234 -s ${server} -port ${repository_port} ;";
-	read -p $'Press [Enter] key to run the script for \033[1;37mREGISTER\033[1;34m a new user'; echo -ne "${NO_COLOUR}";	
+	read -p $'Press [Enter] key to run the script for \033[1;37mREGISTER\033[1;34m a new user'; echo -ne "${NO_COLOUR}";
 	bash register_user.sh -e bob@example.com -pw 1234 -s ${server} -port ${repository_port} ;
