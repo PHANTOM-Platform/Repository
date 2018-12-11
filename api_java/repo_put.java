@@ -33,53 +33,55 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.nio.file.Files;
- 
-public class repo_put { 
-    private static final String LINE_FEED = "\r\n"; 
-    private static final String boundary = "*****"; 
+
+public class repo_put {
+    private static final String LINE_FEED = "\r\n";
+    private static final String boundary = "*****";
 
     public static void main(String[] args)   throws IOException { 
 		int firstArg;
 		if (args.length < 6) {
-			System.err.println("Missing arguments, please try: \n repo_put token server port destfilepath destfilename srcfile scrjson\n");
+			System.err.println("Missing arguments, please try: \n repo_put token server port project source destfilepath destfilename srcfile scrjson\n");
 			System.exit(1);
 		} else{  
 			String token			= args[0];
 			String es_serveraddress	= args[1];
-			String es_serverport	= args[2];	 //project    and source are defined in the json file
-			String DestFilePath		= args[3];
-			String DestFileName		= args[4];			
-			
-			String SrcFile= args[5];//"/home/jmontana/repository/web/example.h"
-			String SrcJson= args[6];//"/home/jmontana/repository/web/exampleh.json"
+			String es_serverport	= args[2];
+			String Project			= args[3];
+			String source		= args[4];
+			String DestFilePath		= args[5];
+			String DestFileName		= args[6];
+
+			String SrcFile= args[7];//"/home/jmontana/repository/web/example.h"
+			String SrcJson= args[8];//"/home/jmontana/repository/web/exampleh.json"
 
 			String charset = "UTF-8";
 			String destfile="example.h";
-			File uploadFile1 = new File(SrcFile);  
+			File uploadFile1 = new File(SrcFile);
 			File uploadFile2 = new File(SrcJson);
 
-			String requestURL = "http://"+es_serveraddress+":"+es_serverport+"/upload?Path="+DestFilePath + "&DestFileName="+DestFileName; 
-			try {     
+			String requestURL = "http://"+es_serveraddress+":"+es_serverport+"/upload?project="+Project + "&source="+source + "&Path="+DestFilePath + "&DestFileName="+DestFileName;
+			try {
 				String lineEnd = "\r\n";
 				String twoHyphens = "--";
 				
 				int bytesRead, bytesAvailable, bufferSize;
 				byte[] buffer;
-				int maxBufferSize = 1 * 1024 * 1024;  
+				int maxBufferSize = 1 * 1024 * 1024;
 				// open a URL connection to the Servlet
-				FileInputStream fileInputStream = new FileInputStream(uploadFile1); 
+				FileInputStream fileInputStream = new FileInputStream(uploadFile1);
 				// Open a HTTP  connection to  the URL 
 				URL url = new URL(requestURL);
 				HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
 				httpConn.setUseCaches(false);
-				httpConn.setDoOutput(true); 
-				httpConn.setDoInput(true);   
+				httpConn.setDoOutput(true);
+				httpConn.setDoInput(true);
 				httpConn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
-				httpConn.setRequestMethod("POST"); 	 
+				httpConn.setRequestMethod("POST");
 				httpConn.setRequestProperty("Authorization", "OAuth " + token);
 				
 				OutputStream outputStream = httpConn.getOutputStream();
-				PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, charset), true);    
+				PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, charset), true);
 
 				// Send text file.
 				writer.append("--" + boundary).append(lineEnd);
