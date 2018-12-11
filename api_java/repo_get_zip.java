@@ -25,7 +25,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -35,8 +34,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
- 
 
 import static org.apache.http.HttpHeaders.USER_AGENT;
 
@@ -54,7 +51,7 @@ public class repo_get_zip {
 	
 	public static String request_repository_server(String table_ini,String token, String es_serveraddress, String es_serverport ) throws IOException {
 		String table=table_ini.replaceAll(" ","%20");
-		String retmonmetric = new String();		
+		String retmonmetric = new String();
 		String urlString = new String();
 		String responsestring = new String();
 		int cnt=0;
@@ -85,7 +82,7 @@ public class repo_get_zip {
 		byte[] buf = new byte[8192];
 		while((bytesRead = inputStream.read(buf)) != -1) {
 			outputStream.write(buf,0,bytesRead);
-		}
+		}	
 		outputStream.close();
 		inputStream.close();
 
@@ -98,7 +95,7 @@ public class repo_get_zip {
 		if (args.length > 5) {
 			String token			= args[0];
 			String es_serveraddress	= args[1];
-			String es_serverport	= args[2];			
+			String es_serverport	= args[2];
 			String project			= args[3];
 			String source			= args[4];
 			String filepath			= args[5]; 

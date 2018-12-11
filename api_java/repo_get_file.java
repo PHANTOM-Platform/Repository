@@ -19,7 +19,7 @@ package demo_phantom;
 // limitations under the License.
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream; 
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -27,10 +27,10 @@ import java.net.URL;
 
 import static org.apache.http.HttpHeaders.USER_AGENT;
 
-public class repo_get_file { 
+public class repo_get_file {
 	public static String request_repository_server(String table_ini,String token, String es_serveraddress, String es_serverport ) throws IOException {
 		String table=table_ini.replaceAll(" ","%20");
-		String retmonmetric = new String();		
+		String retmonmetric = new String();
 		String urlString = new String();
 		String responsestring = new String();
 		int cnt=0;
@@ -39,9 +39,9 @@ public class repo_get_file {
 		URL httpurl = new URL(urlString);
 		HttpURLConnection c = (HttpURLConnection)httpurl.openConnection();//connecting to url
 		c.setRequestProperty( "Content-type", "application/x-www-form-urlencoded");
-		c.setRequestProperty( "Accept", "*/*" ); 
+		c.setRequestProperty( "Accept", "*/*" );
 		c.setRequestProperty("Authorization", "OAuth " + token);
-		c.setRequestMethod("GET"); 
+		c.setRequestMethod("GET");
 		BufferedReader in = new BufferedReader(new InputStreamReader(c.getInputStream()));//stream to resource
 		String str;
 		while ((str = in.readLine()) != null){ //reading data
@@ -51,14 +51,14 @@ public class repo_get_file {
 		in.close();//closing stream
 		c.disconnect();
 		return responsestring;
-	} 
+	}
 
-	public static void main(String[] args) throws IOException { 
-		int firstArg;		
+	public static void main(String[] args) throws IOException {
+		int firstArg;
 		if (args.length > 5) {
 			String token			= args[0];
 			String es_serveraddress	= args[1];
-			String es_serverport	= args[2];			
+			String es_serverport	= args[2];
 			String project			= args[3];
 			String source			= args[4];
 			String filepath			= args[5];
@@ -71,4 +71,3 @@ public class repo_get_file {
 		} 
 	}
 }
-

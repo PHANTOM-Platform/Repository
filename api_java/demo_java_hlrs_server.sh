@@ -31,25 +31,25 @@ javac -classpath org.json.jar:apache-httpcomponents-httpcore.jar:. repo_get_zip.
 
 mv *class demo_phantom/;
 user="bourgos@wings-ict-solutions.eu";
-pw="5379920511";
+pw="12345678";
 
 ###################### TESTING THE CLASSES
 echo "REQUESTING A NEW TOKEN ....";
-token=$(java -classpath org.json.jar:apache-httpcomponents-httpcore.jar:.  demo_phantom/get_token "bourgos@wings-ict-solutions.eu" "5379920511" "141.58.0.8" "2777");
-echo "token is: "+${token}
+token=$(java -classpath org.json.jar:apache-httpcomponents-httpcore.jar:. demo_phantom/get_token "bourgos@wings-ict-solutions.eu" "5379920511" "141.58.0.8" "2777");
+echo "token is: "+${token};
 
 echo "VERIFIYING THE TOKEN ...";
-java -classpath org.json.jar:apache-httpcomponents-httpcore.jar:.  demo_phantom/verify_token ${token} "141.58.0.8" "2777";
+java -classpath org.json.jar:apache-httpcomponents-httpcore.jar:. demo_phantom/verify_token ${token} "141.58.0.8" "2777";
 
 echo "UPLOADING A FILE ... project=demo_hpc source=user path=mypath file=new.h (project and source defined in the json file)";
 echo "Project and Source are defined in the json file !!!";
-java demo_phantom/repo_put ${token} "141.58.0.8" "2777"  "otherpath" "new.h" "../web/example.h" "../web/exampleh.json";
+java demo_phantom/repo_put ${token} "141.58.0.8" "2777" "phantom_tools_on_HPC" "user" "otherpath" "new.h" "../web/example.h" "../web/exampleh.json";
 
 echo "DOWNLOADING A FILE... project=demo_hpc source=user path=mypath file=new.h";
-java -classpath org.json.jar:apache-httpcomponents-httpcore.jar:.  demo_phantom/repo_get_file ${token} "141.58.0.8" "2777" "phantom_tools_on_HPC" user  "otherpath" "new.h";
+java -classpath org.json.jar:apache-httpcomponents-httpcore.jar:. demo_phantom/repo_get_file ${token} "141.58.0.8" "2777" "phantom_tools_on_HPC" "user" "otherpath" "new.h";
 
 echo "DOWNLOADING A ZIP-FILE... project=demo_hpc source=user path=mypath file=new.h";
-java -classpath org.json.jar:apache-httpcomponents-httpcore.jar:.  demo_phantom/repo_get_zip ${token} "141.58.0.8" "2777" "phantom_tools_on_HPC" user  "otherpath" ;
+java -classpath org.json.jar:apache-httpcomponents-httpcore.jar:. demo_phantom/repo_get_zip ${token} "141.58.0.8" "2777" "phantom_tools_on_HPC" "user" "otherpath";
 
-unzip zipfile.zip 
-cat  phantom_tools_on_HPC/user/otherpath/new.h 
+unzip zipfile.zip;
+cat phantom_tools_on_HPC/user/otherpath/new.h;
