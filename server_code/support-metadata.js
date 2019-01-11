@@ -24,7 +24,7 @@ function add_query_term(mquery, mylabel , value ){
 		if(mquery==undefined ){
 			var mquery = {} // empty Object
 			mquery[key] = []; // empty Array, which you can push() values into
-		}  
+		}
 		var tquery ={};
 			tquery[mylabel]=value;
 		var xquery ={};
@@ -116,30 +116,30 @@ find_metadata_id: function(es_server ,my_index, project,source,filename,path){
 			index: my_index,
 			type: my_type, 
 			body: search_query
-		}, function(error, response) {
-			if (error) { 
+		}, function(error, response){
+			if (error){
 				reject (error);
 			} 
-			resolve (response.hits.hits[0]._id); 
+			resolve (response.hits.hits[0]._id);
 		});
 	});
 },
 
 //**********************************************************
 //This function is used to verify if a filename-path is registered
-query_count_filename_path: function(es_server, my_index,project,source, filename,path){ 
-	return new Promise( (resolve,reject) => {  
+query_count_filename_path: function(es_server, my_index,project,source,path, filename){
+	return new Promise( (resolve,reject) => {
 		var elasticsearch = require('elasticsearch');
 		var client = new elasticsearch.Client({
 			host: es_server,
 			log: 'error'
 		});
-		var count_query = this.compose_query(project,source, path, filename);  
-// 			console.log("query is: "+JSON.stringify(count_query)); 
+		var count_query = this.compose_query(project,source, path, filename);
+			console.log("query is: "+JSON.stringify(count_query)); 
 		client.count({
 			index: my_index,
-			type: my_type, 
-			body: count_query 
+			type: my_type,
+			body: count_query
 		}, function(error, response) {
 			if (error) {
 				reject (error);
@@ -154,7 +154,7 @@ query_count_filename_path: function(es_server, my_index,project,source, filename
 },//end query_count_filename_path
 
 //This function is used to register new entries or replace existing one
-//example of use: 	
+//example of use:
 register_update_filename_path_json: function(es_server, my_index, body, project,source, filename, path) {
 	return new Promise( (resolve,reject) => {
 		var elasticsearch = require('elasticsearch');
@@ -166,21 +166,21 @@ register_update_filename_path_json: function(es_server, my_index, body, project,
 		//if there, then we remove them
 		//and update with new fields from the variables filename, path 
 // 			var myobj = get_value_json(body,"filename");
-// 			if(myobj.value!= undefined) 
-// 				delete body.filename; 
+// 			if(myobj.value!= undefined)
+// 				delete body.filename;
 // 			myobj = get_value_json(body,"filename_length");
-// 			if(myobj.value!= undefined) 
-// 				delete body.filename_length; 
+// 			if(myobj.value!= undefined)
+// 				delete body.filename_length;
 // 			myobj = get_value_json(body,"path");
-// 			if(myobj.value!= undefined) 
-// 				delete body.path; 
+// 			if(myobj.value!= undefined)
+// 				delete body.path;
 // 			myobj = get_value_json(body,"path_length");
 // 			if(myobj.value!= undefined) 
 // 				delete body.path_length;
 		var myres = { code: "", text: "" };
-		var count_metadata = this.query_count_filename_path(es_server, my_index, project,source,filename,path);
-		count_metadata.then((resultCount) => {  
-			if(resultCount==0){ //File+path don't found, proceed to register new entry. 
+		var count_metadata = this.query_count_filename_path(es_server, my_index, project,source,path,filename);
+		count_metadata.then((resultCount) => {
+			if(resultCount==0){ //File+path don't found, proceed to register new entry.
 				var new_reg = this.register_json(es_server, my_index, body);
 				new_reg.then((resultReg) => {
 					myres.code="200";
@@ -193,7 +193,7 @@ register_update_filename_path_json: function(es_server, my_index, body, project,
 				});//end new_reg
 			}else{
 				var id_metadata = this.find_metadata_id(es_server, my_index,project,source, filename,path);
-				id_metadata.then((resultId) => { 
+				id_metadata.then((resultId) => {
 					clientb.index({
 						index: my_index,
 						type: my_type,
@@ -221,7 +221,7 @@ register_update_filename_path_json: function(es_server, my_index, body, project,
 			}
 		},(resultReject)=> {
 				myres.code="409";
-				myres.text= "error counting "+ resultReject; 
+				myres.text= "error counting "+ resultReject;
 				reject (myres);
 		});//end count_metadata
 	});//end promise
@@ -229,7 +229,7 @@ register_update_filename_path_json: function(es_server, my_index, body, project,
 //**********************************************************
 //This function is used to register new entries or replace existing one
 //example of use:
-delete_filename_path_json: function(es_server, my_index,project,source, filename, path) {
+delete_filename_path_json: function(es_server, my_index,project,source, path, filename) {
 	return new Promise( (resolve,reject) => {
 		var elasticsearch = require('elasticsearch');
 		var clientb = new elasticsearch.Client({
@@ -237,15 +237,15 @@ delete_filename_path_json: function(es_server, my_index,project,source, filename
 			log: 'error'
 		});
 		var myres = { code: "", text: "" };
-		var count_metadata = this.query_count_filename_path(es_server, my_index, project,source,filename,path);
+		var count_metadata = this.query_count_filename_path(es_server, my_index, project,source,path,filename);
 		count_metadata.then((resultCount) => {
 			if(resultCount==0){ //File+path don't found, proceed to register new entry.
 				myres.code="420";
 				myres.text="Could not DELETE an not existing register.\n";
 				reject (myres);
 			}else{
-				var id_metadata = this.find_metadata_id(es_server, my_index,project,source, filename,path);
-				id_metadata.then((resultId) => { 
+				var id_metadata = this.find_metadata_id(es_server, my_index, project, source, filename,path);
+				id_metadata.then((resultId) => {
 					clientb.delete({
 						index: my_index,
 						type: my_type,
@@ -270,10 +270,10 @@ delete_filename_path_json: function(es_server, my_index,project,source, filename
 					reject (myres);
 				});//end find id_metadata
 			}
-		},(resultReject)=> { 
-				myres.code="409";
-				myres.text= "error counting "+ resultReject; 
-				reject (myres);
+		},(resultReject)=> {
+			myres.code="409";
+			myres.text= "error counting "+ resultReject;
+			reject (myres);
 		});//end count_metadata
 	});//end promise
 }, //end delete_filename_path_json
@@ -355,7 +355,7 @@ delete_filename_path_json: function(es_server, my_index,project,source, filename
 // 					keys.forEach(function(key) { //at most we have one key, because size=1
 // 						item = JSON.parse(JSON.stringify(response.hits.hits[key]._source));
 // 						//console.log("item "+item);
-// 					});	
+// 					});
 // 					resolve(JSON.stringify(item, null, 4 ));
 // 				};
 // 			});

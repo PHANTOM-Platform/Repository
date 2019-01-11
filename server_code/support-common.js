@@ -1,5 +1,5 @@
 //************************************************
-	var dateFormat 		= require('dateformat');
+	var dateFormat = require('dateformat');
 module.exports = {
 	//****************************************************
 	//This function flush the pending operations to the DataBase.
@@ -26,7 +26,7 @@ module.exports = {
 	//This function removes double quotation marks if present at the beginning and the end of the input string
 	 remove_quotation_marks: function(input_string){
 		if(input_string ==undefined){
-			input_string="";
+			return("");
 		}
 		if(input_string.charAt(0) === '"') {
 			input_string = input_string.substr(1);

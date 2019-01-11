@@ -377,8 +377,8 @@ function update_projectname_length_on_json(JSONstring, projectname){
 }
 //**********************************************************
 function validate_parameter(parameter,label,currentdate,user,address){
-	var message_error = "DOWNLOAD Bad Request missing "+label;  
-	if (parameter != undefined){  
+	var message_error = "Bad Request missing "+label;
+	if (parameter != undefined){
 		parameter = remove_quotation_marks(parameter);
 		if (parameter.length > 0)
 			return(parameter);
@@ -629,12 +629,12 @@ app.post('/delete_metadata',middleware.ensureAuthenticated, function(req, res) {
 	}
 
 	var source= find_param(req.body.source, req.query.source);
-	if ( source == undefined){
+	if (source == undefined){
 		res.writeHead(400, { 'Content-Type': contentType_text_plain });
 		res.end("400:"+message_missing+" source.\n");
 		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,message_no_path,currentdate,res.user);
 		return;
-	}else if ( source.length == 0){
+	}else if (source.length == 0){
 		res.writeHead(400, { 'Content-Type': contentType_text_plain });
 		res.end("400: Empty source.\n");
 		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,message_no_path,currentdate,res.user);
@@ -642,16 +642,16 @@ app.post('/delete_metadata',middleware.ensureAuthenticated, function(req, res) {
 	}
 
 	var DestPath= find_param(req.body.Path, req.query.Path);
-	if ( DestPath == undefined){
+	if (DestPath == undefined){
 		res.writeHead(400, { 'Content-Type': contentType_text_plain });
 		res.end("400:"+message_missing+" Path.\n");
 		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,message_no_path,currentdate,res.user);
 		return;
-	}else if ( DestPath.length == 0){
-		res.writeHead(400, { 'Content-Type': contentType_text_plain });
-		res.end("400: Empty Path.\n");
-		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,message_no_path,currentdate,res.user);
-		return;
+// 	}else if (DestPath.length == 0){
+// 		res.writeHead(400, { 'Content-Type': contentType_text_plain });
+// 		res.end("400: Empty Path.\n");
+// 		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,message_no_path,currentdate,res.user);
+// 		return;
 	}
 
 	var DestFileName = find_param(req.body.DestFileName, req.query.DestFileName);
@@ -667,10 +667,17 @@ app.post('/delete_metadata',middleware.ensureAuthenticated, function(req, res) {
 		return;
 	}
 
-	var result= MetadataModule.delete_filename_path_json(es_servername+":"+es_port,SERVERDB, project, source, DestFileName, DestPath);
+	var pathfiletodelete="";
+	if (DestFileName.length == 0){
+		pathfiletodelete=File_Server_Path + '/' + project+ '/' + source+ '/' + DestFileName;
+	}else{
+		pathfiletodelete=File_Server_Path + '/' + project+ '/' + source+ '/' + DestPath + '/' + DestFileName;	
+	}
+
+	var result= MetadataModule.delete_filename_path_json(es_servername+":"+es_port,SERVERDB, project, source, DestPath, DestFileName);
 	result.then((resultResolve) => {
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,resultResolve.text,currentdate,res.user);
-		fs.unlink(os.homedir()+ File_Server_Path + '/' + DestPath + '/' + DestFileName, function(err) {
+		fs.unlink(os.homedir()+ pathfiletodelete, function(err) {
 			if (err) {
 				res.writeHead(400, {"Content-Type": contentType_text_plain});
 				res.end("Error when deleting the file: "+err+"\n", 'utf-8');
@@ -686,7 +693,20 @@ app.post('/delete_metadata',middleware.ensureAuthenticated, function(req, res) {
 		res.writeHead(resultReject.code, {"Content-Type": contentType_text_plain});
 		res.end(resultReject.text+"\n", 'utf-8');
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"Delete Error",currentdate,res.user);
-		return;
+
+		//we try to delete the file, in case the metadata is not existing
+		fs.unlink(os.homedir()+ pathfiletodelete, function(err) {
+			if (err) {
+				res.writeHead(400, {"Content-Type": contentType_text_plain});
+				res.end("Error when deleting the file: "+err+"\n", 'utf-8');
+				return;
+			}else{
+				console.log('successfully file deleted');
+				res.writeHead(resultReject.code, {"Content-Type": contentType_text_plain});
+				res.end(resultReject.text+"\n", 'utf-8');
+				return;
+			}
+		});
 	});//
 });
 //**********************************************************
@@ -988,7 +1008,7 @@ function request_permission( user,pretty, project,source,filepath, filename){
 					}else{
 						result.label_domain[j] = result.domain[j];
 					}
-				}//anyway the next loop run after the first loop even if we join the loop. Then this coding stile looks mor similar to the execution behaviour.
+				}//anyway the next loop run after the first loop even if we join the loop. Then this coding stile looks more similar to the execution behaviour.
 				if(totalkeys.length>0){
 					var kresults= recursively_confirmation_of_permissions(totalkeys.length, user, result.domain,0);
 					kresults.then((resultFind) => {
@@ -1222,6 +1242,14 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"Path",currentdate,res.user);
 		return;
 	}
+	
+	if(DestPath.length>=2){
+	while((DestPath.charAt(DestPath.length-1) == "/") &&(DestPath.length >=2)) {
+		//remove the last character
+		var DestPath = DestPath.slice(0, -1);
+	}}
+	
+	
 	var DestFileName=find_param(req.body.DestFileName, req.query.DestFileName);
 	if (DestFileName == undefined){
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
@@ -1307,6 +1335,14 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
 		res.end("\n400: Bad Request, missing "+"filepath"+".\n");
 		return;}
+		
+	
+	if(filepath.length>=2){
+	while((filepath.charAt(filepath.length-1) == "/") &&(filepath.length >=2)) {
+		//remove the last character
+		var filepath = filepath.slice(0, -1);
+	}}
+
 	//*******************************************
 	var filename= find_param(req.body.filename, req.query.filename);
 	filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
@@ -1342,8 +1378,11 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 				}else{
 				for (var j = 0; j < 1; j++) {// 1 insted of result.totalkeys for considering only the first entry
 					if(result.permission[j] == "deny"){//permision denied
+						console.log("mypath " + myPath+"\n");
+						console.log(" result.totalkeys "+result.totalkeys);
+						console.log(" j " +j);
 						res.writeHead(403, {"Content-Type": contentType_text_plain});
-						res.end("Access DENY: You may not have permission to download some file in the folder\n");
+						res.end("Access DENY:: You may not have permission to download some file in the folder\n");
 						return;
 					}else if (result.permission[j] != "permit"){//error procesing the request
 						res.writeHead(400, {"Content-Type": contentType_text_plain});
@@ -1462,13 +1501,22 @@ app.get('/downloadlist',middleware.ensureAuthenticated, function(req, res) {
 		//*******************************************
 		filepath= find_param(req.body.filepath, req.query.filepath);
 		filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-		if (filepath != undefined)
+		
+		
+		if (filepath != undefined){
+		if(filepath.length>=2){
+		while((filepath.charAt(filepath.length-1) == "/") &&(filepath.length >=2)) {
+			//remove the last character
+			var filepath = filepath.slice(0, -1);
+		}}
+
+
 		if (filepath.length != 0){
 			myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath;
 			//*******************************************
 			filename= find_param(req.body.filename, req.query.filename);
 			filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-		}
+		}}
 	}
 
 //Maybe look for NGAC policy here, then decide if continue or not !!
@@ -1526,14 +1574,19 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 		//*******************************************
 		filepath= find_param(req.body.filepath, req.query.filepath);
 		filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-		if (filepath != undefined)
+		if (filepath != undefined){
+		if(filepath.length>=2){
+		while((filepath.charAt(filepath.length-1) == "/") &&(filepath.length >=2)) {
+			//remove the last character
+			var filepath = filepath.slice(0, -1);
+		}}
 		if (filepath.length != 0){
 			myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath;
 			myDest = project +'/' + source +'/' + filepath;
 			//*******************************************
 			filename= find_param(req.body.filename, req.query.filename);
 			filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-		}
+		}}
 	}
 // project example7
 // myPath /nas_home//hpcjmont/phantom_servers/phantom_repository/example7/user
