@@ -69,13 +69,13 @@ if [ ! $# -eq 0 ]; then
 				echo -e "${yellow}Syntax ${app}:${reset}";
 				echo -e "${yellow}   Required fields:${reset}";
 				echo -e "${yellow}      authentication token  [-t f7vglñerghpq3ghwoghw] ${reset}";
-				echo -e "${yellow}      source_file_path     [-sfp 1234] ${reset}";   # ../web/example.h      src_file
-				echo -e "${yellow}      source_json_path     [-sjp 1234] ${reset}";   # ../web/exampleh.json  json_file
-# 				echo -e "${yellow}      json_string          [-js 1234] ${reset}";	#  .....   src_json
+				echo -e "${yellow}      source_file_path     [-sfp 1234] ${reset}"; # ../web/example.h      src_file
+				echo -e "${yellow}      source_json_path     [-sjp 1234] ${reset}"; # ../web/exampleh.json  json_file
+# 				echo -e "${yellow}      json_string          [-js 1234] ${reset}"; #  .....   src_json
 
-				echo -e "${yellow}      project              [-pr 1234] ${reset}";   # project
-				echo -e "${yellow}      source               [-sr 1234] ${reset}";   # source
-				echo -e "${yellow}      destination_path     [-dp 1234] ${reset}";   # main.h dst_file
+				echo -e "${yellow}      project              [-pr 1234] ${reset}"; # project
+				echo -e "${yellow}      source               [-sr 1234] ${reset}"; # source
+				echo -e "${yellow}      destination_path     [-dp 1234] ${reset}"; # main.h dst_file
 				echo -e "${yellow}      destination_filename [-df 1234] ${reset}"; # mypath/  dst_path
 
 				echo -e "${yellow}   Optional fields:${reset}";
@@ -97,7 +97,7 @@ if [ ! $# -eq 0 ]; then
 			nuevo=true;
 			last=$i;
 		fi;
-	done; 
+	done;
 fi;
 
 if [ -z "${src_file}" ]; then
@@ -138,7 +138,7 @@ fi;
 	if [[ ${HTTP_STATUS} != "200" ]]; then
 		echo "PHANTOM Repository Doesn't get Response from the ElasticSearch Server. Aborting.";
 		exit 1;
-	fi; 
+	fi;
 # Look which kind of server is listening
 	SERVERNAME=$(curl --silent http://${server}:${repository_port}/servername);
 	if [[ ${SERVERNAME} != "PHANTOM Repository" ]]; then

@@ -17,17 +17,85 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-###################   Global Variables' Definition #############################
+################### Global Variables' Definition #############################
 server="localhost"; 
 repository_port="8000";
+expectedserver="PHANTOM Repository";
+resp="";
 app=`basename $0`;
 cd `dirname $0`;
 source colors.sh;
+################ Function Definitions #################################
+verify_reponse()
+{
+	# $1 server
+	# $2 port
+	# $3 expectedserver
+	echo "Checking Response on port ${2} ...";
+	let "j=0";
+	if [ "$#" -lt 3 ]; then
+		echo "error missing parameters at function verify_response";
+		exit 1;
+	fi;
+	HTTP_STATUS=$(curl --silent --output /dev/null --write-out "%{http_code}" http://${1}:${2});
+	while [[ ${HTTP_STATUS} != "200" ]] && [ ${j} -lt 1 ] ; do 
+		let "j += 1 "; sleep 1;
+		HTTP_STATUS=$(curl --silent --output /dev/null --write-out "%{http_code}" http://${1}:${2});
+	done; 
+	if [[ ${HTTP_STATUS} != "200" ]]; then
+		echo "> Server is unreachable on port ${2}. Aborting.";
+		exit 1;
+	fi;
+	HTTP_STATUS=$(curl -s http://${1}:${2}/verify_es_connection);
+	if [[ ${HTTP_STATUS} != "200" ]]; then
+		echo "> Server has not connection with the ElasticSearch server. Aborting.";
+		exit 1;
+	fi;
+	# Look which kind of server is listening
+	SERVERNAME=$(curl --silent http://${1}:${2}/servername);
+	if [[ ${SERVERNAME} != ${3} ]]; then
+		echo " The server found is not a ${3} server. Aborting.";
+		echo ${SERVERNAME} != ${3};
+		exit 1;
+	fi;
+	echo -e "Done. Response successfully found on port ${2}.\n";
+}
+
+delete_file_and_metadata()
+{
+	#$1 is token
+	#$2 is project
+	#$3 is the source
+	#$4 is the path
+	#$5 is the filename
+	echo -e "\n${LIGHT_BLUE}";
+	echo "curl -s -H \"Authorization: OAuth \${1}\" -H \"Content-Type: multipart/form-data\" -XPOST http://${server}:${repository_port}/delete_metadata?project=${2}\&source=${3}\&Path=${4}\&DestFileName=${5}";
+	
+	read -p $'Press [Enter] key to \033[1;37mDELETE METADATA\033[1;34m and \033[1;37mFILE\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -e "${NO_COLOUR}";
+
+	resp=$(curl -s -H "Authorization: OAuth ${1}" -H "Content-Type: multipart/form-data" --write-out "\n%{http_code}" -XPOST http://${server}:${repository_port}/delete_metadata?project=${2}\&source=${3}\&Path=${4}\&DestFileName=${5});
+}
+
+delete_file_and_metadata_emptypath()
+{
+	#$1 is token
+	#$2 is project
+	#$3 is the source
+	#$4 is the filename
+	echo -e "\n${LIGHT_BLUE}";
+	echo "curl -s -H \"Authorization: OAuth \${1}\" -H \"Content-Type: multipart/form-data\" -XPOST http://${server}:${repository_port}/delete_metadata?project=${2}\&source=${3}\&Path=""\&DestFileName=${4}";
+	
+	read -p $'Press [Enter] key to \033[1;37mDELETE METADATA\033[1;34m and \033[1;37mFILE\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -e "${NO_COLOUR}";
+
+	resp=$(curl -s -H "Authorization: OAuth ${1}" -H "Content-Type: multipart/form-data" --write-out "\n%{http_code}" -XPOST http://${server}:${repository_port}/delete_metadata?project=${2}\&source=${3}\&Path=""\&DestFileName=${4});
+}
 ################ Parse of the input parameters #################################  
 src_file="";
 json_file="";
 dst_file="";
 dst_path="";
+project="";
+source="";
 if [ ! $# -eq 0 ]; then
 	nuevo=true;
 	last="";
@@ -38,11 +106,16 @@ if [ ! $# -eq 0 ]; then
 				nuevo=false; 
 			elif [ "$last" = "-port" ] || [ "$last" = "-PORT" ]; then
 				repository_port=$i;
-				nuevo=false;  
+				nuevo=false;
 			elif [ "$last" = "-t" ] || [ "$last" = "-T" ]; then
 				mytoken=$i;
-				nuevo=false; 		
-				
+				nuevo=false;
+			elif [ "$last" = "-project" ] || [ "$last" = "-PROJECT" ]; then
+				project=$i;
+				nuevo=false;
+			elif [ "$last" = "-source" ] || [ "$last" = "-SOURCE" ]; then
+				source=$i;
+				nuevo=false;
 			elif [ "$last" = "-dp" ] || [ "$last" = "-DP" ]; then
 				dst_file=$i;
 				nuevo=false;
@@ -53,9 +126,13 @@ if [ ! $# -eq 0 ]; then
 				echo -e "${yellow}Script for DELETING a FILE and its METADATA${reset}";
 				echo -e "${yellow}Syntax ${app}:${reset}";
 				echo -e "${yellow}   Required fields:${reset}";
-				echo -e "${yellow}      authentication token  [-t f7vglñerghpq3ghwoghw] ${reset}";  
-				echo -e "${yellow}      filename_at_the_repository [-df 1234] ${reset}\n"; # mypath/  dst_path
-				echo -e "${yellow}      path_at_the_repository     [-dp 1234] ${reset}";   # main.h dst_file
+				echo -e "${yellow}      authentication token  [-t f7vglñerghpq3ghwoghw] ${reset}";
+
+				echo -e "${yellow}      project at the repo  [ -project 1234 ] ${reset}";
+				echo -e "${yellow}      source at the repo   [ -source 1234 ] ${reset}";
+				echo -e "${yellow}      path at the repo     [ -dp 1234 ] ${reset}";
+				echo -e "${yellow}      filename at the repo [ -df 1234 ] ${reset}\n";
+
 				echo -e "${yellow}   Optional fields:${reset}";
 				echo -e "${yellow}      Server [-s phantom.com] ${reset}";
 				echo -e "${yellow}      Port [-port 8000] ${reset}";
@@ -72,47 +149,41 @@ if [ ! $# -eq 0 ]; then
 			nuevo=true;
 			last=$i;
 		fi;
-	done; 
+	done;
 fi;
- 
+
+if [ -z "${project}" ]; then
+	echo -e "Missing parameter Project: -project\n";
+	exit 1;
+fi;
 if [ -z "${dst_file}" ]; then
-    echo -e "Missing parameter Destination Filename: df\n";
-    exit 1;
+	echo -e "Missing parameter Destination Filename: -df\n";
+	exit 1;
 fi;
-if [ -z "${dst_path}" ]; then
-    echo -e "Missing parameter Destination Path: dp\n";
-    exit 1;
-fi; 
+if [ -z "${source}" ]; then
+	echo -e "Missing parameter Source: -source\n";
+	exit 1;
+fi;
+# if [ -z "${dst_path}" ]; then
+# 	echo -e "Missing parameter Destination Path: -dp\n";
+# 	exit 1;
+# fi;
 ################### Testing connectivity with the PHANTOM Repository server: #############
-	source verify_connectivity.sh -s ${server} -port ${repository_port};
-	conectivity=$?;
-	if [ ${conectivity} -eq 1 ]; then
-		echo "[ERROR:] Server \"${server}\" is unreachable on port \"${repository_port}\".";
-		exit 1;
+	echo "Checking Repository server ...";
+	verify_reponse ${server} ${repository_port} "${expectedserver}";
+######## DELETE file and metadata ###################################################
+	if [ -z "${dst_path}" ]; then
+		delete_file_and_metadata_emptypath ${mytoken} ${project} ${source} ${dst_file};
+	else
+		delete_file_and_metadata ${mytoken} ${project} ${source} ${dst_path} ${dst_file};
 	fi;
-##### Testing if the PHANTOM Repository server can access to the Elasticsearch Server ####
-	HTTP_STATUS=$(curl -s http://${server}:${repository_port}/verify_es_connection);
-	if [[ ${HTTP_STATUS} != "200" ]]; then
-		echo "PHANTOM Repository Doesn't get Response from the ElasticSearch Server. Aborting.";
-		exit 1;
-	fi;
-# Look which kind of server is listening
-	SERVERNAME=$(curl --silent http://${server}:${repository_port}/servername);
-	if [[ ${SERVERNAME} != "PHANTOM Repository" ]]; then
-		echo " The server found is not a PHANTOM Repository server. Aborting.";
-		echo ${SERVERNAME};
-		exit 1;
-	fi;	
-######## UPLOAD file and metadata ###################################################  
-	resp=$(curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" --write-out "\n%{http_code}" -XPOST http://${server}:${repository_port}/delete_metadata?project=demo\&source=userDestFileName=${dst_file}\&Path=${dst_path});
- 
 	HTTP_STATUS="${resp##*$'\n'}";
 	content="${resp%$'\n'*}";
 	#We sync, because it may start the next command before this operation completes.
 	curl -s -XGET ${server}:${repository_port}/_flush > /dev/null;
 ######## Screen report of the Result #####################################################
 	if [[ ${HTTP_STATUS} == "200" ]]; then
-			echo "${content}"; 			
+			echo "${content}";
 	elif [[ ${HTTP_STATUS} == "409" ]]; then
 			echo "[Error:]  HTTP_STATUS: ${HTTP_STATUS}, CONTENT: ${content}";
 	else #this report is for the case we may get any other kind of response

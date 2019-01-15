@@ -33,22 +33,22 @@ if [ ! $# -eq 0 ]; then
 		if [ "$nuevo" = true ]; then
 			if [ "$last" = "-s" ] || [ "$last" = "-S" ]; then
 				server=$i;
-				nuevo=false; 
+				nuevo=false;
 			elif [ "$last" = "-port" ] || [ "$last" = "-PORT" ]; then
 				repository_port=$i;
-				nuevo=false;  
+				nuevo=false;
 			elif [ "$last" = "-t" ] || [ "$last" = "-T" ]; then
 				mytoken=$i;
 				nuevo=false;
 			elif [ "$last" = "-project" ] || [ "$last" = "-PROJECT" ]; then
 				project=$i;
-				nuevo=false;	
+				nuevo=false;
 			elif [ "$last" = "-source" ] || [ "$last" = "-SOURCE" ]; then
 				source=$i;
-				nuevo=false;	
+				nuevo=false;
 			elif [ "$last" = "-path" ] || [ "$last" = "-PATH" ]; then
 				path=$i;
-				nuevo=false;	 				
+				nuevo=false;
 			elif [ "$last" = "-file" ] || [ "$last" = "-FILE" ]; then
 				file=$i;
 				nuevo=false;
@@ -57,10 +57,10 @@ if [ ! $# -eq 0 ]; then
 				echo -e "${yellow}Syntax ${app}:${reset}";
 				echo -e "${yellow}   Required fields:${reset}";
 				echo -e "${yellow}      authentication token  [ -t f7vglñerghpq3ghwoghw ] ${reset}";
-				echo -e "${yellow}      project at the repo  [ -project 1234 ] ${reset}";   # ../web/exampleh.json  json_file
-				echo -e "${yellow}      source at the repo   [ -source 1234 ] ${reset}";   # ../web/exampleh.json  json_file				
-				echo -e "${yellow}      path at the repo     [ -path 1234 ] ${reset}";   # ../web/exampleh.json  json_file
-				echo -e "${yellow}      filename at the repo [ -file 1234 ] ${reset}";   # ../web/example.h      src_file
+				echo -e "${yellow}      project at the repo  [ -project 1234 ] ${reset}";
+				echo -e "${yellow}      source at the repo   [ -source 1234 ] ${reset}";
+				echo -e "${yellow}      path at the repo     [ -path 1234 ] ${reset}";
+				echo -e "${yellow}      filename at the repo [ -file 1234 ] ${reset}";
 
 				echo -e "${yellow}   Optional fields:${reset}";
 				echo -e "${yellow}      Server [-s phantom.com] ${reset}";

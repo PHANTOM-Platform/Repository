@@ -33,38 +33,38 @@ if [ ! $# -eq 0 ]; then
 		if [ "$nuevo" = true ]; then
 			if [ "$last" = "-s" ] || [ "$last" = "-S" ]; then
 				server=$i;
-				nuevo=false; 
+				nuevo=false;
 			elif [ "$last" = "-port" ] || [ "$last" = "-PORT" ]; then
 				repository_port=$i;
-				nuevo=false;  
+				nuevo=false;
 			elif [ "$last" = "-t" ] || [ "$last" = "-T" ]; then
 				mytoken=$i;
 				nuevo=false;
 			elif [ "$last" = "-project" ] || [ "$last" = "-PROJECT" ]; then
 				project=$i;
-				nuevo=false;	
+				nuevo=false;
 			elif [ "$last" = "-source" ] || [ "$last" = "-SOURCE" ]; then
 				source=$i;
-				nuevo=false;	
+				nuevo=false;
 			elif [ "$last" = "-path" ] || [ "$last" = "-PATH" ]; then
 				path=$i;
-				nuevo=false;	 				
+				nuevo=false;
 			elif [ "$last" = "-file" ] || [ "$last" = "-FILE" ]; then
 				file=$i;
-				nuevo=false; 
+				nuevo=false;
 			elif [ "$i" = "-h" ] || [ "$i" = "-H" ]; then
 				echo -e "${yellow}Script for DOWNLOADING a new FILE plus METADATA${reset}";
 				echo -e "${yellow}Syntax ${app}:${reset}";
 				echo -e "${yellow}   Required fields:${reset}";
 				echo -e "${yellow}      authentication token  [ -t f7vglñerghpq3ghwoghw ] ${reset}";
-				echo -e "${yellow}      project at the repo  [ -project 1234 ] ${reset}";   # ../web/exampleh.json  json_file
-				echo -e "${yellow}      source at the repo   [ -source 1234 ] ${reset}";   # ../web/exampleh.json  json_file				
-				echo -e "${yellow}      path at the repo     [ -path 1234 ] ${reset}";   # ../web/exampleh.json  json_file
-				echo -e "${yellow}      filename at the repo [ -file 1234 ] ${reset}";   # ../web/example.h      src_file 
+				echo -e "${yellow}      project at the repo  [ -project 1234 ] ${reset}";
+				echo -e "${yellow}      source at the repo   [ -source 1234 ] ${reset}";
+				echo -e "${yellow}      path at the repo     [ -path 1234 ] ${reset}";
+				echo -e "${yellow}      filename at the repo [ -file 1234 ] ${reset}";
 				echo -e "${yellow}   Optional fields:${reset}";
 				echo -e "${yellow}      Server [-s phantom.com] ${reset}";
-				echo -e "${yellow}      Port [-port 8000] ${reset}"	;
-				echo -e "${yellow}   Help [--help] to get this help.${reset}" ;
+				echo -e "${yellow}      Port [-port 8000] ${reset}";
+				echo -e "${yellow}   Help [--help] to get this help.${reset}";
 				echo -e "\n${yellow} Example of use:\n     ${app} -t f7vglñerghpq3ghwoghw -project \"video-processing/\"  -source \"user/\"  -path \"mypath/\" -file \"main.h\" ${reset}\n"; 
 				exit 0;
 			elif [ "$last" != "" ]; then
@@ -91,7 +91,7 @@ fi;
 	if [[ ${HTTP_STATUS} != "200" ]]; then
 		echo "PHANTOM Repository Doesn't get Response from the ElasticSearch Server. Aborting.";
 		exit 1;
-	fi; 
+	fi;
 # Look which kind of server is listening
 	SERVERNAME=$(curl --silent http://${server}:${repository_port}/servername);
 	if [[ ${SERVERNAME} != "PHANTOM Repository" ]]; then
@@ -107,7 +107,7 @@ fi;
 	curl -s -XGET ${server}:${repository_port}/_flush > /dev/null;
 ######## Screen report of the Result #####################################################
 	if [[ ${HTTP_STATUS} == "200" ]]; then
-			echo "${content}"; 			
+			echo "${content}";
 	elif [[ ${HTTP_STATUS} == "409" ]]; then
 			echo "[Error:]  HTTP_STATUS: ${HTTP_STATUS}, CONTENT: ${content}";
 	else #this report is for the case we may get any other kind of response

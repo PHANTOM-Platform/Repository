@@ -37,10 +37,10 @@ if [ ! $# -eq 0 ]; then
 				nuevo=false;
 			elif [ "$last" = "-port" ] || [ "$last" = "-PORT" ]; then
 				repository_port=$i;
-				nuevo=false;  
+				nuevo=false;
 			elif [ "$last" = "-pw" ] || [ "$last" = "-PW" ]; then
 				password=$i;
-				nuevo=false;  
+				nuevo=false;
 			elif [ "$i" = "-h" ] || [ "$i" = "-H" ]; then
 				echo -e "${yellow}Script for REGISTERING a new user${reset}";
 				echo -e "${yellow}Syntax ${app}:${reset}";
