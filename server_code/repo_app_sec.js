@@ -250,39 +250,54 @@ function update_filename_path_on_json(JSONstring, project,source, filename, path
 	if (source == undefined) source="";
 	if (path == undefined) path="";
 	if (filename == undefined) filename="";
-	new_json['project']		=project;
-	new_json['project'+'_length']		=project.length;
-	new_json['source']		=source;
-	new_json['source'+'_length']		=source.length;	
-	new_json['path']		=path;
-	new_json['path'+'_length']	=path.length; //label can not contain points '.' !
-	new_json['filename']	=filename;
+	new_json['project']=project;
+	new_json['project'+'_length']=project.length;
+	new_json['source']=source;
+	new_json['source'+'_length']=source.length;
+	new_json['path']=path;
+	new_json['path'+'_length']=path.length; //label can not contain points '.' !
+	new_json['filename']=filename;
 	new_json['filename'+'_length']=filename.length;
 	for (var i = 0; i < keys.length; i++) {
 		var label=Object.getOwnPropertyNames(jsonobj)[i];
 		label=lowercase(label);
 		if((label != 'path') && (label != 'filename') && (label != 'path_length') && (label != 'filename_length'))
-			new_json[label]=jsonobj[keys[i]];	//add one property
+			new_json[label]=jsonobj[keys[i]]; //add one property
 		if( typeof jsonobj[keys[i]] == 'string'){
 			new_json[label+'_length']=jsonobj[keys[i]].length;
 		}
-	} 
+	}
 	new_json=(JSON.stringify(new_json));
 	return new_json;
 }
 
-function update_device_length_on_json(JSONstring, device){ 
-	var new_json = {  } 
+
+function find_id(JSONstring){
+	var response = "";
+	var jsonobj = JSON.parse(JSONstring);
+	var keys = Object.keys(jsonobj);
+	var found_id=0;
+	for (var i = 0; i < keys.length; i++) {
+		var label=Object.getOwnPropertyNames(jsonobj)[i];
+		label=lowercase(label);
+		if(label == '_id')
+			response = jsonobj[keys[i]];
+	}
+	return response;
+}
+
+function update_device_length_on_json(JSONstring, device){
+	var new_json = {  }
 	var jsonobj = JSON.parse(JSONstring);
 	var keys = Object.keys(jsonobj);
 	if (device == undefined) device="";
-	new_json['device']		=device;
-	new_json['device_length']	=device.length; 	
+	new_json['device']=device;
+	new_json['device_length']=device.length;
 	for (var i = 0; i < keys.length; i++) {
 		var label=Object.getOwnPropertyNames(jsonobj)[i];
 		label=lowercase(label);
 		if((label != 'device') && (label != 'device_length'))
-		new_json[label]=jsonobj[keys[i]];	//add one property
+		new_json[label]=jsonobj[keys[i]]; //add one property
 		if( typeof jsonobj[keys[i]] == 'string'){
 			new_json[label+'_length']=jsonobj[keys[i]].length;
 		}
@@ -296,13 +311,13 @@ function update_app_length_on_json(JSONstring, appname){
 	var jsonobj = JSON.parse(JSONstring);
 	var keys = Object.keys(jsonobj);
 	if (appname== undefined) appname="";
-	new_json['app']		=appname;
-	new_json['app_length']	=appname.length;
+	new_json['app']=appname;
+	new_json['app_length']=appname.length;
 	for (var i = 0; i < keys.length; i++) {
 		var label=Object.getOwnPropertyNames(jsonobj)[i];
 		label=lowercase(label);
 		if((label != 'app') && (label != 'app_length'))
-		new_json[label]=jsonobj[keys[i]];	//add one property
+		new_json[label]=jsonobj[keys[i]]; //add one property
 		if( typeof jsonobj[keys[i]] == 'string'){
 			new_json[label+'_length']=jsonobj[keys[i]].length;
 		}
@@ -310,6 +325,27 @@ function update_app_length_on_json(JSONstring, appname){
 	new_json=(JSON.stringify(new_json));
 	return new_json;
 }
+
+function update_execution_id_length_on_json(JSONstring, exec_id){
+	var new_json = {  }
+	var jsonobj = JSON.parse(JSONstring);
+	var keys = Object.keys(jsonobj);
+	if (exec_id== undefined) exec_id="";
+	for (var i = 0; i < keys.length; i++) {
+		var label=Object.getOwnPropertyNames(jsonobj)[i];
+		label=lowercase(label);
+		if((label != 'execution_id') && (label != 'execution_id_length'))
+		new_json[label]=jsonobj[keys[i]]; //add one property
+		if( typeof jsonobj[keys[i]] == 'string'){
+			new_json[label+'_length']=jsonobj[keys[i]].length;
+		}
+	}
+	new_json['execution_id'] =exec_id;
+	new_json['execution_id_length'] =exec_id.length;	
+	new_json=(JSON.stringify(new_json));
+	return new_json;
+}
+
 
 function get_source_project_json(JSONstring){
 	var myres = { source: "", project: "" };
@@ -322,7 +358,7 @@ function get_source_project_json(JSONstring){
 			myres.source=jsonobj[keys[i]];
 		if(label == 'project')
 			myres.project=jsonobj[keys[i]];
-	} 
+	}
 	return myres;
 }
 //*********************************************************************	
@@ -330,7 +366,7 @@ function get_source_project_json(JSONstring){
 // 	var Employee = {
 // 		firstname: "Pedro",
 // 		lastname: "Picapiedra"
-// 	} 
+// 	}
 // 	console.log(Employee);
 // 	delete Employee.firstname; //delete one property
 // 	var label='age';
@@ -355,7 +391,6 @@ function get_value_json(JSONstring,label){
 	return (myres);
 }
 
-
 function update_projectname_length_on_json(JSONstring, projectname){
 	var new_json = {  }
 	var jsonobj = JSON.parse(JSONstring);
@@ -367,7 +402,7 @@ function update_projectname_length_on_json(JSONstring, projectname){
 		var label=Object.getOwnPropertyNames(jsonobj)[i];
 		label=lowercase(label);
 		if((label != 'project') && (label != 'project_length'))
-		new_json[label]=jsonobj[keys[i]];	//add one property
+		new_json[label]=jsonobj[keys[i]]; //add one property
 		if( typeof jsonobj[keys[i]] == 'string'){
 			new_json[label+'_length']=jsonobj[keys[i]].length;
 		}
@@ -668,7 +703,7 @@ app.post('/delete_metadata',middleware.ensureAuthenticated, function(req, res) {
 	}
 
 	var pathfiletodelete="";
-	if (DestFileName.length == 0){
+	if (DestPath.length == 0){
 		pathfiletodelete=File_Server_Path + '/' + project+ '/' + source+ '/' + DestFileName;
 	}else{
 		pathfiletodelete=File_Server_Path + '/' + project+ '/' + source+ '/' + DestPath + '/' + DestFileName;	
@@ -683,7 +718,7 @@ app.post('/delete_metadata',middleware.ensureAuthenticated, function(req, res) {
 				res.end("Error when deleting the file: "+err+"\n", 'utf-8');
 				return;
 			}else{
-				console.log('successfully file deleted');
+// 				console.log('successfully file deleted');
 				res.writeHead(resultResolve.code, {"Content-Type": contentType_text_plain});
 				res.end(resultResolve.text+"\n", 'utf-8');
 				return;
@@ -696,16 +731,11 @@ app.post('/delete_metadata',middleware.ensureAuthenticated, function(req, res) {
 
 		//we try to delete the file, in case the metadata is not existing
 		fs.unlink(os.homedir()+ pathfiletodelete, function(err) {
-			if (err) {
-				res.writeHead(400, {"Content-Type": contentType_text_plain});
-				res.end("Error when deleting the file: "+err+"\n", 'utf-8');
+// 			if (err) {
 				return;
-			}else{
-				console.log('successfully file deleted');
-				res.writeHead(resultReject.code, {"Content-Type": contentType_text_plain});
-				res.end(resultReject.text+"\n", 'utf-8');
+// 			}else{
 				return;
-			}
+// 			}
 		});
 	});//
 });
