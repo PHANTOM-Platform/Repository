@@ -11,25 +11,48 @@ The example consists of a java application which suscribes to JSON updates for s
 Following the next steps that java application will report on the screen the reception of the notifications.
 Such notifications consists of JSON strings updates which are only sent to those who be suscribed.
 
-## Steps
+## Preparation
 
-#### 1.- start the servers, in case they are not running yet
+#### 1.- Start the servers, in case they are not running yet
 ```bash
 bash start-es.sh;
 bash start-appmanager.sh;
 ```
 
-#### 2.- in case the DB was not created or any user not registered, then run:
+#### 2.- In case the DB was not created or any user not registered, then run:
 ```bash
 bash ../repo_api_command_line/demo_admin_repo_curl.sh
 ```
 
-#### 3.- run a client, which will suscribe to some project updates, and some type of source updates.
+## Running the demo
+
+### 1.- Run a client, which will suscribe to some project updates, and some type of source updates.
+
+The suscriber needs to know the server-address and the server-port.
+
+The suscriber needs an authentication token, and perform a websocket subscription.
+
+The subscription in done by a websocket connection to ***ws://serveraddress:serverport/***
+
+and sending a message for each subscription like ***{"user":"bob@abc.com","project":"demo_hpc"}***
+or ***{"user":"bob@abc.com", "source":"PT"}***
+where it is identified the project or source for which be notified.
+
+It can be performed as many subscriptions as wished on the same websocket connection.
+
+As an example, the next script performs a doble subscription:
+
 ```bash
 bash test_client_ws_suscriber_repository.sh;
 ```
 
-#### 4.- Perform some updates to the APP-Resource Manager, which will be forwared to the suscribed client
+or 
+
+```bash
+python test_client_ws_suscriber_repository.py;
+```
+
+### 2.- Performing some updates to the Resource Manager, which will be forwared to the suscribed client
 I suggest to run the next strings on a different terminal, or computer, to make it clear what is the feedback to the suscribed client
 
 
@@ -46,9 +69,31 @@ bash test_repo_update_db.sh;
 python test_repo_update_db.py;
 ```
 
-Demonstration step-by-step video of suscribing with JAVA to notifications to the APP-Manager is available at [Demo WS][Demo WS], which is similar to the use of the example in the folder for the suscription on the Repository.
+Demonstration step-by-step video of suscribing with JAVA to notifications to the Repository is available at [Demo WS][Demo WS], which is similar to the use of the example in the folder for the suscription on the Repository.
+
+
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=NByRNFJG1tI
+" target="_blank"><img src="http://img.youtube.com/vi/NByRNFJG1tI/0.jpg" 
+alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
+
+
+
+### The authentication token
+
+   It is mandatory to provide a **TOKEN** !!  The token is a text string, its length in the current implementation is about 162 characters.
+
+   In the example is generated a new token from a user id, such "bob@abc.com" and password "1234".
+
+   BUT it is expected that users will provide a token, and NOT provide their id neither their password.
+
+
+### Notice:
+* Who suscribes will get ONLY notifications from the server of the NEW updates. If you suscribe later than some updates, then you will not get those corresponding notifications.
+
+* If the websocket connection is broken, then the notifications will be lost. The subscriber needs to perform a new connection and new subscription.
+
+* In case of doubt if a notification is lost, the subscriber can always possible to query for the files or metadata in the Repository.
+
 
 
 [Demo WS]: https://www.youtube.com/watch?v=NByRNFJG1tI
-
- 
