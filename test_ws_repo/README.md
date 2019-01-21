@@ -42,11 +42,13 @@ It can be performed as many subscriptions as wished on the same websocket connec
 
 As an example, the next script performs a doble subscription:
 
+**TEST WITH JAVA:**
+
 ```bash
 bash test_client_ws_suscriber_repository.sh;
 ```
 
-or 
+or  **TEST WITH PYTHON:** 
 
 ```bash
 python test_client_ws_suscriber_repository.py;
@@ -55,18 +57,8 @@ python test_client_ws_suscriber_repository.py;
 ### 2.- Performing some updates to the Resource Manager, which will be forwared to the suscribed client
 I suggest to run the next strings on a different terminal, or computer, to make it clear what is the feedback to the suscribed client
 
-
-**TEST WITH JAVA:**
-
 ```bash
 bash test_repo_update_db.sh;
-```
-
-**TEST WITH PYTHON:**
-
-
-```bash
-python test_repo_update_db.py;
 ```
 
 Demonstration step-by-step video of suscribing with JAVA to notifications to the Repository is available at [Demo WS][Demo WS], which is similar to the use of the example in the folder for the suscription on the Repository.
