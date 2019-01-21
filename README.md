@@ -1,6 +1,6 @@
 # PHANTOM REPOSITORY server
 
-> PHANTOM REPOSITORY server interface between different PHANTOM tools, storing files and the metadata related to them. 
+> PHANTOM REPOSITORY server interfaces between the different PHANTOM tools, storing files and the metadata related to them. 
 
 
 ## 1.- Introduction
