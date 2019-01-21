@@ -45,7 +45,7 @@ This project requires the following dependencies to be installed:
 
 
 
-#### Installation of npm
+### Installation of npm
 When using Ubuntu, for example, please install npm as follows:
 
 ```bash
@@ -55,7 +55,7 @@ sudo apt-get install npm;
 Alternatively, you can install it using your operating system's software installer.
 
 
-## Installation of Nodejs and ElasticSearch
+### Installation of Nodejs and ElasticSearch
 This section assumes that you've successfully installed all required dependencies as described in the previous paragraphs.
 
 #### 1.- To ease the installation and preparation process, there is one shell script provided, which downloads and installs all the dependencies and packages. 
@@ -109,7 +109,7 @@ Please take a look on the next suggested reference books, if you face difficulti
 * [Elasticsearch Cookbook][Elasticsearch Cookbook]
 
 
-## 4.- Start/Stop the server
+## 3.- Start/Stop the server
 
 #### 1.- The PHANTOM Repository relies on the Elasticsearch running on the SAME server. 
 
@@ -147,7 +147,7 @@ bash stop-repo.sh;
 ```
 
 
-## 5.- Configuration of USERS' accounts
+## 4.- Configuration of USERS' accounts
 
 After the installation, and before users can use the repository, it is needed to register the users.
 
@@ -163,7 +163,7 @@ NOTICE: For securoity reasons, users' accounts can be ONLY registered on the ser
         
 
 
-## 6.- Example of use
+## 5.- Example of use
 
 Notice that the files uploaded require to define their metadata, and their domain of use in case of wish to take advantage/use of the PHANTOM security server. Next figure shows an example of metadata.
 
