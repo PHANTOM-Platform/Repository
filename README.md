@@ -24,15 +24,25 @@ Before you can proceed, please clone the repository:
 git clone https://github.com/PHANTOM-Platform/Repository.git;
 ```
 
+**OR** alternatively, if you prefer to use **svn** instead of git:
+
+```bash
+svn export https://github.com/PHANTOM-Platform/Repository.git/trunk Repository;
+```
 
 ### Dependencies
 This project requires the following dependencies to be installed:
 
 | Component         | Homepage                                           | Version   |
 |------------------ |--------------------------------------------------  |---------  |
-| Elasticsearch     | https://www.elastic.co/products/elasticsearch      | = 2.4.6   | 
+| ElasticSearch     | https://www.elastic.co/products/elasticsearch      | = 2.4.6   | 
 | Node.js           | https://apr.apache.org/                            | >= 4.5    |
 | npm               | https://www.npmjs.com/                             | >= 1.3.6  |
+| curl              |  http://curl.haxx.se/download/                     | 7.37.0    |
+| git               |                                                    |           |
+| netstat(net-tools package)|                                            |           |
+| python            |                                                    |           |
+
 
 
 #### Installation of npm
@@ -45,7 +55,7 @@ sudo apt-get install npm;
 Alternatively, you can install it using your operating system's software installer.
 
 
-## Installation of other components
+## Installation of Nodejs and ElasticSearch
 This section assumes that you've successfully installed all required dependencies as described in the previous paragraphs.
 
 #### 1.- To ease the installation and preparation process, there is one shell script provided, which downloads and installs all the dependencies and packages. 
