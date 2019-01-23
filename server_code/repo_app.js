@@ -185,14 +185,13 @@ function remove_quotation_marks(input_string){
 	}
 	if(input_string.length>0){
 	if(input_string.charAt(input_string.length-1) === '"') {
-		input_string = input_string.substring(0, input_string.length - 1); 
+		input_string = input_string.substring(0, input_string.length - 1);
 	}}}
 	return (input_string);
-}	
-
+}
 
 function lowercase(input_string){
-	var result=""; 
+	var result="";
 	for (var j = 0; j < input_string.length; j++) {
 // 		input_string.replaceAt(j, character.toLowerCase());
         var charCode = input_string.charCodeAt(j);
@@ -205,9 +204,9 @@ function lowercase(input_string){
             // Append the lowercase character
             result += String.fromCharCode(charCode + 32);
         }
-	} 
+	}
 	return (result);
-}	
+}
 
 function is_defined(variable) {
 	return (typeof variable !== 'undefined');
@@ -341,7 +340,7 @@ function update_execution_id_length_on_json(JSONstring, exec_id){
 		}
 	}
 	new_json['execution_id'] =exec_id;
-	new_json['execution_id_length'] =exec_id.length;	
+	new_json['execution_id_length'] =exec_id.length;
 	new_json=(JSON.stringify(new_json));
 	return new_json;
 }
@@ -370,7 +369,7 @@ function get_source_project_json(JSONstring){
 // 	console.log(Employee);
 // 	delete Employee.firstname; //delete one property
 // 	var label='age';
-// 	Employee[label]="32";		//add one property
+// 	Employee[label]="32"; //add one property
 // 	console.log(Employee);
 // }
 //*********************************************************************
@@ -418,7 +417,7 @@ function validate_parameter(parameter,label,currentdate,user,address){
 		if (parameter.length > 0)
 			return(parameter);
 	}
-	resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,address,message_error,currentdate, user );
+	resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,address,message_error,currentdate, user);
 	return undefined;
 }
 
@@ -431,7 +430,7 @@ function retrieve_file(filePath,res){
 	switch (extname) {
 		case '.html':
 			contentType = 'text/html';
-			break;			
+			break;
 		case '.js':
 			contentType = 'text/javascript';
 			break;
@@ -461,7 +460,7 @@ function retrieve_file(filePath,res){
 			} else {
 				res.writeHead(500);
 				res.end('Sorry, check with the site admin for error: '+error.code+' ..\n');
-				res.end(); 
+				res.end();
 			}
 		} else {
 			res.writeHead(200, { 'Content-Type': contentType });
@@ -473,11 +472,11 @@ function retrieve_file(filePath,res){
 var middleware = require('./token-middleware');
 
 // Access to private content only if autenticated, using an authorization token
-app.get('/verifytoken',middleware.ensureAuthenticated, function(req, res) { 
-// 	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset); 
-		var message = "The token is valid !!!.\n"
-			res.writeHead(200, { 'Content-Type': 'text/plain' });
-			res.end(message, 'utf-8');
+app.get('/verifytoken',middleware.ensureAuthenticated, function(req, res) {
+// 	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset);
+	var message = "The token is valid !!!.\n"
+	res.writeHead(200, { 'Content-Type': 'text/plain' });
+	res.end(message, 'utf-8');
 } );
 var deleteFolderRecursive = function(path) {
 	if( fs.existsSync(path) ) {
@@ -611,29 +610,29 @@ app.get('/phantom.js', function(req, res) {
 	retrieve_file(filePath,res);
 });
 
-app.get('/upload_file.html', function(req, res) { 
+app.get('/upload_file.html', function(req, res) {
 	var filePath = '../web-repository/upload_file.html';
 	retrieve_file(filePath,res);
 });
 
-app.get('/download_file.html', function(req, res) { 
+app.get('/download_file.html', function(req, res) {
 	var filePath = '../web-repository/download_file.html';
 	retrieve_file(filePath,res);
 });
-app.get('/download_zip.html', function(req, res) { 
+app.get('/download_zip.html', function(req, res) {
 	var filePath = '../web-repository/download_zip.html';
 	retrieve_file(filePath,res);
 });
-app.get('/examplec.json', function(req, res) { 
+app.get('/examplec.json', function(req, res) {
 	var filePath = '../web-repository/examplec.json';
 	retrieve_file(filePath,res);
 });
 
-app.get('/query_metadata.html', function(req, res) { 
+app.get('/query_metadata.html', function(req, res) {
 	var filePath = '../web-repository/query_metadata.html';
 	retrieve_file(filePath,res);
 });
-app.get('/file_list.html', function(req, res) { 
+app.get('/file_list.html', function(req, res) {
 	var filePath = '../web-repository/file_list.html';
 	retrieve_file(filePath,res);
 });
@@ -641,8 +640,8 @@ app.get('/file_list.html', function(req, res) {
 // Path only accesible when Authenticated
 app.get('/private',middleware.ensureAuthenticated, function(req, res) {
 	var message = "\n\nAccess to restricted content !!!.\n\n"
-		res.writeHead(200, { 'Content-Type': contentType_text_plain});
-		res.end(message, 'utf-8');
+	res.writeHead(200, { 'Content-Type': contentType_text_plain});
+	res.end(message, 'utf-8');
 });
 //**********************************************************
 app.post('/delete_metadata',middleware.ensureAuthenticated, function(req, res) {
@@ -702,11 +701,11 @@ app.post('/delete_metadata',middleware.ensureAuthenticated, function(req, res) {
 		return;
 	}
 
-	var pathfiletodelete="";
+	var pathfiletodelete=File_Server_Path + '/' + project+ '/' + source+ '/' ;
 	if (DestPath.length == 0){
-		pathfiletodelete=File_Server_Path + '/' + project+ '/' + source+ '/' + DestFileName;
+		pathfiletodelete=pathfiletodelete + DestFileName;
 	}else{
-		pathfiletodelete=File_Server_Path + '/' + project+ '/' + source+ '/' + DestPath + '/' + DestFileName;	
+		pathfiletodelete=pathfiletodelete + DestPath + '/' + DestFileName;
 	}
 
 	var result= MetadataModule.delete_filename_path_json(es_servername+":"+es_port,SERVERDB, project, source, DestPath, DestFileName);
@@ -898,6 +897,46 @@ app.get('/es_query_metadata', middleware.ensureAuthenticated, function(req, res)
 			+JSON.stringify(QueryBody),currentdate,res.user); 
 	}); 
 }); 
+
+function remove_slashing(mystring){
+	//removing starting or ending slash on the string
+	while((mystring.charAt(mystring.length-1) == "/")&&(mystring.length>0)){
+		//remove the last character
+		mystring = mystring.slice(0, -1);
+	}
+	while((mystring.charAt(mystring.length-2) == ".")&&(mystring.charAt(mystring.length-1) == "/")&&(mystring.length>=2)){
+		//remove the last character
+		mystring = mystring.slice(0, -2);
+	}
+	while((mystring.charAt(mystring.length-1) == "/")&&(mystring.length>0)){
+		//remove the last character
+		mystring = mystring.slice(0, -1);
+	}
+	while((mystring.charAt(0) == "/")&&(mystring.length>0)) {
+		//remove the last character
+		mystring = mystring.substring(1);
+	}
+	return(mystring);
+}
+
+function find_indirection(mystring){
+	var string_to_find="..";
+	var pos=-1;
+	if(mystring.length>=2){
+		pos=mystring.indexOf(string_to_find, 0);
+	}
+	if(pos==-1){
+		pos=mystring.indexOf("*", 0);
+	}
+	if(pos==-1){
+		pos=mystring.indexOf("\"", 0);
+	}	
+	if(mystring.length>=2){
+	if(pos==-1){
+		pos=mystring.indexOf("./", 0);
+	}}
+	return(pos);
+}
 //**********************************************************
 function list_of_files(myPath){
 	var path = path || require('path');
@@ -927,7 +966,7 @@ function json_list_of_files(myPath,filelist){
 // 			if(registered_path==false){
 // 			console.log(" path " + myPath + " file "+file);
 // 			if(filelist!=undefined ){
-// 				filelist= filelist + ", {\"path\": \"" + myPath + "\" , \"name\": \""+ file +"\" }";
+// 				filelist= filelist + ", {\"path\": \"" + myPath + "\", \"name\": \""+ file +"\" }";
 // 			}else{
 // 				filelist= "{\"path\": \"" + myPath +"\", \"name\": \""+ file+ "\" }";
 // 			}
@@ -938,7 +977,7 @@ function json_list_of_files(myPath,filelist){
 }
 //**********************************************************
 //TODO: falta confirmar que los archivos existen
-//si no existen en el curl parece que se queda esperando indefinidamente
+//si no existen en el curl parece que se queda esperando indefinidamente !!
 app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 	"use strict";
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
@@ -951,24 +990,22 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 		return;
 	}
 	var RawJSON= find_param(req.body.RawJSON, req.query.RawJSON);
-	
 	var source_proj = {totalkeys: 1, project: [''], source: [''] };
 	source_proj.project=find_param(req.body.project, req.query.project);
 	if (source_proj.project == undefined){
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
-		res.end("400:Bad Request, missing Path.\n");
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"Path",currentdate,res.user);
+		res.end("400:Bad Request, missing project.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"project",currentdate,res.user);
 		return;
 	}
-	
+
 	source_proj.source=find_param(req.body.source, req.query.source);
 	if (source_proj.source == undefined){
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
-		res.end("400:Bad Request, missing Path.\n");
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"Path",currentdate,res.user);
+		res.end("400:Bad Request, missing source.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"source",currentdate,res.user);
 		return;
 	}
-	
 	var DestPath=find_param(req.body.Path, req.query.Path);
 	if (DestPath == undefined){
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
@@ -976,25 +1013,61 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"Path",currentdate,res.user);
 		return;
 	}
-	
-	if(DestPath.length>=2){
-	while((DestPath.charAt(DestPath.length-1) == "/") &&(DestPath.length >=2)) {
-		//remove the last character
-		var DestPath = DestPath.slice(0, -1);
-	}}
-	
 	var DestFileName=find_param(req.body.DestFileName, req.query.DestFileName);
 	if (DestFileName == undefined){
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
 		res.end("400:Bad Request, missing DestFileName.\n");
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"DestFileName",currentdate,res.user);
 		return;
-	}else if (DestFileName.length == 0){
+	}
+
+	if(find_indirection(source_proj.project)!=-1){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("400:Bad Request, Invalid project.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"project",currentdate,res.user);
+		return;
+	}
+	if(find_indirection(source_proj.source)!=-1){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("400:Bad Request, Invalid source.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"source",currentdate,res.user);
+		return;
+	}
+	if(find_indirection(DestPath)!=-1){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("400:Bad Request, Invalid Path.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"path",currentdate,res.user);
+		return;
+	}
+	if((find_indirection(DestFileName)!=-1) || (DestFileName.indexOf("/", 0)>-1)){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("400:Bad Request, Invalid DestFileName.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"DestFileName",currentdate,res.user);
+		return;
+	}
+	source_proj.project=remove_slashing(source_proj.project);
+	source_proj.source=remove_slashing(source_proj.source);
+	DestPath=remove_slashing(DestPath);
+	DestFileName=remove_slashing(DestFileName);
+	if (source_proj.project.length == 0){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("400:Bad Request, Empty project.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"project",currentdate,res.user);
+		return;
+	}
+	if (source_proj.source.length == 0){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("400:Bad Request, Empty source.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"source",currentdate,res.user);
+		return;
+	}
+	if (DestFileName.length == 0){
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
 		res.end("400:Bad Request, Empty DestFileName.\n");
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"DestFileName",currentdate,res.user);
 		return;
 	}
+
 	// The name of the input field (i.e. "UploadFile") is used to retrieve the uploaded file
 	let UploadFile = req.files.UploadFile;
 	var jsontext="";
@@ -1006,13 +1079,44 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 		jsontext=req.files.UploadJSON.data.toString('utf8');
 	//	if (jsontext.length > 0)
 	//		jsontext = JSON.stringify(jsontext);
-	} 
+	}
 // 	var source_proj= get_source_project_json(jsontext);
-	jsontext=update_filename_path_on_json(jsontext,source_proj.project, source_proj.source, DestFileName, DestPath); //this adds the field
+	jsontext=update_filename_path_on_json(jsontext, source_proj.project, source_proj.source, DestFileName, DestPath); //this adds the field
 // 	console.log("send_repo_update_to_suscribers("+source_proj.project + " "+ source_proj.source+")"+jsontext);
-	send_repo_update_to_suscribers(source_proj.project, source_proj.source,jsontext);
+	send_repo_update_to_suscribers(source_proj.project, source_proj.source, jsontext);
 
-	var storage_path=source_proj.project+"/"+source_proj.source+"/"+DestPath;
+	var storage_path=source_proj.project+"/"+source_proj.source;
+	if (DestPath.length > 0){
+		storage_path=storage_path + '/' + DestPath;
+	}
+
+
+// // Now we query if there is a file register with such params, then instead of register new one, we may update the existing register
+// 	var elasticsearch = require('elasticsearch');
+// 	var clientb = new elasticsearch.Client({
+// 		host: es_servername+":"+es_port,
+// 		log: 'error'
+// 	});
+// 	var myres = { code: "", text: "" };
+// 	var count_metadata = MetadataModule.query_count_filename_path(es_servername+":"+es_port, SERVERDB, source_proj.project, source_proj.source, DestPath, DestFileName);
+// 	count_metadata.then((resultCount) => {
+// 		if(resultCount==0){ //File+path don't found, proceed to register new entry.
+// 			console.log("we will register new entry\n");
+// 		}else{
+// 			console.log("Existing files with such params are "+ resultCount+"\n");
+// 			console.log(source_proj.project, source_proj.source, DestPath, DestFileName+"\n");
+// 			var id_metadata = MetadataModule.find_metadata_id(es_servername+":"+es_port, SERVERDB,source_proj.project,source_proj.source, DestFileName, DestPath);
+// 			id_metadata.then((resultId) => {
+// 				console.log(" the _id of the registered file is "+resultId+"\n");
+// 			},(resultReject)=> { 
+// 				console.log("error finding id "+resultReject);
+// 			});//end find id_metadata
+// 		}
+// 	},(resultReject)=> {
+// 		console.log("error counting "+ resultReject);
+// 	});//end count_metadata
+
+
 	var result= MetadataModule.register_update_filename_path_json(es_servername+":"+es_port,SERVERDB, jsontext, source_proj.project, source_proj.source, DestFileName, DestPath);
 	result.then((resultResolve) => {
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,resultResolve.text,currentdate,res.user);
@@ -1029,7 +1133,7 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 			res.writeHead(resultRejectUp.code, {"Content-Type": contentType_text_plain});
 			res.end(resultRejectUp.text+"\n", 'utf-8');
 			return;
-		} );
+		});
 	},(resultReject)=> {
 		res.writeHead(resultReject.code, {"Content-Type": contentType_text_plain});
 		res.end(resultReject.text+"\n", 'utf-8')
@@ -1044,48 +1148,96 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 	var path = require('path');
 	//var pretty = find_param(req.body.pretty, req.query.pretty);//only used in the sec case
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
-	//*******************************************
-	var project= find_param(req.body.project, req.query.project);
+	var message_bad_request = "UPLOAD Bad Request missing ";
+	var resultlog;
+	var project=find_param(req.body.project, req.query.project);
+	if (project == undefined){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("400:Bad Request, missing project.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"Path",currentdate,res.user);
+		return;
+	}
 	project= validate_parameter(project,"project",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (project == undefined) project="";
+	
+	var source=find_param(req.body.source, req.query.source);
+	if (source == undefined){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("400:Bad Request, missing source.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"source",currentdate,res.user);
+		return;
+	}
+	source= validate_parameter(source,"source",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
+
+	var filepath=find_param(req.body.filepath, req.query.filepath);
+	if (filepath == undefined){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("400:Bad Request, missing filepath.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"filepath",currentdate,res.user);
+		return;
+	}
+	filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
+	
+	var filename=find_param(req.body.filename, req.query.filename);
+	if (filename == undefined){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("400:Bad Request, missing filename.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"filename",currentdate,res.user);
+		return;
+	}
+	filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
+
+	if(find_indirection(project)!=-1){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("400:Bad Request, Invalid project.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"project",currentdate,res.user);
+		return;
+	}
+	if(find_indirection(source)!=-1){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("400:Bad Request, Invalid source.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"source",currentdate,res.user);
+		return;
+	}
+	if(find_indirection(filepath)!=-1){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("400:Bad Request, Invalid Path.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"filepath",currentdate,res.user);
+		return;
+	}
+	if((find_indirection(filename)!=-1) || (filename.indexOf("/", 0)>-1)){
+		res.writeHead(400, {'Content-Type': contentType_text_plain });
+		res.end("400:Bad Request, Invalid filename.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"filename",currentdate,res.user);
+		return;
+	}
+	project=remove_slashing(project);
+	source=remove_slashing(source);
+	filepath=remove_slashing(filepath);
+	filename=remove_slashing(filename);
 	if (project.length == 0){
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
-		res.end("\n400: Bad Request, missing "+"project"+".\n");
-		return;}
-	//*******************************************
-	var source= find_param(req.body.source, req.query.source);
-	source= validate_parameter(source,"source",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (source == undefined) source="";
+		res.end("400:Bad Request, Empty project.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"project",currentdate,res.user);
+		return;
+	}
 	if (source.length == 0){
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
-		res.end("\n400: Bad Request, missing "+"source"+".\n");
-		return;}
-	//*******************************************
-	var filepath= find_param(req.body.filepath, req.query.filepath);
-	filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (filepath == undefined) filepath="";
-	if (filepath.length == 0){
-		res.writeHead(400, {'Content-Type': contentType_text_plain });
-		res.end("\n400: Bad Request, missing "+"filepath"+".\n");
-		return;}
-		
-	
-	if(filepath.length>=2){
-	while((filepath.charAt(filepath.length-1) == "/") &&(filepath.length >=2)) {
-		//remove the last character
-		var filepath = filepath.slice(0, -1);
-	}}
-	
-	//*******************************************
-	var filename= find_param(req.body.filename, req.query.filename);
-	filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (filename == undefined) filename="";
+		res.end("400:Bad Request, Empty source.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"source",currentdate,res.user);
+		return;
+	}	
 	if (filename.length == 0){
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
-		res.end("\n400: Bad Request, missing "+"filename"+".\n");
-		return;}
-	//******************************************* 
-	var myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath + '/' + filename;
+		res.end("400:Bad Request, Empty filename.\n");
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,message_bad_request+"filename",currentdate,res.user);
+		return;
+	}
+
+	var myPath=os.homedir()+ File_Server_Path + '/' + project +'/' + source;
+	if (filepath.length > 0){
+		myPath=myPath + '/' + filepath;
+	}
+	myPath = myPath + '/' + filename;
 
 // START ADDTIONAL FOR SECURED VERSION
 // 	// look for NGAC policy here, then decide if continue or not !!
@@ -1108,7 +1260,7 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 // 			query_permission.then((result) => {
 // 				if(result.totalkeys==0){
 // 					//permisson granted, not files found
-// 				}else{	
+// 				}else{
 // 				for (var j = 0; j < 1; j++) {// 1 insted of result.totalkeys for considering only the first entry
 // 					if(result.permission[j] == "deny"){//permision denied
 // 						res.writeHead(403, {"Content-Type": contentType_text_plain});
@@ -1125,8 +1277,7 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 					// Check if file specified by the filePath exists
 					fs.stat(myPath, function(err, stat) {
 						if(err == null) {
-// 							console.log('File exists');
-// 							console.log("myPath "+myPath);
+// 							console.log('File exists'+"\nmyPath "+myPath);
 							// Content-type is very interesting part that guarantee that
 							// Web browser will handle response in an appropriate manner.
 							//fs.createReadStream(myPath).pipe(response);
@@ -1190,14 +1341,14 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 // 			res.writeHead(400, {'Content-Type': contentType_text_plain });
 // 			res.end("400 unexpected error "+resultReject);
 //			return;
-// 		} );
+// 		});
 // // 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,200,req.connection.remoteAddress,"QUERY METADATA granted to query:"
 // // 			+JSON.stringify(query),currentdate,res.user);
 // 	},(resultReject)=> {
 // 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 // 		res.end("querymetadata: Bad Request "+resultReject +"\n");
-// // 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"QUERY METADATA BAD Request on query:" 
-// // 			+JSON.stringify(query),currentdate,res.user);
+// // 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"QUERY METADATA BAD Request on query:"
+// //			+JSON.stringify(query),currentdate,res.user);
 // END SECURED VERSION
 	});
 });
@@ -1231,15 +1382,12 @@ app.get('/downloadlist',middleware.ensureAuthenticated, function(req, res) {
 		//*******************************************
 		filepath= find_param(req.body.filepath, req.query.filepath);
 		filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-		
 		if (filepath != undefined){
 		if(filepath.length>=2){
 		while((filepath.charAt(filepath.length-1) == "/") &&(filepath.length >=2)) {
 			//remove the last character
 			var filepath = filepath.slice(0, -1);
 		}}
-
-
 		if (filepath.length != 0){
 			myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath;
 			//*******************************************
@@ -1279,7 +1427,7 @@ const contentType_zip = 'application/zip';
 app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 	var fs = require('fs');
 	var path = require('path');
-// 	var pretty = find_param(req.body.pretty, req.query.pretty);
+// 	var pretty = find_param(req.body.pretty, req.query.pretty);//only used in the sec case
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
 	var filepath=undefined;
 	var filename=undefined;
@@ -1456,30 +1604,30 @@ app.post('/signup', function(req, res) {
 	var name= find_param(req.body.userid, req.query.userid);
 	var email= find_param(req.body.email, req.query.email);
 	var pw=find_param(req.body.pw, req.query.pw);
-	var resultlog ;
+	var resultlog;
 	if (pw == undefined){
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("\n400: SIGNUP Bad Request, missing Passwd.\n");
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"SIGNUP Bad Request, missing Passwd",currentdate,"");
-		return ;
+		return;
 	}else if(pw.length == 0){
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("\n400: SIGNUP Bad Request, empty Passwd.\n");
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"SIGNUP Bad Request, Empty Passwd",currentdate,"");
-		return ;
+		return;
 	}
 	if (email == undefined){
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("\n400: Bad Request, missing Email.\n");
 		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"SIGNUP Bad Request, missing Email",currentdate,"");
-		return ;
+		return;
 	}else if (email.length == 0){
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("\n400: Bad Request, Empty Email.\n");
 		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"SIGNUP Bad Request, Empty Email",currentdate,"");
-		return ;
+		return;
 	}
-	console.log("[LOG]: REGISTER USER+PW"); 
+	console.log("[LOG]: REGISTER USER+PW");
 	console.log("   " +colours.FgYellow + colours.Bright + " user: " + colours.Reset + email );
 	console.log("   " +colours.FgYellow + colours.Bright + " request from IP: " + req.connection.remoteAddress + colours.Reset);
 	if(( req.connection.remoteAddress!= ips[0] ) &&( req.connection.remoteAddress!=ips[1])&&( req.connection.remoteAddress!=ips[2])){
@@ -1488,7 +1636,7 @@ app.post('/signup', function(req, res) {
 		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,403,req.connection.remoteAddress,messagea,currentdate,"");
 		res.writeHead(403, {"Content-Type": contentType_text_plain});
 		res.end("\n403: FORBIDDEN access from external IP.\n");
-		return ;
+		return;
 	}
 	var result = UsersModule.register_new_user(es_servername+":"+es_port,SERVERDB, name, email, pw);
 	result.then((resultreg) => {
@@ -1520,17 +1668,17 @@ app.post('/update_user', function(req, res) {
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
 	var name= find_param(req.body.userid, req.query.userid);
 	var email= find_param(req.body.email, req.query.email);
-	var pw=find_param(req.body.pw, req.query.pw); 
-	if (pw == undefined){ 
+	var pw=find_param(req.body.pw, req.query.pw);
+	if (pw == undefined){
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("\n400: SIGNUP Bad Request, missing Email.\n");
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"SIGNUP Bad Request, missing Email",currentdate,"");
-		return ;
+		return;
 	}else if (pw.length == 0){
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("\n400: SIGNUP Bad Request, Empty Email.\n");
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"SIGNUP Bad Request, Empty Email",currentdate,"");
-		return ;
+		return;
 	}
 	if (email == undefined){
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
@@ -1541,14 +1689,14 @@ app.post('/update_user', function(req, res) {
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("\n400: Bad Request, Empty Email.\n");
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"SIGNUP Bad Request, Empty Email",currentdate,"");
-		return ;
+		return;
 	}
 	if(( req.connection.remoteAddress!= ips[0] ) &&( req.connection.remoteAddress!=ips[1])&&( req.connection.remoteAddress!=ips[2])){
 		var messagea = "REGISTER USER '"+ email + "' FORBIDDEN access from external IP";
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 403,req.connection.remoteAddress,messagea,currentdate,"");
 		res.writeHead(403, {"Content-Type": contentType_text_plain});
 		res.end("\n403: FORBIDDEN access from external IP.\n");
-		return ;
+		return;
 	}
 	var result = UsersModule.update_user(es_servername+":"+es_port,SERVERDB, name, email, pw);
 	result.then((resultreg) => {
@@ -1567,7 +1715,7 @@ app.post('/update_user', function(req, res) {
 		res.end("updateuser: Bad Request "+resultReject.text+"\n");
 		var messagec = "UPDATE USER '"+ email + "' BAD REQUEST";
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, resultreg.code, req.connection.remoteAddress, messagec,currentdate,"");
-	} );
+	});
 });
 
 //**********************************************************
@@ -1575,7 +1723,7 @@ app.post('/update_user', function(req, res) {
 // curl -H "Content-Type: text/plain" -XGET http://localhost:8000/login?email="bob"\&pw="1234" --output token.txt
 app.get('/login', function(req, res) {
 	"use strict";
-	var resultlog ;
+	var resultlog;
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
 	var email= find_param(req.body.email, req.query.email);
 	var pw=find_param(req.body.pw, req.query.pw);
@@ -1604,13 +1752,13 @@ app.get('/login', function(req, res) {
 	var result = UsersModule.query_count_user_pw( es_servername+":"+es_port,SERVERDB, email, pw); //returns the count of email-pw, if !=1 then we consider not registered.
 	result.then((resultCount) => {
 		if(resultCount==1){
-			var mytoken= auth.emailLogin(email); 
+			var mytoken= auth.emailLogin(email);
 			res.writeHead(200, {"Content-Type": contentType_text_plain});
 			res.end(mytoken);
 			resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200, req.connection.remoteAddress, "New token Generated",currentdate,"");
 		}else{
 			res.writeHead(401, {"Content-Type": contentType_text_plain});
-			res.end("401 (Unauthorized) Autentication failed, incorrect user " +" or passwd " +"\n"); 
+			res.end("401 (Unauthorized) Autentication failed, incorrect user " +" or passwd " +"\n");
 // 			console.log("resultCount "+resultCount);
 			resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 401, req.connection.remoteAddress,
 				"401: Bad Request of Token, incorrect user or passwd "+email+"or passwd ",currentdate,"");
@@ -1619,8 +1767,8 @@ app.get('/login', function(req, res) {
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("\n400: Bad Request "+resultReject+"\n");
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400, req.connection.remoteAddress, 
-				"400: Bad Token Request "+resultReject,currentdate,"");	
-	} );
+				"400: Bad Token Request "+resultReject,currentdate,"");
+	});
 }); // login
 function originIsAllowed(origin) {
 	// put logic here to detect whether the specified origin is allowed.
@@ -1835,8 +1983,7 @@ app.all("*", function(req, res) {
 	return;
 });
 //**********************************************************
-var tryToOpenServer = function(port)
-{
+var tryToOpenServer = function(port) {
 	console.log('trying to Open port: ' + port);
 	console.log('we will get an error IF there is other server running on the same port');
 	app.listen(port, function() {
