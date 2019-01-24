@@ -148,20 +148,20 @@ const logsmapping = {
 	var totalusers=0;
 	var user_ids = new Array(max_users );
 	var user_conn = new Array(max_users ); // the connetion of each user
-	
+
 	var user_address = new Array(max_users ); // the connetion of each user
 	var user_index = new Array(max_users ); // the connetion of each user
-	
+
 //*** STORAGE OF PROJECT CONTENTS
 	const max_projects= 100;
-	const max_mensages=40;
+	const max_mensages=100;
 	var totalmensages= [max_projects];
 	for (var i = 0; i < max_projects; i++) 
 		totalmensages[i]=0;
 	var ProjectContents = new Array(max_projects,max_mensages); //10 projects,  stack of max_mensages contents
 	
 //*** STORAGE OF SUSCRIPTIONS
-	const max_suscrip=6;
+	const max_suscrip=100;
 
 	var total_project_suscriptions= [max_users]; //for each user
 	for (var i = 0; i < max_users; i++)
@@ -175,7 +175,7 @@ const logsmapping = {
 
 	var clients = [ ];// list of currently connected clients (users)
 //****************************************************
-var zip = require('express-easy-zip');
+// var zip = require('express-easy-zip');
 //**********************************************************
 //This function removes double quotation marks if present at the beginning and the end of the input string
 function remove_quotation_marks(input_string){
@@ -561,7 +561,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cors());
 app.use(fileUpload()); 
-app.use(zip());
 
 //**********************************************************
 /* GET home page. */
@@ -1736,14 +1735,16 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
 		res.end("\n400: Bad Request, missing "+"project"+".\n");
 		return;}
-	var myPath = os.homedir()+ File_Server_Path + '/' + project ;
+	var myPath = os.homedir()+ File_Server_Path + '/' + project +'/';
+	var newPath = project +'/';	
 	var myDest = project ;
 	//******************************************* 
 	var source= find_param(req.body.source, req.query.source);
 	source= validate_parameter(source,"source",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
 	if (source != undefined)
 	if (source.length != 0){
-		myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source;
+		myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source+'/';
+		newPath = project +'/'+ source+'/';		
 		myDest = project +'/' + source ;
 		//*******************************************
 		filepath= find_param(req.body.filepath, req.query.filepath);
@@ -1755,7 +1756,8 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 			var filepath = filepath.slice(0, -1);
 		}}
 		if (filepath.length != 0){
-			myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath;
+			myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath+'/';
+			newPath = project +'/'+ source+'/' + filepath+'/';			
 			myDest = project +'/' + source +'/' + filepath;
 			//*******************************************
 			filename= find_param(req.body.filename, req.query.filename);
@@ -1801,7 +1803,7 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 					files = fs.readdirSync(myPath);
 					filelist= { path : myPath , name : myDest };
 	// 				console.log(JSON.stringify(JSON.parse("[" + filelist+ "]"), null, 4 ));
-					if(filelist!=undefined ){
+					if(filelist!=undefined){
 // 						var algo= new Promise( (resolve,reject) => {
 								try{
 		// 							res.zip({
@@ -1815,28 +1817,52 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 		// 								filelist],
 		// 								filename: zipfile+'.zip'
 		// 							})
-									res.zip({
-										files: [
-											filelist],
-										filename: zipfile+'.zip'
-									})
-									.then(function(obj){
-// 										res.writeHead(200, {"Content-Type": contentType_zip});
-// 										res.setHeader('Content-Type', 'application/zip');
-// 										res.set('Content-Disposition', 'attachment; filename=file.zip');
-// 										res.set('Content-Length', data.length);
-// 										res.end(data, 'binary');
-										resolve(" succeeed");
-		// 								var zipFileSizeInBytes = obj.size;
-		// 								var ignoredFileArray = obj.ignored;
-									})
-									.catch(function(err){
-// 										res.writeHead(400, {"Content-Type": contentType_text_plain});
-										reject (err);
+// 									res.zip({
+// 										files: [ filelist],
+// 										filename: zipfile+'.zip'
+// 									}).then(function(obj){
+// // 										res.writeHead(200, {"Content-Type": contentType_zip});
+// // 										res.setHeader('Content-Type', 'application/zip');
+// // 										res.set('Content-Disposition', 'attachment; filename=file.zip');
+// // 										res.set('Content-Length', data.length);
+// // 										res.end(data, 'binary');
+// // 										resolve(" succeeed");
+// 		// 								var zipFileSizeInBytes = obj.size;
+// 		// 								var ignoredFileArray = obj.ignored;
+// 									}).catch(function(err){
+// // 										res.writeHead(400, {"Content-Type": contentType_text_plain});
+// // 										reject (err);
+// 									});
+									var file_system = require('fs');
+									var archiver = require('archiver');
+									var output = file_system.createWriteStream(zipfile);
+									var archive = archiver('zip');
+									output.on('close', function () {
+										console.log(archive.pointer() + ' total bytes');
+										console.log('zip has been finalized and the output file descriptor has closed.');
 									});
+									archive.on('error', function(err){
+										throw err;
+									});
+									// good practice to catch warnings (ie stat failures and other non-blocking errors)
+									archive.on('warning', function(err) {
+									if (err.code === 'ENOENT') {
+										console.log("ENOENT"+err.code);
+										// log warning
+									} else {
+										console.log("other "+err.code);
+										// throw error
+// 										throw err;
+									}
+									});
+									archive.pipe(res);
+									//Not use BULK, it is deprecated !!!
+// 									archive.directory(myPath, true, { date: new Date() });
+									archive.directory(myPath, newPath);
+									// archive.directory(other folders, true, { date: new Date() });//can add other files or folders
+									archive.finalize();
 								}catch(eb){
 // 									res.writeHead(400, {"Content-Type": contentType_text_plain});
-									reject("Stream-2 error: "+eb);
 								}
 // 						});
 // 						algo.then((resultResolve) => {
@@ -2073,7 +2099,7 @@ function originIsAllowed(origin) {
 };
 
 //report on the screen the list of fields, and values
-function consolelogjsonws(JSONstring ){
+function consolelogjsonws(JSONstring){
 	var jsonobj = JSON.parse(JSONstring);
 	var keys = Object.keys(jsonobj);
 	var myres = { user: "", project: "" , source: ""};
@@ -2091,7 +2117,7 @@ function consolelogjsonws(JSONstring ){
 	return myres;
 };
 
-function send_repo_update_to_suscribers(projectname,sourcename, jsontext){
+function send_repo_update_to_suscribers(projectname, sourcename, jsontext){
 	//*******************************************************************
 	if(projectname != undefined)
 	if(projectname.length > 0){
@@ -2200,7 +2226,7 @@ app.ws('/', function(ws_connection, req) {
 		//**********************************************************************
 		//first we need find if the user_id already suscribed, if not then we add the new suscription
 		//**********************************************************************
-		//adding suscriptoin on PROJECTS:
+		//adding suscription on PROJECTS:
 		var found_susc=false;
 		if(user_input.project!=undefined)
 		if(user_input.project.length > 0){
