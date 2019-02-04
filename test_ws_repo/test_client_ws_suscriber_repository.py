@@ -10,27 +10,27 @@
 # prints in the screen the notifications it receives.
 #
 # You may need to install a package with the command: pip install websocket-client
-#
-import websocket 
+
+import websocket
 import json
 import thread
 from time import sleep
   
 def on_message(ws, message):
-    print "Received '%s'" % message 
+    print "Received '%s'" % message
 
 def on_error(ws, error):
     print error
-    
+
 def on_close(ws):
     print "### closed ###"
 
 def on_open(ws):
     def run(*args):
         msg_counter = 0
-        ws.send(json.dumps({"user":"ian.gray@york.ac.uk" , "project":"demo_hpc"}))  
-        ws.send(json.dumps({"user":"ian.gray@york.ac.uk" , "project":"phantom_tools_on_HPC"})) 
-        ws.send(json.dumps({"user":"ian.gray@york.ac.uk" , "source":"PT"}))         
+        ws.send(json.dumps({"user":"ian.gray@york.ac.uk" , "project":"demo_hpc"}))
+        ws.send(json.dumps({"user":"ian.gray@york.ac.uk" , "project":"phantom_tools_on_HPC"}))
+        ws.send(json.dumps({"user":"ian.gray@york.ac.uk" , "source":"PT"}))
         while True:
             sleep(5)
             print('Hello world %d'%msg_counter)
@@ -48,4 +48,4 @@ if __name__ == "__main__":
         print "WS no OK"
 
     ws.on_open = on_open
-    ws.run_forever()  
+    ws.run_forever()
