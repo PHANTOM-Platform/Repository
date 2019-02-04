@@ -25,30 +25,30 @@ process.title = 'PHANTOM-Repository-server';
 	const SERVERNAME ="PHANTOM Repository";
 	const SERVERPORT = 8000;
 	const SERVERDB = "repository_db";
-	
+
 	// This will be allocated in the home folder of the user running nodejs !! os.homedir()+File_Server_Path
 //******************** PACKAGES AND SOME GLOBAL VARIABLES ************
 	const express 		= require('express');
-	var app = express(); 
+	var app = express();
 	const fileUpload 	= require('express-fileupload');
 	var fs 				= require('fs');
 	var dateFormat 		= require('dateformat');
-	const os 			= require('os'); 
+	const os 			= require('os');
 	const contentType_text_plain = 'text/plain';
 //********************* SUPPORT JS file, with variable defs *********
 	const colours 			= require('./colours');
 //********************* SUPPORT JS file, for DB functionalities *****
-	const MetadataModule 	= require('./support-metadata'); 
+	const MetadataModule 	= require('./support-metadata');
 	const UsersModule 		= require('./support-usersaccounts');
 	const LogsModule 		= require('./support-logs');
 	const CommonModule 		= require('./support-common');
-	const supportmkdir 		= require('./mkdirfullpath'); 
+	const supportmkdir 		= require('./mkdirfullpath');
 //*********************** SUPPORT JS file, for TOKENS SUPPORT *******
 	var bodyParser	= require('body-parser');
 	var cors		= require('cors');
 	var auth		= require('./token-auth');
 var middleware	= require('./token-middleware');
-//*************************** MAPPING OF THE TABLES **************	
+//*************************** MAPPING OF THE TABLES *****************
 const metadatamapping = {
 	"metadata": {
 		"properties": {
@@ -56,7 +56,7 @@ const metadatamapping = {
 				"type": "string",
 				"index": "analyzed"
 			},
-			"path_length": { 
+			"path_length": {
 				"type": "short"
 			},
 			"user_owner": {//of the file, user_id is the user email
@@ -71,13 +71,13 @@ const metadatamapping = {
 				"type": "string",
 				"index": "analyzed"
 			},
-			"filename_length": { 
+			"filename_length": {
 				"type": "short"
 			}
 		} 
 	}
 }
-const usersmapping = {			 
+const usersmapping = {
 	"users": {
 		"properties": {
 			"email": {
@@ -97,7 +97,7 @@ const usersmapping = {
 		}
 	}
 }
-const tokensmapping = { 
+const tokensmapping = {
 	"tokens":{
 		"properties": {
 			"user_id": {
@@ -117,8 +117,8 @@ const tokensmapping = {
 			}
 		}
 	}
-} 
-const logsmapping = { 
+}
+const logsmapping = {
 	"logs":{
 		"properties": {
 			"code": {
@@ -138,7 +138,7 @@ const logsmapping = {
 			}
 		}
 	}
-} 
+}
 	var expressWs 		= require('express-ws')(app);
 	var app = expressWs.app;
 //*******************************************************************
@@ -271,6 +271,66 @@ function update_filename_path_on_json(JSONstring, project,source, filename, path
 }
 
 
+function update_request_time(JSONstring, req_date){
+	var new_json = {  }
+	var jsonobj = JSON.parse(JSONstring);
+	var keys = Object.keys(jsonobj);
+	if (req_date == undefined) req_date="";
+	new_json['req_date']=req_date;
+	new_json['req_date'+'_length']=req_date.length;
+	for (var i = 0; i < keys.length; i++) {
+		var label=Object.getOwnPropertyNames(jsonobj)[i];
+		label=lowercase(label);
+		if((label != 'req_date') && (label != 'req_date_length'))
+			new_json[label]=jsonobj[keys[i]]; //add one property
+		if( typeof jsonobj[keys[i]] == 'string'){
+			new_json[label+'_length']=jsonobj[keys[i]].length;
+		}
+	}
+	new_json=(JSON.stringify(new_json));
+	return new_json;
+}
+
+function update_exec_status(JSONstring, status){
+	var new_json = {  }
+	var jsonobj = JSON.parse(JSONstring);
+	var keys = Object.keys(jsonobj);
+	if (status == undefined) status="";
+	new_json['req_status']=status;
+	new_json['req_status'+'_length']=status.length;
+	for (var i = 0; i < keys.length; i++) {
+		var label=Object.getOwnPropertyNames(jsonobj)[i];
+		label=lowercase(label);
+		if((label != 'req_status') && (label != 'req_status_length'))
+			new_json[label]=jsonobj[keys[i]]; //add one property
+		if( typeof jsonobj[keys[i]] == 'string'){
+			new_json[label+'_length']=jsonobj[keys[i]].length;
+		}
+	}
+	new_json=(JSON.stringify(new_json));
+	return new_json;
+}
+
+function update_reject_reason(JSONstring, reason){
+	var new_json = {  }
+	var jsonobj = JSON.parse(JSONstring);
+	var keys = Object.keys(jsonobj);
+	if (reason == undefined) reason="";
+	new_json['rejection_reason']=reason;
+	new_json['rejection_reason'+'_length']=reason.length;
+	for (var i = 0; i < keys.length; i++) {
+		var label=Object.getOwnPropertyNames(jsonobj)[i];
+		label=lowercase(label);
+		if((label != 'rejection_reason') && (label != 'rejection_reason_length'))
+			new_json[label]=jsonobj[keys[i]]; //add one property
+		if( typeof jsonobj[keys[i]] == 'string'){
+			new_json[label+'_length']=jsonobj[keys[i]].length;
+		}
+	}
+	new_json=(JSON.stringify(new_json));
+	return new_json;
+}
+
 function find_id(JSONstring){
 	var response = "";
 	var jsonobj = JSON.parse(JSONstring);
@@ -310,8 +370,6 @@ function update_app_length_on_json(JSONstring, appname){
 	var jsonobj = JSON.parse(JSONstring);
 	var keys = Object.keys(jsonobj);
 	if (appname== undefined) appname="";
-	new_json['app']=appname;
-	new_json['app_length']=appname.length;
 	for (var i = 0; i < keys.length; i++) {
 		var label=Object.getOwnPropertyNames(jsonobj)[i];
 		label=lowercase(label);
@@ -321,6 +379,8 @@ function update_app_length_on_json(JSONstring, appname){
 			new_json[label+'_length']=jsonobj[keys[i]].length;
 		}
 	}
+	new_json['app']=appname;
+	new_json['app_length']=appname.length;
 	new_json=(JSON.stringify(new_json));
 	return new_json;
 }
@@ -334,7 +394,7 @@ function update_execution_id_length_on_json(JSONstring, exec_id){
 		var label=Object.getOwnPropertyNames(jsonobj)[i];
 		label=lowercase(label);
 		if((label != 'execution_id') && (label != 'execution_id_length'))
-		new_json[label]=jsonobj[keys[i]]; //add one property
+			new_json[label]=jsonobj[keys[i]]; //add one property
 		if( typeof jsonobj[keys[i]] == 'string'){
 			new_json[label+'_length']=jsonobj[keys[i]].length;
 		}
@@ -732,10 +792,10 @@ app.post('/delete_metadata',middleware.ensureAuthenticated, function(req, res) {
 // 			if (err) {
 				return;
 // 			}else{
-				return;
+// 				return;
 // 			}
 		});
-	});//
+	});
 });
 //**********************************************************
 app.get('/verify_es_connection', function(req, res) {
@@ -867,35 +927,35 @@ app.get('/query_metadata',middleware.ensureAuthenticated, function(req, res) {
 		res.end(JSON.stringify(JSON.parse(resultFind).hits));
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,200,req.connection.remoteAddress,"QUERY METADATA granted to query:"
 			+JSON.stringify(query),currentdate,res.user);
-	},(resultReject)=> { 
+	},(resultReject)=> {
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("querymetadata: Bad Request "+resultReject +"\n");
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"QUERY METADATA BAD Request on query:"
-			+JSON.stringify(query),currentdate,res.user); 
-	}); 
+			+JSON.stringify(query),currentdate,res.user);
+	});
 });
 //**********************************************************
-app.get('/es_query_metadata', middleware.ensureAuthenticated, function(req, res) { 
-	"use strict"; 
-	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 		
-	var QueryBody 	= find_param(req.body.QueryBody, req.query.QueryBody); 
-	var pretty 		= find_param(req.body.pretty, req.query.pretty); 
-	var mybody_obj	= JSON.parse( QueryBody);   
+app.get('/es_query_metadata', middleware.ensureAuthenticated, function(req, res) {
+	"use strict";
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
+	var QueryBody 	= find_param(req.body.QueryBody, req.query.QueryBody);
+	var pretty 		= find_param(req.body.pretty, req.query.pretty);
+	var mybody_obj	= JSON.parse( QueryBody);
 	//1.1- find id of the existing doc for such path filename JSON.stringify(
 	var searching = MetadataModule.query_metadata(es_servername+":"+es_port,SERVERDB, mybody_obj, pretty); //.replace(/\//g, '\\/');
 	var resultlog="";
-	searching.then((resultFind) => { 
+	searching.then((resultFind) => {
 		res.writeHead(200, {"Content-Type": "application/json"});
 		res.end(resultFind+"\n");
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,200,req.connection.remoteAddress,"ES-QUERY METADATA granted to query:" 
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,200,req.connection.remoteAddress,"ES-QUERY METADATA granted to query:"
 			+JSON.stringify(QueryBody),currentdate,res.user);
-	},(resultReject)=> { 
+	},(resultReject)=> {
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("es_query: Bad Request "+resultReject +"\n");
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"ES-QUERY METADATA BAD Request on query:" 
-			+JSON.stringify(QueryBody),currentdate,res.user); 
-	}); 
-}); 
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,400,req.connection.remoteAddress,"ES-QUERY METADATA BAD Request on query:"
+			+JSON.stringify(QueryBody),currentdate,res.user);
+	});
+});
 
 //**********************************************************
 /* GET home page. */
@@ -1764,14 +1824,6 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 			filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
 		}}
 	}
-// project example7
-// myPath /nas_home//hpcjmont/phantom_servers/phantom_repository/example7/user
-// source user
-// filepath undefined
-// myDest example7/user
-// filename undefined
-// res.user gtzanettis@wings-ict-solutions.eu
-
 //	//START OF SECURED VERSION CODE
 	var query_permission =request_permission(res.user,pretty, project,source,filepath, filename);
 	query_permission.then((result) => {
@@ -1796,89 +1848,41 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 		try{
 			fs.stat(myPath, function(err, stat) {
 				if(err == null) {
-					var filelist=undefined;
-		// 			filelist=json_list_of_files(myPath,filelist);
 					var path = path || require('path');
 					var fs = fs || require('fs');
 					files = fs.readdirSync(myPath);
-					filelist= { path : myPath , name : myDest };
-	// 				console.log(JSON.stringify(JSON.parse("[" + filelist+ "]"), null, 4 ));
-					if(filelist!=undefined){
-// 						var algo= new Promise( (resolve,reject) => {
-								try{
-		// 							res.zip({
-		// 								files: [
-		// 									{content: 'content',
-		// 									name: 'description.txt',
-		// 									mode: 0755,
-		// 									comment: 'File-Downloaded-From-Repository',
-		// 									date: new Date(),
-		// 									type: 'file' },
-		// 								filelist],
-		// 								filename: zipfile+'.zip'
-		// 							})
-// 									res.zip({
-// 										files: [ filelist],
-// 										filename: zipfile+'.zip'
-// 									}).then(function(obj){
-// // 										res.writeHead(200, {"Content-Type": contentType_zip});
-// // 										res.setHeader('Content-Type', 'application/zip');
-// // 										res.set('Content-Disposition', 'attachment; filename=file.zip');
-// // 										res.set('Content-Length', data.length);
-// // 										res.end(data, 'binary');
-// // 										resolve(" succeeed");
-// 		// 								var zipFileSizeInBytes = obj.size;
-// 		// 								var ignoredFileArray = obj.ignored;
-// 									}).catch(function(err){
-// // 										res.writeHead(400, {"Content-Type": contentType_text_plain});
-// // 										reject (err);
-// 									});
-									var file_system = require('fs');
-									var archiver = require('archiver');
-									var output = file_system.createWriteStream(zipfile);
-									var archive = archiver('zip');
-									output.on('close', function () {
-										console.log(archive.pointer() + ' total bytes');
-										console.log('zip has been finalized and the output file descriptor has closed.');
-									});
-									archive.on('error', function(err){
-										throw err;
-									});
-									// good practice to catch warnings (ie stat failures and other non-blocking errors)
-									archive.on('warning', function(err) {
-									if (err.code === 'ENOENT') {
-										console.log("ENOENT"+err.code);
-										// log warning
-									} else {
-										console.log("other "+err.code);
-										// throw error
-// 										throw err;
-									}
-									});
-									archive.pipe(res);
-									//Not use BULK, it is deprecated !!!
-// 									archive.directory(myPath, true, { date: new Date() });
-									archive.directory(myPath, newPath);
-									// archive.directory(other folders, true, { date: new Date() });//can add other files or folders
-									archive.finalize();
-								}catch(eb){
-// 									res.writeHead(400, {"Content-Type": contentType_text_plain});
-								}
-// 						});
-// 						algo.then((resultResolve) => {
-// 							console.log(resultResolve);
-							return;
-// 						},(resultReject)=> {
-// 							res.writeHead(400, {"Content-Type": contentType_text_plain});
-// 							res.write( "[Error]: "+resultReject, 'utf-8');
-// 							res.end("path: "+myPath+"\n"+zipfile+'.zip'+"\n");
-// 							return;
-// 						});
-					}else{
-						res.end("files not found in that directory");
-						return;
+					try{
+						var file_system = require('fs');
+						var archiver = require('archiver');
+						var output = file_system.createWriteStream(zipfile);
+						var archive = archiver('zip');
+						//output.on('close', function () {
+							//console.log(archive.pointer() + ' total bytes');
+							//console.log('zip has been finalized and the output file descriptor has closed.');
+						//});
+						archive.on('error', function(err){
+							throw err;
+						});
+						// good practice to catch warnings (ie stat failures and other non-blocking errors)
+						archive.on('warning', function(err) {
+						if (err.code === 'ENOENT') {
+							console.log("ENOENT"+err.code); // log warning
+						} else {
+							console.log("other "+err.code);
+							throw err;
+						}
+						});
+						archive.pipe(res);
+						//Not use BULK, it is deprecated !!!
+						//archive.directory(myPath, true, { date: new Date() });
+						archive.directory(myPath, newPath);
+						// archive.directory(other folders, true, { date: new Date() });//can add other files or folders
+						archive.finalize();
+					}catch(eb){
+						//....
 					}
-				} else if(err.code == 'ENOENT') {
+					return;
+				} else if(err.code == 'ENOENT'){
 					// file does not exist 
 					varresultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,404,req.connection.remoteAddress,"DOWNLOAD-LIST error: File not found: "+myPath ,currentdate,res.user);
 					//res.setHeader(name.value); //only before writeHeader
@@ -1908,14 +1912,6 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 	});
 // //END OF SECURED CODE
 	//*******************************************
-// 	res.zip({files: [ {content: 'downloaded from the PHANTOM REPOSITORY', name: 'test-file', mode: 0755, comment: zipfile, date: new Date(), type: 'file' },
-// 			{path: myPath, name: 'uploads' } ], filename: zipfile+'.zip' });
-// 	res.zip({
-// 		files: [
-// 			{path: myPath, name: zipfile }
-// 		],
-// 		filename: zipfile+'.zip'
-// 	});
 });
 //**********************************************************
 //example:
