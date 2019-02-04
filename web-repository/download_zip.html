@@ -20,7 +20,6 @@
 
 <body onload="start_page_new()">
 	<div id="menu_phantom"></div>
-	
 	<div id="menu_login" style="display:none"></div>
 
 <div id="phantom_operation">
@@ -30,9 +29,9 @@
 		<form ref='downloadFormFile' id='downloadFormFile'
 		method='get'>
 		<!-- 	encType="multipart/form-data"> this is only for post requests-->
-		Project (MANDATORY):  <input type="text" name="project_f" id="project_f" value="phantom_tools_on_HPC"/><br>
-		Source (optional):  <input type="text" name="source" id="source_f"  value="user"/><br>
-		Path (only if source provided, optional):  <input type="text" name="filepath" id="filepath_f" value="mypath"/> <br>
+		Project (MANDATORY): <input type="text" name="project_f" id="project_f" value="phantom_tools_on_HPC"/><br>
+		Source (optional):  <input type="text" name="source" id="source_f" value="user"/><br>
+		Path (only if source provided, optional): <input type="text" name="filepath" id="filepath_f" value="mypath"/> <br>
 		Filename (only if source provided, optional): <input type="text" name="filename" id="filename_f" value="main.c"/><br>
 		<br><center>
 		<input type='submit' onclick="return downloadzip_file_repo( document.getElementById('project_f').value,
@@ -44,8 +43,8 @@
 	<hr>
 	<b>Tested command line example with curl:</b>
 	<p style="color:DodgerBlue;"><b>
-	curl -H "Authorization: OAuth ${mytoken}" -XGET http://localhost:8000/downloadzip?project=phantom_tools_on_HPC\&source=user\&filepath=mypath\&filename=main.c   --output main.c;
-<!-- 	 -H "Content-Type: multipart/form-data"  -->
+	curl -H "Authorization: OAuth ${mytoken}" -XGET http://localhost:8000/downloadzip?project=phantom_tools_on_HPC\&source=user\&filepath=mypath\&filename=main.c --output main.c;
+<!-- 	 -H "Content-Type: multipart/form-data" -->
 	</b>
 	</p>
 
@@ -54,15 +53,15 @@
 		<form ref='downloadFormJson' id='downloadFormJson' 
 		action='get_metadata' 
 		method='get'> 
-		Path:   <input type="text" name="filepath" value="mypath"> <br>
-		FileName:    <input type="text" name="filename" value="main.c"><br>
-		<br><center><input type='submit' value='Download METADATA-JSON!' /></center> 
-		</form> 
+		Path: <input type="text" name="filepath" value="mypath"> <br>
+		FileName: <input type="text" name="filename" value="main.c"><br>
+		<br><center><input type='submit' value='Download METADATA-JSON!' /></center>
+		</form>
 		
 	<hr> <b>Tested command line example with curl:</b>
 
 	<p style="color:DodgerBlue;">
-	curl -H "Content-Type: multipart/form-data" -XGET get_metadata?filepath=mypath\&filename=main.c 
+	curl -H "Content-Type: multipart/form-data" -XGET get_metadata?filepath=mypath\&filename=main.c
 	</p>-->
 
 <!--	<h2><b> Online formular: Retrieve Metadata</b></h2>
@@ -71,7 +70,7 @@
 		action='query_metadata'
 		method='get'
 		encType="multipart/form-data">
-			Destination Path (optional): <input type="text" name="Path" value="mypath/"> leave empty if not wish to filter by path<br>
+			Destination Path (optional): <input type="text" name="Path" value="mypath"> leave empty if not wish to filter by path<br>
 			Destination Filename (optional):<input type="text" name="filename" value="main.c"> leave empty if not wish to filter by file-name<br>
 			<input type="hidden" name="pretty" value="true">
 		<center><input type='submit' value='Perform query!'/></center>
@@ -85,12 +84,11 @@
 
 	<hr> <b>Tested command line example with curl:</b>
 	<p style="color:DodgerBlue;">
-		curl -XGET 'http://localhost:8000/query_metadata?Path=mypath%2F\&filename=main.c';
+		curl -XGET 'http://localhost:8000/query_metadata?Path=mypath\&filename=main.c';
 	</p>-->
 </div>
 
 	<div id="debug_phantom"> <p id="demoreplaceb"></p></div>
-
 	<div id="foot_phantom"></div>
 	<script> repo_load_header_footer(); </script>
 </body>

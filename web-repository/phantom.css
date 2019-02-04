@@ -1,5 +1,3 @@
-
-
 /* 		for the top menu */
 	ul.menuphantom {
 		list-style-type: none;
@@ -56,9 +54,9 @@
 	th {
 		background-color: #0d98ff;
 		color: white;
-	}	 
+	}
 
-/*  for the phantom logo   */
+/*  for the phantom logo*/
 	img {
 		padding: 0px;
 		border: 0;
@@ -80,13 +78,11 @@
 	font-size: 0.75em;
 }
 
-
 .greyfont {
 	font-size: 0.75em;
 	font-style: normal;
 	color: grey;
-}	
-
+}
 
 hr.style-phantom-hr {
 	height: 10px;
@@ -98,4 +94,3 @@ hr.style-phantom-hr {
 	-o-border-radius: 5px;
 	border-radius: 5px;
 }
-

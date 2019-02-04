@@ -14,7 +14,7 @@
 	<meta charset="utf-8">
 	<title>PHANTOM REPOSITORY-Server</title>
 	<link rel="stylesheet" type="text/css" href="phantom.css"/>
-	<script src="phantom.js"></script> 
+	<script src="phantom.js"></script>
 	<script>
 	function submitform_upload(e, frm) {
 		var demoreplaceb = document.getElementById("demoreplaceb");
@@ -65,7 +65,6 @@
 
 <body onload="start_page_new()">
 	<div id="menu_phantom"></div>
-	
 	<div id="menu_login" style="display:none"></div>
 
 	<div id="phantom_operation" style="display:block">
@@ -77,7 +76,7 @@
 			<!--<fieldset><legend></legend>  -->
 			Project:  <input type="text" id="project" name="project" value="phantom_tools_on_HPC"> MANDATORY<br>
 			Source:  <input type="text" id="source" name="source" value="user"> MANDATORY<br>
-			Destination Path:  <input type="text" id="Path" name="Path" value="mypath/"> optional <br>
+			Destination Path:  <input type="text" id="Path" name="Path" value="mypath"> optional <br>
 			Destination Filename: <input type="text" id="DestFileName" name="DestFileName" value="main.c"> MANDATORY<br>
 			File to upload (MANDATORY) <input type="file" id="UploadFile" name="UploadFile"/><br>
 			Metadata in JSON format (MANDATORY) chose one of the next 2 options: <br>
@@ -101,13 +100,13 @@
 
 		<hr> <b>Tested command line example with curl:</b>
 		<p style="color:DodgerBlue;">
-			curl -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST -F "http://localhost:8000/UploadFile=@/home/jmontana/test.c" -F "RawJSON={ \"domain\":\"domain_HLRS\", \"any_other_user_defined_label\":\"user_defined_value\" }" http://localhost:8000/upload?project=phantom_tools_on_HPC\&source=user\&DestFileName=main.c\&'Path=mypath/'
+			curl -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST -F "http://localhost:8000/UploadFile=@/home/jmontana/test.c" -F "RawJSON={ \"domain\":\"domain_HLRS\", \"any_other_user_defined_label\":\"user_defined_value\" }" http://localhost:8000/upload?project=phantom_tools_on_HPC\&source=user\&DestFileName=main.c\&'Path=mypath'
 		</p>
 
 		<b>OR</b> <br>
 
 		<p style="color:DodgerBlue;">
-			curl -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST -F "http://localhost:8000/UploadFile=@/home/jmontana/test.c" -F "UploadJSON=@/home/jmontana/example.json" http://localhost:8000/upload?project=phantom_tools_on_HPC\&source=user\&DestFileName=main.c\&'Path=mypath/'
+			curl -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST -F "http://localhost:8000/UploadFile=@/home/jmontana/test.c" -F "UploadJSON=@/home/jmontana/example.json" http://localhost:8000/upload?project=phantom_tools_on_HPC\&source=user\&DestFileName=main.c\&'Path=mypath'
 		</p>
 	</div>
 

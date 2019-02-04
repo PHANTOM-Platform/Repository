@@ -27,40 +27,40 @@
 		<hr class="style-phantom-hr" /> <h2><b> Online formular: Retrieve Metadata</b></h2>
 			<form ref='queryForm' id='queryForm'
 			method='get'>
-				Project (MANDATORY):  <input type="text" name="project" id="project" value="phantom_tools_on_HPC"/><br>
-				Source:  <input type="text" name="source" id="source" value="user"/><br>
-				Destination Path (optional): <input type="text" id="Path" name="Path" value="mypath/"> leave empty if not wish to filter by path<br>
+				Project (MANDATORY): <input type="text" name="project" id="project" value="phantom_tools_on_HPC"/><br>
+				Source: <input type="text" name="source" id="source" value="user"/><br>
+				Destination Path (optional): <input type="text" id="Path" name="Path" value="mypath"> leave empty if not wish to filter by path<br>
 				Destination Filename (optional):<input type="text" id="filename" name="filename" value="main.c"> leave empty if not wish to filter by file-name<br>
 				<input type="hidden" name="pretty" value="true">
 			<center> <input type='submit' onclick="return submitform_qr_metatada(event, this)" value='Perform query!'/></center>
 			</form>
 		<hr> <h2><b> CAUTION:<b></h2>
-		<ul style="list-style-type:disc"> 
+		<ul style="list-style-type:disc">
 			<li> Field names in the json must be lower-case</li>
 			<li> The path and the fileName are case sensitive (put the correct uper or lower case)</li>
 		</ul>
 		<hr> <b>Tested command line example with curl:</b>
 		<p style="color:DodgerBlue;">
 			newtoken=`bash get_token.sh -e user_id -pw password -s localhost -port 8000`;<br><br>
-			curl -H "Authorization: OAuth ${mytoken}" -XGET 'http://localhost:8000/query_metadata?project=\"demo\"\&amp;source=\"user\"\&amp;filepath=\"mypath/\"\&amp;filename=\"main.c\"';
+			curl -H "Authorization: OAuth ${mytoken}" -XGET 'http://localhost:8000/query_metadata?project=\"demo\"\&amp;source=\"user\"\&amp;filepath=\"mypath\"\&amp;filename=\"main.c\"';
 		</p><!-- single quote &#39; -->
 <!-- ****************************************** -->
 		<hr class="style-phantom-hr" /> <h2><b> Online formular: For running "ElasticSearch" queries on metadata stored on the repository </b></h2>
 			<form ref='esqueryForm' id='esqueryForm'
 			method='get'>
-				ES Query (MANDATORY): 
-				<input type="text" id="QueryBody" name="QueryBody" value='{ "query": { "bool": { "must": [ { "match": { "path": "mypath/" }}, { "match": { "filename" : "main.c" } } ] }}}' style="font-size:11pt;height:20px;width:700px;">
+				ES Query (MANDATORY):
+				<input type="text" id="QueryBody" name="QueryBody" value='{ "query": { "bool": { "must": [ { "match": { "path": "mypath" }}, { "match": { "filename" : "main.c" } } ] }}}' style="font-size:11pt;height:20px;width:700px;">
 				<input type="hidden" name="pretty" value="true">
 				<center> <input type='submit' onclick="return submitform_qr_metatada_es(event, this)" value='Perform query!'/> </center>
 			</form>
 		<hr> <b>Tested command line example with curl (warning: not put empty spaces in the query):</b>
 		<p style="color:DodgerBlue;">
-			curl -H "Authorization: OAuth ${mytoken}" -XGET 'http://localhost:8000/es_query_metadata?QueryBody="\{\"query\":\{\"bool\":\{\"must\":\[\{\"match\":\{\"path\":\"mypath/\"\}\},\{\"match\":\{\"filename\":\"main.c\"\}\}\]\}\}\}"';
+			curl -H "Authorization: OAuth ${mytoken}" -XGET 'http://localhost:8000/es_query_metadata?QueryBody="\{\"query\":\{\"bool\":\{\"must\":\[\{\"match\":\{\"path\":\"mypath\"\}\},\{\"match\":\{\"filename\":\"main.c\"\}\}\]\}\}\}"';
 <!--curl -H "Authorization: OAuth ${mytoken}" -XGET http://localhost:8000/es_query_metadata?QueryBody="\{\"query\":\{\"bool\":\{\"must\":\[\{\"match\":\{\"filename\":\"main.c\"\}\}\]\}\}\}" -->
-<!-- curl -H "Authorization: OAuth ${mytoken}" -XGET http://localhost:8000/es_query_metadata?QueryBody="\{\"query\":\{\"bool\":\{\"must\":\[\{\"match\":\{\"path\":\"mypath/\"\}\}\]\}\}\}" -->
-<!-- curl -XGET http://localhost:8000/es_query_metadata?QueryBody="\{\"query\":\{\"bool\":\{\"must\":\[\{\"match\":\{\"path\":\"/phantom/usecases/hpc/serial/\"\}\},\{\"match\":\{\"filename\":\"HPC_serial.tgz\"\}\}\]\}\}\}" -->
+<!-- curl -H "Authorization: OAuth ${mytoken}" -XGET http://localhost:8000/es_query_metadata?QueryBody="\{\"query\":\{\"bool\":\{\"must\":\[\{\"match\":\{\"path\":\"mypath\"\}\}\]\}\}\}" -->
+<!-- curl -XGET http://localhost:8000/es_query_metadata?QueryBody="\{\"query\":\{\"bool\":\{\"must\":\[\{\"match\":\{\"path\":\"/phantom/usecases/hpc/serial\"\}\},\{\"match\":\{\"filename\":\"HPC_serial.tgz\"\}\}\]\}\}\}" -->
 		</p>
-<!-- curl -XGET http://localhost:9400/repository_db/metadata/_search -d '{ "query": { "bool": { "must": [ { "match": { "path": "mypath/" }}, { "match": { "filename" : "main.c" } } ] }}}' -->
+<!-- curl -XGET http://localhost:9400/repository_db/metadata/_search -d '{ "query": { "bool": { "must": [ { "match": { "path": "mypath" }}, { "match": { "filename" : "main.c" } } ] }}}' -->
 	</div>
 	
 	<div id="debug_phantom"> <p id="demoreplaceb"></p></div>

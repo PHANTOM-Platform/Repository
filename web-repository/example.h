@@ -5,5 +5,3 @@
 int foo(int x);  /* An example function declaration */
 
 #endif // FOO_H_
-
-

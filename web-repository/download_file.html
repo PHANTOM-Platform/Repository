@@ -66,14 +66,14 @@
 		<form ref='queryForm' id='queryForm'
 		method='get'>
 		<!-- encType="multipart/form-data"> this is only for post requests-->
-			Project (MANDATORY):  <input type="text" id="project_m" name="project_m" value="phantom_tools_on_HPC">  value<br>
+			Project (MANDATORY):  <input type="text" id="project_m" name="project_m" value="phantom_tools_on_HPC"/> value<br>
 			Source(optional):  <input type="text" id="source_m"  name="source_m"  value="user"/><br>
-			Destination Path (optional): <input type="text" id="Path_m" name="Path_m" value="mypath/"> leave empty if not wish to filter by path<br>
-			Destination Filename (optional):<input type="text" id="filename_m" name="filename_m" value="main.h"> leave empty if not wish to filter by file-name<br>
+			Destination Path (optional): <input type="text" id="Path_m" name="Path_m" value="mypath"/> leave empty if not wish to filter by path<br>
+			Destination Filename (optional):<input type="text" id="filename_m" name="filename_m" value="main.h"/> leave empty if not wish to filter by file-name<br>
 			<input type="hidden" name="pretty" value="true">
 		<center>
-		<input type='submit' onclick="return download_metadata_repo( document.getElementById('project_m').value, 
-		document.getElementById('source_m').value, 
+		<input type='submit' onclick="return download_metadata_repo( document.getElementById('project_m').value,
+		document.getElementById('source_m').value,
 		document.getElementById('Path_m').value,
 		document.getElementById('filename_m').value )" value='Perform query!'/> </center>
 		</form>
@@ -87,7 +87,7 @@
 	<hr>
 	<b>Tested command line example with curl:</b>
 	<p style="color:DodgerBlue;">
-	curl -H "Authorization: OAuth ${mytoken}" -XGET 'http://localhost:8000/query_metadata?Path=mypath%2F\&filename=main.c'
+	curl -H "Authorization: OAuth ${mytoken}" -XGET 'http://localhost:8000/query_metadata?Path=mypath\&filename=main.c'
 	</p>
 </div>
 
