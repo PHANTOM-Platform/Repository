@@ -16,11 +16,12 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License. 
- 
+
 #0. ########## GLOBAL VARIABLES ###################################
 	server="localhost";
 	repository_port="8000";
 	expectedserver="PHANTOM Repository";
+	app=`basename $0`;
 	BASE_DIR=`dirname $0`;
 	cd ${BASE_DIR};
 			BLUE="\033[0;34m";
@@ -39,23 +40,21 @@
 			reset=$'\E[0m';
 			BC=$'\e[4m'; #underline
 			EC=$'\e[0m'; #not underline
-app=`basename $0`;
-cd `dirname $0`;
 #0. #### Function Scripts definition ################################
 	verify_reponse()
-	{ 
+	{
 		# $1 server
 		# $2 port
 		# $3 expectedserver
 		echo "Checking Response on port ${2} ...";
-		let "j=0"; 		
+		let "j=0";
 		if [ "$#" -lt 3 ]; then
 			echo "error missing parameters at function verify_response";
 			exit 1;
 		fi;
 		HTTP_STATUS=$(curl --silent --output /dev/null --write-out "%{http_code}" http://${1}:${2});
 		while [[ ${HTTP_STATUS} != "200" ]] && [ ${j} -lt 1 ] ; do 
-			let "j += 1 "; sleep 1; 
+			let "j += 1 "; sleep 1;
 			HTTP_STATUS=$(curl --silent --output /dev/null --write-out "%{http_code}" http://${1}:${2});
 		done; 
 		if [[ ${HTTP_STATUS} != "200" ]]; then
@@ -74,8 +73,7 @@ cd `dirname $0`;
 			echo ${SERVERNAME} != ${3};
 			exit 1;
 		fi;
-		echo "Done. Response successfully found on port ${2}.";
-		echo ;
+		echo -e "Done. Response successfully found on port ${2}.\n";
 	}
 # 1. ################# CHECK if Respository server is running ###############
 	echo "Checking Repository server ...";
@@ -103,30 +101,51 @@ cd `dirname $0`;
 	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -XGET ${server}:${repository_port}/verifytoken";
 	read -p $'Press [Enter] key to \033[1;37mCHECK\033[1;34m if the \033[1;37mTOKEN\033[1;34m is valid or not'; echo -ne "${NO_COLOUR}";
 	curl -s -H "Authorization: OAuth ${mytoken}" -XGET ${server}:${repository_port}/verifytoken;
+# # 9. ################## TEST ACCESS WITH A NOT VALID TOKEN, access must be rejected UNAUTHORIZED:401 #####################
+# 	echo -e "\n${LIGHT_BLUE}";
+# 	echo "curl -s -H \"Authorization: OAuth 12345678\" -XGET ${server}:${repository_port}/verifytoken";
+# 	read -p $'Press [Enter] key to \033[1;37mCHECK\033[1;34m if dummy string is a valid \033[1;37mTOKEN\033[1;34m or not'; echo -ne "${NO_COLOUR}";
+# 	curl -s -H "Authorization: OAuth 12345678" -XGET ${server}:${repository_port}/verifytoken;
+# # 10. ################## TEST ACCESS WITHOUT A TOKEN, access must be rejected UNAUTHORIZED:401 ####################
+# 	echo -e "\n${LIGHT_BLUE}";
+# 	echo "curl -H \"Content-Type: multipart/form-data\" -XPOST -F \"UploadFile=@../web-repository/example.c\" -F \"UploadJSON=@../web-repository/examplec.json\" http://${server}:${repository_port}/upload?DestFileName=main.c\&Path=mypath";
+# 	read -p $'Press [Enter] key to \033[1;37mUPLOAD\033[1;34m a file \033[1;37mWITHOUT TOKEN\033[1;34m'; echo -ne "${NO_COLOUR}";
+# 	curl -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web-repository/example.c" -F "UploadJSON=@../web-repository/examplec.json" http://${server}:${repository_port}/upload?DestFileName=main.c\&'Path=mypath';
+# # 11. ################## TEST OF UPLOADING A FILE WITH A NOT VALID TOKEN, access must be rejected UNAUTHORIZED:401 ######## 
+# 	echo -e "\n${LIGHT_BLUE}";
+# 	echo "curl -s -H \"Authorization: OAuth 12345678\" -H \"Content-Type: multipart/form-data\" -XPOST -F \"UploadFile=@../web-repository/example.c\" -F \"UploadJSON=@../web-repository/examplec.json\" http://${server}:${repository_port}/upload?DestFileName=main.c\&Path=mypath";
+# 	read -p $'Press [Enter] key to \033[1;37mUPLOAD\033[1;34m a \033[1;37mFILE\033[1;34m with \033[1;37mWRONG TOKEN\033[1;34m'; echo -ne "${NO_COLOUR}";
+# 	curl -s -H "Authorization: OAuth 12345678" -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web-repository/example.c" -F "UploadJSON=@../web-repository/examplec.json" http://${server}:${repository_port}/upload?DestFileName=main.c\&'Path=mypath';
+# # 12. ################## TEST OF UPLOADING A FILE WITH A NOT VALID TOKEN, access must be rejected UNAUTHORIZED:401 ######## 
+# 	echo -e "\n${LIGHT_BLUE}";
+# 	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XPOST -F \"UploadFile=@../web-repository/example.c\" -F \"UploadJSON=@../web-repository/examplec.json\" http://${server}:${repository_port}/upload?DestFileName=main.c\&Path=mypath";
+# 	read -p $'Press [Enter] key to \033[1;37mUPLOAD\033[1;34m a \033[1;37mFILE\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -e "${NO_COLOUR}";
+# 	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web-repository/example.c" -F "UploadJSON=@../web-repository/examplec.json" http://${server}:${repository_port}/upload?DestFileName=main.c\&'Path=mypath';
+# 	#We sync, because it may start the next command before this operation completes.
+# 	curl -s -XGET ${server}:${repository_port}/_flush > /dev/null;
 # 13. ################## TEST OF UPLOADING A FILE WITH A VALID TOKEN, access must be accepted : 200 ########## 
 	echo -e "\n${LIGHT_BLUE}";
 	echo "We upload one more file for testing later the Metadata queries...";
-	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XPOST -F \"UploadFile=@../web-repository/example.h\" -F \"UploadJSON=@../web-repository/exampleh.json\" http://${server}:${repository_port}/upload?project=phantom_tools_on_HPC\&source=user\&DestFileName=main.h\&Path=mypath/";
+	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XPOST -F \"UploadFile=@../web-repository/example.h\" -F \"UploadJSON=@../web-repository/exampleh.json\" http://${server}:${repository_port}/upload?project=phantom_tools_on_HPC\&source=user\&DestFileName=main.h\&Path=mypath";
 	read -p $'Press [Enter] key to \033[1;37mUPLOAD\033[1;34m a \033[1;37mFILE\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -e "${NO_COLOUR}";
-	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web-repository/example.h" -F "UploadJSON=@../web-repository/exampleh.json" http://${server}:${repository_port}/upload?project=phantom_tools_on_HPC\&source=user\&DestFileName=main.h\&'Path=mypath/';
+	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web-repository/example.h" -F "UploadJSON=@../web-repository/exampleh.json" http://${server}:${repository_port}/upload?project=phantom_tools_on_HPC\&source=user\&DestFileName=main.h\&'Path=patatos';
 	#We sync, because it may start the next command before this operation completes.
 	curl -s -XGET ${server}:${repository_port}/_flush > /dev/null;
 
-	
 	echo -e "\n${LIGHT_BLUE}We upload one more file for testing later the Metadata queries...";
-	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XPOST -F \"UploadFile=@../web-repository/example.c\" -F \"UploadJSON=@../web-repository/exampleh_domain.json\" http://${server}:${repository_port}/upload?project=phantom_tools_on_HPC\&source=user\&DestFileName=main.c\&Path=mypath/";
+	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XPOST -F \"UploadFile=@../web-repository/example.c\" -F \"UploadJSON=@../web-repository/exampleh_domain.json\" http://${server}:${repository_port}/upload?project=phantom_tools_on_HPC\&source=user\&DestFileName=main.c\&Path=mypath";
 	read -p $'Press [Enter] key to \033[1;37mUPLOAD\033[1;34m a \033[1;37mFILE\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -e "${NO_COLOUR}";
-	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web-repository/example.c" -F "UploadJSON=@../web-repository/exampleh.json" http://${server}:${repository_port}/upload?project=phantom_tools_on_HPC\&source=user\&DestFileName=main.c\&'Path=mypath/';
+	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web-repository/example.c" -F "UploadJSON=@../web-repository/exampleh.json" http://${server}:${repository_port}/upload?project=phantom_tools_on_HPC\&source=user\&DestFileName=main.c\&'Path=mypath';
 	#We sync, because it may start the next command before this operation completes.
 	curl -s -XGET ${server}:${repository_port}/_flush > /dev/null;
 	
 	echo -e "\n${LIGHT_BLUE}We upload one more file for testing permissions ....";
-	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XPOST -F \"UploadFile=@../web-repository/example.h\" -F \"UploadJSON=@../web-repository/exampleh_domain.json\" http://${server}:${repository_port}/upload?project=phantom_tools_on_HPC\&source=user\&DestFileName=main_domain.h\&Path=mypath/";
+	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XPOST -F \"UploadFile=@../web-repository/example.h\" -F \"UploadJSON=@../web-repository/exampleh_domain.json\" http://${server}:${repository_port}/upload?project=phantom_tools_on_HPC\&source=user\&DestFileName=main_domain.h\&Path=mypath";
 	read -p $'Press [Enter] key to \033[1;37mUPLOAD\033[1;34m a \033[1;37mFILE\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -e "${NO_COLOUR}";
-	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web-repository/example.h" -F "UploadJSON=@../web-repository/exampleh.json" http://${server}:${repository_port}/upload?project=phantom_tools_on_HPC\&source=user\&DestFileName=main_domain.h\&'Path=mypath/';
+	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@../web-repository/example.h" -F "UploadJSON=@../web-repository/exampleh.json" http://${server}:${repository_port}/upload?project=phantom_tools_on_HPC\&source=user\&DestFileName=main_domain.h\&'Path=mypath';
 	#We sync, because it may start the next command before this operation completes.
 	curl -s -XGET ${server}:${repository_port}/_flush > /dev/null;
-	
+
 # 14. ################## TEST OF DOWNLOADING A FILE WITH A VALID TOKEN, access must be accepted : 200 ###### 
 	echo -e "\n${LIGHT_BLUE}curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XGET http://${server}:${repository_port}/download?project=phantom_tools_on_HPC\&source=user\&filepath=mypath\&filename=main.c";
 	read -p $'Press [Enter] key to \033[1;37mDOWNLOAD\033[1;34m a \033[1;37mFILE\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -ne "${NO_COLOUR}";
@@ -140,49 +159,49 @@ cd `dirname $0`;
 	ls *.c -l;
 # 16. ######### TEST OF DOWNLOADING METADATA WITH A VALID TOKEN for a path and a filename, access must be accepted : 200 ####
 	echo -e "\n${LIGHT_BLUE}";
-	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -XGET http://${server}:${repository_port}/query_metadata?project=phantom_tools_on_HPC\&source=user\&Path=mypath%2F&filename=main.c";
+	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -XGET http://${server}:${repository_port}/query_metadata?project=phantom_tools_on_HPC\&source=user\&Path=mypath\&filename=main.c";
 	read -p $'Press [Enter] key to \033[1;37mRETRIEVE METADATA\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -e "${NO_COLOUR}" ;
-	curl -s -H "Authorization: OAuth ${mytoken}" -XGET http://${server}:${repository_port}/query_metadata?project=phantom_tools_on_HPC\&source=user\&Path=mypath%2F\&filename=main.c; 
+	curl -s -H "Authorization: OAuth ${mytoken}" -XGET http://${server}:${repository_port}/query_metadata?project=phantom_tools_on_HPC\&source=user\&Path=mypath\&filename=main.c; 
 # 17. ######## TEST OF DOWNLOADING METADATA WITH A VALID TOKEN for files in a path, access must be accepted : 200 ########
 	echo -e "\n${LIGHT_BLUE}";
 	echo "Now only QUERY on the filepath";
-	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -XGET http://${server}:${repository_port}/query_metadata?project=phantom_tools_on_HPC\&source=user\&Path=mypath%2F";
+	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -XGET http://${server}:${repository_port}/query_metadata?project=phantom_tools_on_HPC\&source=user\&Path=mypath";
 	read -p $'Press [Enter] key to \033[1;37mRETRIEVE METADATA\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -e "${NO_COLOUR}" ;
-	curl -s -H "Authorization: OAuth ${mytoken}" -XGET http://${server}:${repository_port}/query_metadata?project=phantom_tools_on_HPC\&source=user\&Path=mypath%2F ;
+	curl -s -H "Authorization: OAuth ${mytoken}" -XGET http://${server}:${repository_port}/query_metadata?project=phantom_tools_on_HPC\&source=user\&Path=mypath ;
 # 18. ################## TEST OF DOWNLOADING METADATA WITH A VALID TOKEN and USER DEFINED QUERY ##########################
 	echo -e "\n${LIGHT_BLUE}";
 	echo "Now only QUERY on the filepath, we EXPLICITLY provide the query";
-	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XGET http://${server}:${repository_port}/es_query_metadata?QueryBody=\"\\{\\\"query\\\":\\{\\\"bool\\\":\\{\\\"must\\\":\\[\\{\\\"match\\\":\\{\\\"path\\\":\\\"mypath/\\\"\\}\\}\\]\\}\\}\\}\"";
+	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XGET http://${server}:${repository_port}/es_query_metadata?QueryBody=\"\\{\\\"query\\\":\\{\\\"bool\\\":\\{\\\"must\\\":\\[\\{\\\"match\\\":\\{\\\"path\\\":\\\"mypath\\\"\\}\\}\\]\\}\\}\\}\"";
 	read -p $'Press [Enter] key to \033[1;37mRETRIEVE METADATA\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -ne "${NO_COLOUR}" ;
-	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XGET http://${server}:${repository_port}/es_query_metadata?QueryBody="\{\"query\":\{\"bool\":\{\"must\":\[\{\"match\":\{\"path\":\"mypath/\"\}\}\]\}\}\}";
+	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XGET http://${server}:${repository_port}/es_query_metadata?QueryBody="\{\"query\":\{\"bool\":\{\"must\":\[\{\"match\":\{\"path\":\"mypath\"\}\}\]\}\}\}";
 
-	
+
 #List of files in a project+source+path in the Repository
 	echo -e "\n${LIGHT_BLUE}";
 	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XGET http://${server}:${repository_port}/downloadlist?project=phantom_tools_on_HPC\&source=user\&filepath=mypath ";
-	read -p $'Press [Enter] key to \033[1;37mList the files in the PROJECT+SOURCE+PATH\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -ne "${NO_COLOUR}"
+	read -p $'Press [Enter] key to \033[1;37mList the files in the PROJECT+SOURCE+PATH\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -ne "${NO_COLOUR}";
 	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XGET http://${server}:${repository_port}/downloadlist?project=phantom_tools_on_HPC\&source=user\&filepath=mypath ;
 
 #List of files in a project+source in the Repository
 	echo -e "\n${LIGHT_BLUE}";
 	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XGET http://${server}:${repository_port}/downloadlist?project=phantom_tools_on_HPC\&source=user ";
-	read -p $'Press [Enter] key to \033[1;37mList the files in the PROJECT+SOURCE+PATH\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -ne "${NO_COLOUR}"
+	read -p $'Press [Enter] key to \033[1;37mList the files in the PROJECT+SOURCE+PATH\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -ne "${NO_COLOUR}";
 	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XGET http://${server}:${repository_port}/downloadlist?project=phantom_tools_on_HPC\&source=user ;
-	
+
 #List of files in a project in the Repository
 	echo -e "\n${LIGHT_BLUE}";
 	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XGET http://${server}:${repository_port}/downloadlist?project=phantom_tools_on_HPC ";
-	read -p $'Press [Enter] key to \033[1;37mList the files in the PROJECT+SOURCE+PATH\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -ne "${NO_COLOUR}"
+	read -p $'Press [Enter] key to \033[1;37mList the files in the PROJECT+SOURCE+PATH\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -ne "${NO_COLOUR}";
 	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XGET http://${server}:${repository_port}/downloadlist?project=phantom_tools_on_HPC;
 ########### EXAMPLE OF DOWNLOADING A FOLDER FROM THE REPOSITORY INTO A ZIP FILE
 	echo -e "\n${LIGHT_BLUE}";
 	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XGET http://${server}:${repository_port}/downloadzip?project=phantom_tools_on_HPC\&source=user\&filepath=mypath ";
-	read -p $'Press [Enter] key to \033[1;37mList the files in the PROJECT+SOURCE+PATH\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -ne "${NO_COLOUR}"
+	read -p $'Press [Enter] key to \033[1;37mList the files in the PROJECT+SOURCE+PATH\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -ne "${NO_COLOUR}";
 	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XGET http://${server}:${repository_port}/downloadzip?project=phantom_tools_on_HPC\&source=user\&filepath=mypath --output demo1.zip;
 
 ########### OTHER EXAMPLE OF DOWNLOADING A FOLDER FROM THE REPOSITORY INTO A ZIP FILE
 	echo -e "\n${LIGHT_BLUE}";
 	echo "curl -s -H \"Authorization: OAuth \${mytoken}\" -H \"Content-Type: multipart/form-data\" -XGET http://${server}:${repository_port}/downloadzip?project=phantom_tools_on_HPC\&source=user\&filepath=mypath ";
-	read -p $'Press [Enter] key to \033[1;37mList the files in the PROJECT+SOURCE+PATH\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -ne "${NO_COLOUR}"
+	read -p $'Press [Enter] key to \033[1;37mList the files in the PROJECT+SOURCE+PATH\033[1;34m with \033[1;37mVALID TOKEN\033[1;34m'; echo -ne "${NO_COLOUR}";
 	curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XGET http://${server}:${repository_port}/downloadzip?project=phantom_tools_on_HPC --output demo2.zip;
 if [ -e token.txt ]; then rm token.txt; fi;

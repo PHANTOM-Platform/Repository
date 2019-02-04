@@ -19,8 +19,9 @@
  
 #0. ########## GLOBAL VARIABLES ###################################
 	BASE_DIR=`pwd`;
-	server="localhost"; 
+	server="localhost";
 	repository_port="8000";
+	expectedserver="PHANTOM Repository";
 	app=`basename $0`;
 	cd `dirname $0`;
 	BLUE="\033[0;34m";
@@ -41,18 +42,35 @@
 	EC=$'\e[0m'; #not underline
 #0. #### Function Scripts definition ################################
 	verify_reponse()
-	{ 
+	{
 		# $1 server
 		# $2 port
+		# $3 expectedserver
 		echo "Checking Response on port ${2} ...";
-		let "j=0"; 
+		let "j=0";
+		if [ "$#" -lt 3 ]; then
+			echo "error missing parameters at function verify_response";
+			exit 1;
+		fi;
 		HTTP_STATUS=$(curl --silent --output /dev/null --write-out "%{http_code}" http://${1}:${2});
 		while [[ ${HTTP_STATUS} != "200" ]] && [ ${j} -lt 1 ] ; do 
-			let "j += 1 ";  sleep 1; 
+			let "j += 1 "; sleep 1; 
 			HTTP_STATUS=$(curl --silent --output /dev/null --write-out "%{http_code}" http://${1}:${2});
 		done; 
 		if [[ ${HTTP_STATUS} != "200" ]]; then
-			echo "> Server is unreachable on port ${2}. Aborting."
+			echo "> Server is unreachable on port ${2}. Aborting.";
+			exit 1;
+		fi;
+		HTTP_STATUS=$(curl -s http://${1}:${2}/verify_es_connection);
+		if [[ ${HTTP_STATUS} != "200" ]]; then
+			echo "> Server has not connection with the ElasticSearch server. Aborting.";
+			exit 1;
+		fi;
+		# Look which kind of server is listening
+		SERVERNAME=$(curl --silent http://${1}:${2}/servername);
+		if [[ ${SERVERNAME} != ${3} ]]; then
+			echo " The server found is not a ${3} server. Aborting.";
+			echo ${SERVERNAME} != ${3};
 			exit 1;
 		fi;
 		echo "Done. Response successfully found on port ${2}.";
@@ -60,7 +78,7 @@
 	}
 # 1. #################  CHECK if Respository server is running ###############
 	echo "Checking Repository server ...";
-	verify_reponse ${server} ${repository_port};  
+	verify_reponse ${server} ${repository_port} "${expectedserver}";  
 # 2. ##################  CHECK if Elasticsearch is running ###############
 	echo "Checking ElasticSearch ...";
 	HTTP_STATUS=$(curl -s http://${server}:${repository_port}/verify_es_connection);
@@ -70,20 +88,20 @@
 	fi;
 	echo "Done. Response successfully found on ElasticSearch-server address.";
 # 3. ##################  DELETE DATABASE  ###################################
-	echo -e "\n${LIGHT_BLUE}"; 
+	echo -e "\n${LIGHT_BLUE}";
 	echo "curl -s -XGET http://${server}:${repository_port}/drop_db";
-	read -p $'Do you wish to \033[1;37mDELETE\033[1;34m the Repository \033[1;37mDB\033[1;34m? (y/n)' confirm; echo -ne "${NO_COLOUR}"; 
+	read -p $'Do you wish to \033[1;37mDELETE\033[1;34m the Repository \033[1;37mDB\033[1;34m? (y/n)' confirm; echo -ne "${NO_COLOUR}";
 	if [[ ! ${confirm} = "" ]]; then
 		if [ ${confirm} == 'y' ] || [ ${confirm} == 'Y' ];then
 			HTTP_STATUS=$(curl  --silent --output /dev/null --write-out "%{http_code}" -XGET http://${server}:${repository_port}/drop_db);
 			if [[ ${HTTP_STATUS} != "200" ]]; then
-				echo "> Error, can not delete the DBs."; 
+				echo "> Error, can not delete the DBs.";
 			else
 				echo "> DATABASE DELETED !!";
 			fi;
 			echo
 		fi;
-	fi;	
+	fi;
 # 4. ##################  CREATE A NEW DATABASE  ###################################
 	echo -e "\n${LIGHT_BLUE}"; 
 	echo "curl -s -XGET http://${server}:${repository_port}/new_db";
@@ -94,11 +112,13 @@
 		curl  --silent -XGET http://${server}:${repository_port}/new_db;
 	else
 		echo "> DATABASE CREATED !!";
-	fi; 
+	fi;
 # 5. ##################  REGISTER A NEW USER ###################################
 	echo -e "\n${LIGHT_BLUE}";
 	echo "curl -XPOST http://${server}:${repository_port}/signup?email=\"bob@example.com\"\&pw=\"1234\"";
 	read -p $'Press [Enter] key to \033[1;37mREGISTER\033[1;34m the example \033[1;37mUSER\033[1;34m'; echo -ne "${NO_COLOUR}";
 	curl -s -H "Content-Type: application/json" -XPOST http://${server}:${repository_port}/signup?email="montana@abc.com"\&pw="new";
+
 	#We sync, because it may start the next command before this operation completes.
 	curl -s -XGET ${server}:${repository_port}/_flush > /dev/null;
+	if [ -e token.txt ]; then rm token.txt; fi;
