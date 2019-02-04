@@ -12,11 +12,10 @@
 	app=`basename $0`;
 	SERVER_DIR=~/phantom_servers;
 	BASE_DIR=`dirname $0`;
-	cd ${BASE_DIR};
-	BASE_DIR=`pwd`;
 	TMP_DIR=${SERVER_DIR}/tmp;
 	DIST_DIR=${SERVER_DIR}/dist;
 	repo_port=8000;
+	cd ${BASE_DIR};
 	cd server_code;
 # CHECK INSTALLATION 
 	echo "Checking ... > elasticsearch";
@@ -65,8 +64,10 @@
 
 	RESULT=$(netstat -lnt | awk '$6 == "LISTEN" && $4 ~ ":'${repo_port}'"');
 	if [[ -z "${RESULT// }" ]] ; then
-		nohup ${NODE_BIN} repo_app.js >/dev/null 2>&1 &
-		pid=$!;
+#		nohup ${NODE_BIN} repo_app.js >/dev/null 2>&1 &
+		${NODE_BIN} repo_app.js &	
+
+	pid=$!;
 		echo "pid of the server is ${pid}";
 		echo ${pid} > ${TMP_DIR}/repo.pid; 
 	else

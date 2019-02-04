@@ -11,7 +11,7 @@
 	    kill ${PID};
 	    rm -f ${TMP_DIR}/repo.pid; 
 	else
-	    echo "Couldn't find PID associated with REPOSITORŸ node process.";
+	    echo "Couldn't find PID associated with REPOSITORY node process.";
 	    echo "Please kill the service manually.";
 	fi;
 	echo -e "Done.\n";

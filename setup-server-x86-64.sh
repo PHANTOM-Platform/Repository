@@ -7,4 +7,3 @@ bash setup-es.sh;
 
 #instalation of nodejs
 bash setup-nodejs-64.sh;
-
