@@ -146,8 +146,21 @@ fi;
 		echo ${SERVERNAME};
 		exit 1;
 	fi;
-######## UPLOAD file and metadata ###################################################  
+######## UPLOAD file and metadata ###################################################
+	if [ ! -e ${src_file} ]; then
+		echo "error, src-file \"${src_file}\" not found!!";
+		exit 1;
+	fi;
+	if [ ! -e ${json_file} ]; then
+		echo "error, json-file \"${json_file}\" not found!!";
+		exit 1;
+	fi;
+
+curl -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" --write-out "\n%{http_code}" -XPOST -F "UploadFile=@${src_file}" -F "UploadJSON=@${json_file}" http://${server}:${repository_port}/upload?project=${project}\&source=${source}\&DestFileName=${dst_file}\&Path=${dst_path}
+
+exit
 	resp=$(curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" --write-out "\n%{http_code}" -XPOST -F "UploadFile=@${src_file}" -F "UploadJSON=@${json_file}" http://${server}:${repository_port}/upload?project=${project}\&source=${source}\&DestFileName=${dst_file}\&Path=${dst_path});
+	
 	HTTP_STATUS="${resp##*$'\n'}";
 	content="${resp%$'\n'*}";
 	#We sync, because it may start the next command before this operation completes.
@@ -157,6 +170,8 @@ fi;
 			echo "${content}";
 	elif [[ ${HTTP_STATUS} == "409" ]]; then
 			echo "[Error:]  HTTP_STATUS: ${HTTP_STATUS}, CONTENT: ${content}";
+			echo "response is ${resp}";
 	else #this report is for the case we may get any other kind of response
 			echo "[Log:] HTTP_STATUS: ${HTTP_STATUS}, CONTENT: ${content}";
+			echo "response is ${resp}";
 	fi;

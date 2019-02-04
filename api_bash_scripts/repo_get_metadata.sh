@@ -77,7 +77,7 @@ if [ ! $# -eq 0 ]; then
 			nuevo=true;
 			last=$i;
 		fi;
-	done; 
+	done;
 fi;
 ################### Testing connectivity with the PHANTOM Repository server: #############
 	source verify_connectivity.sh -s ${server} -port ${repository_port};
@@ -100,7 +100,7 @@ fi;
 		exit 1;
 	fi;
 ######## DONWLOAD file and metadata ################################################### 
-	resp=$(curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" --write-out "\n%{http_code}" -XGET http://${server}:${repository_port}/query_metadata?project=\"${project}\"\&source=\"${source}\"\&filepath=\"${path}\"\&filename=\"${file}\");	
+	resp=$(curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" --write-out "\n%{http_code}" -XGET http://${server}:${repository_port}/query_metadata?project=\"${project}\"\&source=\"${source}\"\&filepath=\"${path}\"\&filename=\"${file}\");
 	HTTP_STATUS="${resp##*$'\n'}";
 	content="${resp%$'\n'*}";
 	#We sync, because it may start the next command before this operation completes.

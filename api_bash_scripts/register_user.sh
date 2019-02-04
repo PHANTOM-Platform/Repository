@@ -63,7 +63,7 @@ if [ ! $# -eq 0 ]; then
 			nuevo=true;
 			last=$i;
 		fi;
-	done; 
+	done;
 fi;
 ################### Testing connectivity with the PHANTOM Repository server: #############
 	source verify_connectivity.sh -s ${server} -port ${repository_port};
@@ -84,9 +84,9 @@ fi;
 		echo " The server found is not a PHANTOM Repository server. Aborting.";
 		echo ${SERVERNAME};
 		exit 1;
-	fi;	
+	fi;
 ######## Register of the new user ###################################################
-HTTP_STATUS=$(curl -XPOST --silent --output /dev/null --write-out "%{http_code}" http://${server}:${repository_port}/signup?email="${email}"\&pw="${password}"); 
+HTTP_STATUS=$(curl -XPOST --silent --output /dev/null --write-out "%{http_code}" http://${server}:${repository_port}/signup?email="${email}"\&pw="${password}");
 #We sync, because it may start the next command before this operation completes.
 curl -s -XGET ${server}:${repository_port}/_flush > /dev/null;
 ######## Screen report of the Result #####################################################

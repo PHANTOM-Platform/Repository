@@ -78,7 +78,7 @@ if [ ! $# -eq 0 ]; then
 			nuevo=true;
 			last=$i;
 		fi;
-	done; 
+	done;
 fi;
 ################### Testing connectivity with the PHANTOM Repository server: #############
 	source verify_connectivity.sh -s ${server} -port ${repository_port};
@@ -99,7 +99,7 @@ fi;
 		echo " The server found is not a PHANTOM Repository server. Aborting.";
 		echo ${SERVERNAME};
 		exit 1;
-	fi;	
+	fi;
 ######## DONWLOAD file and metadata ###################################################  
 	resp=$(curl -s -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" --write-out "\n%{http_code}" -XGET http://${server}:${repository_port}/download?project=\"${project}\"\&source=\"${source}\"\&filepath=\"${path}\"\&filename=\"${file}\");	
 	HTTP_STATUS="${resp##*$'\n'}";

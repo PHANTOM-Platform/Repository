@@ -17,8 +17,8 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-###################   Global Variables' Definition #############################
-server="localhost"; 
+################### Global Variables' Definition #############################
+server="localhost";
 repository_port="8000";
 app=`basename $0`;
 cd `dirname $0`;
@@ -34,10 +34,10 @@ if [ ! $# -eq 0 ]; then
 				nuevo=false;
 			elif [ "$last" = "-port" ] || [ "$last" = "-PORT" ]; then
 				repository_port=$i;
-				nuevo=false;  
+				nuevo=false;
 			elif [ "$last" = "-s" ] || [ "$last" = "-S" ]; then
 				server=$i;
-				nuevo=false;  
+				nuevo=false;
 			elif [ "$i" = "-h" ] || [ "$i" = "-H" ]; then
 				echo -e "${yellow}Script for VERIFING a token${reset}";
 				echo -e "${yellow}Syntax ${app}:${reset}";
@@ -60,20 +60,20 @@ if [ ! $# -eq 0 ]; then
 			last=$i;
 		fi;
 	done; 
-fi;  
+fi;
 ################### Testing connectivity with the PHANTOM Repository server: #############
 	source verify_connectivity.sh -s ${server} -port ${repository_port};
 	conectivity=$?;
 	if [ ${conectivity} -eq 1 ]; then
 		echo "[ERROR:] Server \"${server}\" is unreachable on port \"${repository_port}\".";
-		exit 1;	
+		exit 1;
 	fi;
 ##### Testing if the PHANTOM Repository server can access to the Elasticsearch Server ####
 	HTTP_STATUS=$(curl -s http://${server}:${repository_port}/verify_es_connection);
 	if [[ ${HTTP_STATUS} != "200" ]]; then
 		echo "PHANTOM Repository Doesn't get Response from the ElasticSearch Server. Aborting.";
 		exit 1;
-	fi; 
+	fi;
 # Look which kind of server is listening
 	SERVERNAME=$(curl --silent http://${server}:${repository_port}/servername);
 	if [[ ${SERVERNAME} != "PHANTOM Repository" ]]; then
@@ -81,7 +81,7 @@ fi;
 		echo ${SERVERNAME};
 		exit 1;
 	fi;
-######## Register of the new user ###################################################  
+######## Register of the new user ###################################################
 	resp=$(curl -s -H "Authorization: OAuth ${mytoken}" -XGET --write-out "\n%{http_code}" http://${server}:${repository_port}/verifytoken);
 	HTTP_STATUS="${resp##*$'\n'}";
 	content="${resp%$'\n'*}";
@@ -89,9 +89,9 @@ fi;
 	curl -s -XGET ${server}:${repository_port}/_flush > /dev/null;
 ######## Screen report of the Result #####################################################
 	if [[ ${HTTP_STATUS} == "200" ]]; then
-			echo "${content}"; 			
+			echo "${content}";
 	elif [[ ${HTTP_STATUS} == "409" ]]; then
-			echo "[Error:]  HTTP_STATUS: ${HTTP_STATUS}, CONTENT: ${content}";
+			echo "[Error:] HTTP_STATUS: ${HTTP_STATUS}, CONTENT: ${content}";
 	else #this report is for the case we may get any other kind of response
 			echo "[Log:] HTTP_STATUS: ${HTTP_STATUS}, CONTENT: ${content}";
 	fi;

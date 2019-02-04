@@ -76,8 +76,8 @@ fi;
 	if [[ ${SERVERNAME} != "PHANTOM Repository" ]]; then
 		echo " The server found is not a PHANTOM Repository server. Aborting.";
 		echo ${SERVERNAME};
-		exit 1;			
-	fi;		
+		exit 1;
+	fi;
 ######## Creating a new empty database ###################################################
 HTTP_STATUS=$(curl -XGET --silent --output /dev/null --write-out "%{http_code}" http://${server}:${repository_port}/new_db);
 ######## Screen report of the Result #####################################################

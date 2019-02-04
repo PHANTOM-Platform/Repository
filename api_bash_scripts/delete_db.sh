@@ -80,8 +80,8 @@ if [[ ! ${confirm} = "" ]]; then
 		if [[ ${SERVERNAME} != "PHANTOM Repository" ]]; then
 			echo " The server found is not a PHANTOM Repository server. Aborting.";
 			echo ${SERVERNAME};
-			exit 1;			
-		fi;			
+			exit 1;
+		fi;
 ######### Deleting the DB ########################################################### 
 		HTTP_STATUS=$(curl -XGET --silent --output /dev/null --write-out "%{http_code}" http://${server}:${repository_port}/drop_db);
 		if [[ ${HTTP_STATUS} == "200" ]]; then

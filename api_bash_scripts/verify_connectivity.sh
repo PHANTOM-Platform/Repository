@@ -83,4 +83,4 @@ elif [ $# -eq 4 ]; then
 else
 	echo -e "Missing parameters\n";
 	return 1;
-fi;	
+fi;
