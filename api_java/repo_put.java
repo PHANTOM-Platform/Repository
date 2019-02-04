@@ -38,12 +38,11 @@ public class repo_put {
     private static final String LINE_FEED = "\r\n";
     private static final String boundary = "*****";
 
-    public static void main(String[] args)   throws IOException { 
-		int firstArg;
+    public static void main(String[] args) throws IOException { 
 		if (args.length < 6) {
 			System.err.println("Missing arguments, please try: \n repo_put token server port project source destfilepath destfilename srcfile scrjson\n");
 			System.exit(1);
-		} else{  
+		} else{
 			String token			= args[0];
 			String es_serveraddress	= args[1];
 			String es_serverport	= args[2];
@@ -62,14 +61,14 @@ public class repo_put {
 
 			String requestURL = "http://"+es_serveraddress+":"+es_serverport+"/upload?project="+Project + "&source="+source + "&Path="+DestFilePath + "&DestFileName="+DestFileName;
 			try {
-				String lineEnd = "\r\n";
-				String twoHyphens = "--";
+				final String lineEnd = "\r\n";
+				final String twoHyphens = "--";
 				
-				int bytesRead, bytesAvailable, bufferSize;
-				byte[] buffer;
-				int maxBufferSize = 1 * 1024 * 1024;
+// 				int bytesRead, bytesAvailable, bufferSize;
+// 				byte[] buffer;
+// 				int maxBufferSize = 1 * 1024 * 1024;
 				// open a URL connection to the Servlet
-				FileInputStream fileInputStream = new FileInputStream(uploadFile1);
+// 				FileInputStream fileInputStream = new FileInputStream(uploadFile1);
 				// Open a HTTP  connection to  the URL 
 				URL url = new URL(requestURL);
 				HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();

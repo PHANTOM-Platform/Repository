@@ -1,7 +1,7 @@
 #!/bin/bash
 #Author: J.M. Montañana 2018
 #This compiles and executes the java code which 
-# 1- otains a token for a particualr user+password
+# 1- obtains a token for a particular user+password
 # 2- verifies the token, this step is OPTINAL, only for debugging purposes
 # 3- upload a file
 # 4- download the file
@@ -31,11 +31,11 @@ javac -classpath org.json.jar:apache-httpcomponents-httpcore.jar:. repo_get_zip.
 
 mv *class demo_phantom/;
 user="bourgos@wings-ict-solutions.eu";
-pw="12345678";
+pw="1234";
 
 ###################### TESTING THE CLASSES
 echo "REQUESTING A NEW TOKEN ....";
-token=$(java -classpath org.json.jar:apache-httpcomponents-httpcore.jar:. demo_phantom/get_token "bourgos@wings-ict-solutions.eu" "5379920511" "141.58.0.8" "2777");
+token=$(java -classpath org.json.jar:apache-httpcomponents-httpcore.jar:. demo_phantom/get_token "bourgos@wings-ict-solutions.eu" "1234" "141.58.0.8" "2777");
 echo "token is: "+${token};
 
 echo "VERIFIYING THE TOKEN ...";
@@ -43,7 +43,7 @@ java -classpath org.json.jar:apache-httpcomponents-httpcore.jar:. demo_phantom/v
 
 echo "UPLOADING A FILE ... project=demo_hpc source=user path=mypath file=new.h (project and source defined in the json file)";
 echo "Project and Source are defined in the json file !!!";
-java demo_phantom/repo_put ${token} "141.58.0.8" "2777" "phantom_tools_on_HPC" "user" "otherpath" "new.h" "../web/example.h" "../web/exampleh.json";
+java demo_phantom/repo_put ${token} "141.58.0.8" "2777" "phantom_tools_on_HPC" "user" "otherpath" "new.h" "../web-repository/example.h" "../web-repository/exampleh.json";
 
 echo "DOWNLOADING A FILE... project=demo_hpc source=user path=mypath file=new.h";
 java -classpath org.json.jar:apache-httpcomponents-httpcore.jar:. demo_phantom/repo_get_file ${token} "141.58.0.8" "2777" "phantom_tools_on_HPC" "user" "otherpath" "new.h";

@@ -1,6 +1,4 @@
 {
-  "type":"Usercase",
-  "name":"HPC",
-  "content":"src_file",
+  "some_field":"somevalue",
   "domain":"domain_public"
 }

@@ -28,14 +28,14 @@ import java.net.URL;
 import static org.apache.http.HttpHeaders.USER_AGENT;
 
 public class repo_get_file {
-	public static String request_repository_server(String table_ini,String token, String es_serveraddress, String es_serverport ) throws IOException {
+	public static String request_repository_server(String table_ini,String token, String es_serveraddress, String es_serverport) throws IOException {
 		String table=table_ini.replaceAll(" ","%20");
 		String retmonmetric = new String();
 		String urlString = new String();
 		String responsestring = new String();
 		int cnt=0;
 		urlString = "http://"+es_serveraddress+":"+es_serverport+table;
- 		System.out.println( "\nGET request to Repository using the url: "+urlString );
+ 		System.out.println( "\nGET request to Repository using the url: "+urlString);
 		URL httpurl = new URL(urlString);
 		HttpURLConnection c = (HttpURLConnection)httpurl.openConnection();//connecting to url
 		c.setRequestProperty( "Content-type", "application/x-www-form-urlencoded");
@@ -62,12 +62,12 @@ public class repo_get_file {
 			String project			= args[3];
 			String source			= args[4];
 			String filepath			= args[5];
-			String filename			= args[6]; 
+			String filename			= args[6];
 			String responsestring 	= request_repository_server("/download?project="+project+"&source=user&filepath="+filepath+"&filename="+filename, token, es_serveraddress, es_serverport);
 			System.out.println(responsestring); //it returns the string token.
 		}else{
-			System.err.println("Missing arguments, please try:\n repo_get_file token filepath filename\n");
+			System.err.println("Missing arguments, please try:\n repo_get_file token server port project source filepath filename\n");
 			System.exit(1);
-		} 
+		}
 	}
 }

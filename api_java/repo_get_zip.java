@@ -48,7 +48,7 @@ public class repo_get_zip {
 	    path=path.replace('\\','/');
 	    return path;
 	}
-	
+
 	public static String request_repository_server(String table_ini,String token, String es_serveraddress, String es_serverport ) throws IOException {
 		String table=table_ini.replaceAll(" ","%20");
 		String retmonmetric = new String();
@@ -73,16 +73,14 @@ public class repo_get_zip {
 
 		InputStream inputStream = c.getInputStream();
 		String zipfile = "zipfile.zip";
-		
 		String path = findProjectPath();
-		
 		FileOutputStream outputStream = new FileOutputStream(path+zipfile);
 		System.out.println( "GET path: "+path+zipfile );
 		int bytesRead = -1;
 		byte[] buf = new byte[8192];
 		while((bytesRead = inputStream.read(buf)) != -1) {
 			outputStream.write(buf,0,bytesRead);
-		}	
+		}
 		outputStream.close();
 		inputStream.close();
 
@@ -91,20 +89,20 @@ public class repo_get_zip {
 	} 
 
 	public static void main(String[] args) throws IOException { 
-		int firstArg;		
+		int firstArg;
 		if (args.length > 5) {
 			String token			= args[0];
 			String es_serveraddress	= args[1];
 			String es_serverport	= args[2];
 			String project			= args[3];
 			String source			= args[4];
-			String filepath			= args[5]; 
+			String filepath			= args[5];
 			String responsestring 	= request_repository_server("/downloadzip?project="+project+"&source=user&filepath="+filepath, token, es_serveraddress, es_serverport);
 			System.out.println(responsestring); //it returns the string token.
 		}else{
 			System.err.println("Missing arguments, please try:\n repo_get_file token filepath filename\n");
 			System.exit(1);
-		} 
+		}
 	}
 }
 

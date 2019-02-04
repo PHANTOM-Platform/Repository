@@ -27,10 +27,10 @@ import java.net.URL;
 
 import static org.apache.http.HttpHeaders.USER_AGENT;
 
-public class get_token { 
+public class get_token {
 	public static String request_repository_server(String table_ini, String mfserveraddress, String mfserverport ) throws IOException {
 		String table=table_ini.replaceAll(" ","%20");
-		String retmonmetric = new String();		
+		String retmonmetric = new String();
 		String urlString = new String();
 		String responsestring = new String();
 		int cnt=0;
@@ -50,20 +50,20 @@ public class get_token {
 		in.close();//closing stream
 		c.disconnect();
 		return responsestring;
-	} 
+	}
 
 	public static void main(String[] args) throws IOException { 
 		int firstArg;
 		if (args.length > 1) {
 			String user_id=args[0];
 			String user_pw = args[1];
-			String mfserveraddress= args[2]; 
-			String mfserverport= args[3];			
+			String mfserveraddress= args[2];
+			String mfserverport= args[3];
 			String responsestring = request_repository_server("/login?email="+user_id+"&pw="+user_pw, mfserveraddress, mfserverport);
 			System.out.println(responsestring); //it returns the string token.
 		}else{
 			System.err.println("Missing arguments, please try: \n get_token user_id user_pw\n");
 			System.exit(1);
-		} 
+		}
 	}
 }
