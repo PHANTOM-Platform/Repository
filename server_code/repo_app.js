@@ -904,25 +904,24 @@ app.get('/query_metadata', function(req, res) {
 	//***************************************
 	var filepath =find_param(req.body.Path,req.query.Path);
 	if (filepath != undefined)
-		filepath=remove_quotation_marks(filepath); 
+		filepath=remove_quotation_marks(filepath);
 	//***************************************
 	var filename =find_param(req.body.filename,req.query.filename);
 	if (filename != undefined)
-		filename=remove_quotation_marks(filename); 
+		filename=remove_quotation_marks(filename);
 	//***************************************
 	var project =find_param(req.body.project,req.query.project);
-	if (project != undefined) 
-		project=remove_quotation_marks(project); 
+	if (project != undefined)
+		project=remove_quotation_marks(project);
 	//***************************************
 	var source =find_param(req.body.source,req.query.source);
-	if (source != undefined) 
-		source=remove_quotation_marks(source); 
-	var query= MetadataModule.compose_query(project,source,filepath, filename); 
+	if (source != undefined)
+		source=remove_quotation_marks(source);
+	var query= MetadataModule.compose_query(project ,source, filepath, filename);
 	//1.1- find id of the existing doc for such path filename
-
 	var searching = MetadataModule.query_metadata(es_servername+":"+es_port,SERVERDB,query, pretty);
 	var resultlog="";
-	searching.then((resultFind) => { 
+	searching.then((resultFind) => {
 		res.writeHead(200, {"Content-Type": "application/json"});
 		res.end(JSON.stringify(JSON.parse(resultFind).hits));
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,200,req.connection.remoteAddress,"QUERY METADATA granted to query:"

@@ -17,7 +17,7 @@
 
 var my_type = 'metadata';
 
-function add_query_term(mquery, mylabel, value ){
+function add_query_term(mquery, mylabel, value){
 	const key = 'must';
 	if (value != undefined) {
 		if(mquery==undefined ){
@@ -43,7 +43,7 @@ function add_query_term(mquery, mylabel, value ){
 }
 
 module.exports = {
-compose_query: function(project,source,filepath, filename){
+compose_query: function(project, source, filepath, filename){
 	var mquery=undefined;
 	mquery = add_query_term(mquery,"project",project );
 	mquery = add_query_term(mquery,"source",source );
@@ -79,7 +79,7 @@ register_json: function(es_server, my_index, body) {
 			} else if(!error){
 				myres.code="200";
 				myres.text="succeed "+response;
-				resolve (myres); 
+				resolve (myres);
 			}
 		});
 	});
@@ -229,7 +229,7 @@ register_update_filename_path_json: function(es_server, my_index, body, project,
 //**********************************************************
 //This function is used to register new entries or replace existing one
 //example of use:
-delete_filename_path_json: function(es_server, my_index,project,source, path, filename) {
+delete_filename_path_json: function(es_server, my_index, project, source, path, filename) {
 	return new Promise( (resolve,reject) => {
 		var elasticsearch = require('elasticsearch');
 		var clientb = new elasticsearch.Client({
@@ -382,7 +382,7 @@ drop_db: function( es_server, my_index) {
 	});
 },//end drop_db
 //**************************************************
-new_db: function( es_server, my_index) {
+new_db: function(es_server, my_index) {
 	return new Promise( (resolve,reject) => {
 		var elasticsearch = require('elasticsearch');
 		var client = new elasticsearch.Client({
@@ -479,7 +479,7 @@ query_metadata: function(es_server, my_index, bodyquery, pretty) {
 			type: my_type,
 			size: 100,
 			body: bodyquery
-		},function (error, response,status) {
+		},function (error, response, status) {
 			if (error){
 				reject("search error: "+error)
 			} else {
@@ -489,7 +489,7 @@ query_metadata: function(es_server, my_index, bodyquery, pretty) {
 					if(result!=""){
 						result+=",";
 					}
-					if((pretty=="true")||(pretty=="TRUE")){ 
+					if((pretty=="true")||(pretty=="TRUE")){
 						result+=" "+(JSON.stringify(item, null, 4));
 					}else{
 						result+=" "+(JSON.stringify(item));
