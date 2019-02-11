@@ -61,14 +61,14 @@ pw="12345678";
 	echo -e "We are currently defining the project and the source in the json file !!!"
 	echo "bash repo_put.sh -t ${newtoken} -sfp \"../web/example.h\" -sjp \"../web/exampleh.json\" -dp \"mypath/\" -df \"main.h\" -s ${server} -port ${repository_port} ";
 	read -p $'Press [Enter] key to run the script for \033[1;37mUPLOADING\033[1;34m a file with metadata'; echo -ne "${NO_COLOUR}";
-	bash repo_put.sh -t ${newtoken} -sfp "../web/example.h" -sjp "../web/exampleh.json" -pr "phantom_tools_on_HPC" -sr "user" -dp "mypath/" -df "main.h" -s ${server} -port ${repository_port};
+	bash repo_put.sh -t ${newtoken} -sfp "../web/example.h" -sjp "../web/exampleh.json" -pr "phantom_tools_on_HPC" -sr "user" -dp "mypath" -df "main.h" -s ${server} -port ${repository_port};
 # 14. ################## TEST OF DOWNLOADING A FILE WITH A VALID TOKEN, access must be accepted : 200 ###### 
 	echo -e "\n${LIGHT_BLUE}";
 	echo "bash repo_get_file.sh -t ${newtoken} -project \"phantom_tools_on_HPC\" -source \"user\" -path \"mypath/\" -file \"main.h\" -s ${server} -port ${repository_port} ";
 	read -p $'Press [Enter] key to run the script for \033[1;37mDOWNLOADING\033[1;34m a file from the REPOSITORY'; echo -ne "${NO_COLOUR}";
-	bash repo_get_file.sh -t ${newtoken} -project "phantom_tools_on_HPC" -source "user" -path "mypath/" -file "main.h" -s ${server} -port ${repository_port};
+	bash repo_get_file.sh -t ${newtoken} -project "phantom_tools_on_HPC" -source "user" -path "mypath" -file "main.h" -s ${server} -port ${repository_port};
 # 17. ######## TEST OF DOWNLOADING METADATA WITH A VALID TOKEN for files in a path, access must be accepted : 200 ########
 	echo -e "\n${LIGHT_BLUE}";
 	echo "bash repo_get_metadata.sh -t ${newtoken} -project \"phantom_tools_on_HPC\" -source \"user\" -path \"mypath/\" -file \"main.h\" -s ${server} -port ${repository_port} ";
 	read -p $'Press [Enter] key to run the script for \033[1;37mDOWNLOADING\033[1;34m metadata from the REPOSITORY'; echo -ne "${NO_COLOUR}";
-	bash repo_get_metadata.sh -t ${newtoken} -project "phantom_tools_on_HPC" -source "user" -path "mypath/" -file "main.h" -s ${server} -port ${repository_port};
+	bash repo_get_metadata.sh -t ${newtoken} -project "phantom_tools_on_HPC" -source "user" -path "mypath" -file "main.h" -s ${server} -port ${repository_port};
