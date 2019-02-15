@@ -98,13 +98,11 @@ fi;
 	resp=$(curl -s -H "Content-Type: text/plain" -XGET  --write-out "\n%{http_code}" http://${server}:${repository_port}/login?email="${email}"\&pw="${password}");
 	HTTP_STATUS="${resp##*$'\n'}";
 	content="${resp%$'\n'*}";
-	#We sync, because it may start the next command before this operation completes.
-	curl -s -XGET ${server}:${repository_port}/_flush > /dev/null;
 ######## Screen report of the Result #####################################################
 	if [[ ${HTTP_STATUS} == "200" ]]; then
-			echo "${content}"; 			
+		echo "${content}"; 			
 	elif [[ ${HTTP_STATUS} == "409" ]]; then
-			echo "[Error:]  HTTP_STATUS: ${HTTP_STATUS}, CONTENT: ${content}";
+		echo "[Error:]  HTTP_STATUS: ${HTTP_STATUS}, CONTENT: ${content}";
 	else #this report is for the case we may get any other kind of response
-			echo "[Log:] HTTP_STATUS: ${HTTP_STATUS}, CONTENT: ${content}";
+		echo "[Log:] HTTP_STATUS: ${HTTP_STATUS}, CONTENT: ${content}";
 	fi;
