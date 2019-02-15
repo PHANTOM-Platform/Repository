@@ -19,11 +19,12 @@
 ################### Global Variables' Definition #############################
 server="localhost"; 
 repository_port="8000";
+user="montana@abc.com"
+pw="new";
+
 app=`basename $0`;
 cd `dirname $0`;
 source colors.sh;
-user="montana@abc.com";#"bob@example.com";
-pw="new";
 ################### Testing connectivity with the PHANTOM Repository server: #############
 	source verify_connectivity.sh -s ${server} -port ${repository_port};
 	conectivity=$?;
@@ -59,6 +60,6 @@ pw="new";
 # 13. ################## TEST OF UPLOADING A FILE WITH A VALID TOKEN, access must be accepted : 200 ##########
 	echo -e "\n${LIGHT_BLUE}";
 	echo -e "We are currently defining the project and the source in the json file !!!"
-	echo "bash repo_put.sh -t ${newtoken} -sdp \"Application/Component1\" -sjp \"demo.json\" -dp \"Application/Component1\" -s ${server} -port ${repository_port} ";
+	echo "bash repo_put_dir.sh -t ${newtoken} -sdp \"Application/Component1\" -sjp \"demo.json\"  -pr \"demo_put_dir\" -sr \"development\" -dp \"Application/Component1\" -s ${server} -port ${repository_port} ";
 	read -p $'Press [Enter] key to run the script for \033[1;37mUPLOADING\033[1;34m a file with metadata'; echo -ne "${NO_COLOUR}";
 	bash repo_put_dir.sh -t ${newtoken} -sdp "Application/Component1" -sjp "demo.json" -pr "demo_put_dir" -sr "development" -dp "Application/Component2" -s ${server} -port ${repository_port};

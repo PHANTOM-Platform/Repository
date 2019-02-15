@@ -22,8 +22,25 @@ server="localhost";
 repository_port="8000";
 app=`basename $0`;
 cd `dirname $0`;
-source colors.sh;
-################ Parse of the input parameters #################################  
+################ Fancy colors #################################
+		BLUE="\033[0;34m";
+	LIGHT_GRAY="\033[0;37m";
+LIGHT_GREEN="\033[1;32m";
+	LIGHT_BLUE="\033[1;34m";
+	LIGHT_CYAN="\033[1;36m";
+		yellow="\033[1;33m";
+		WHITE="\033[1;37m";
+		RED="\033[0;31m";
+		marron="\033[2;33m";
+	NO_COLOUR="\033[0m";
+		white="\033[0;0m";
+	nyellow=$'\E[1;33m';
+		cyan=$'\E[36m';
+		reset=$'\E[0m';
+	BC=$'\e[4m'; #underline
+	EC=$'\e[0m'; #not underline
+
+################ Parse of the input parameters #################################
 src_file="";
 json_file="";
 dst_file="";
@@ -90,24 +107,24 @@ if [ ! $# -eq 0 ]; then
 fi;
 
 if [ -z "${src_dir}" ]; then
-    echo -e "Missing parameter Input File: sdp\n";
-    exit 1;
+	echo -e "Missing parameter Input File: sdp\n";
+	exit 1;
 fi;
 if [ -z "${json_file}" ]; then
-    echo -e "Missing parameter Input JSON: sjp\n";
-    exit 1;
+	echo -e "Missing parameter Input JSON: sjp\n";
+	exit 1;
 fi;
 if [ -z "${project}" ]; then
 	echo -e "Missing parameter Project: pr\n";
-    exit 1;
+	exit 1;
 fi;
 if [ -z "${source}" ]; then
 	echo -e "Missing parameter Source: sr\n";
-    exit 1;
+	exit 1;
 fi;
 if [ -z "${dst_path}" ]; then
 	echo -e "Missing parameter Destination Path: dp\n";
-    exit 1;
+	exit 1;
 fi;
 
 ################### Testing connectivity with the PHANTOM Repository server: #############
@@ -141,22 +158,22 @@ fi;
 	fi;
 	echo "";
 	
-#$1 is the recursing path 
+#$1 is the recursing path
 #$2 is the prefix to cut
 recurse() {
- for i in "$1"/*;do
-    if [ -d "$i" ];then
-#         echo "dir: $i"
-        recurse "$i" $2
-    elif [ -f "$i" ]; then
-        echo -e "\nProcessing file: $i"
-        file_name=${i#$1/}
-        subpath=${i#$2/}
-        subpath=${subpath%/$file_name}
-        echo -e " repo_put.sh source="development" source_file=$i dest_path=${dst_path}/${subpath} filename=${file_name};\n"
-		curl -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" -XPOST -F "UploadFile=@${i}" -F "UploadJSON=@${json_file}" http://${server}:${repository_port}/upload?project=${project}\&source=${source}\&Path=${dst_path}/${subpath}\&DestFileName=${file_name}
-	fi
- done
+for i in "$1"/*;do
+	if [ -d "$i" ];then
+#         echo "dir: $i";
+		recurse "$i" $2;
+	elif [ -f "$i" ]; then
+		echo -e "\nProcessing file: $i";
+		file_name=${i#$1/};
+		subpath=${i#$2/};
+		subpath=${subpath%/$file_name};
+		echo -e " uploading: source="development" source_file=$i dest_path=${dst_path}/${subpath} filename=${file_name};\n";
+		curl -H "Authorization: OAuth ${mytoken}" -H "Content-Type: multipart/form-data" --write-out "\n%{http_code}" -XPOST -F "UploadFile=@${i}" -F "UploadJSON=@${json_file}" http://${server}:${repository_port}/upload?project=${project}\&source=${source}\&Path=${dst_path}/${subpath}\&DestFileName=${file_name};
+	fi;
+done;
 }
 
-recurse ${src_dir} ${src_dir}
+recurse ${src_dir} ${src_dir};
