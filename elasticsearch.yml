@@ -20,12 +20,28 @@ cluster.name: phantom-database
 #
 # Use a descriptive name for the node:
 #
-# node.name: node-1
+node.name: main-node
 #
 # Add custom attributes to the node:
 #
 # node.rack: r1
 #
+# ----------------------------------- Index -----------------------------------
+# You can set a number of options (such as shard/replica options, mapping
+# or analyzer definitions, translog settings, ...) for indices globally,
+# in this file.
+#
+# Note, that it makes more sense to configure index settings specifically for
+# a certain index, either when creating it or by using the index templates API.
+#
+# See <http://elasticsearch.org/guide/en/elasticsearch/reference/current/index-modules.html> and
+# <http://elasticsearch.org/guide/en/elasticsearch/reference/current/indices-create-index.html>
+# for more information.
+#
+# Set the number of shards (splits) of an index (5 by default):
+index.number_of_shards: 4
+# Set the number of replicas (additional copies) of an index (1 by default):
+index.number_of_replicas: 0
 # ----------------------------------- Paths ------------------------------------
 #
 # Path to directory where to store the data (separate multiple locations by comma):
@@ -96,8 +112,6 @@ http.port: 9400
 #
 # action.destructive_requires_name: true
 
-
-
 # ------------------------------- Script support ----------------------------
 script.engine.groovy.inline.search: on
 script.inline: true
@@ -116,4 +130,3 @@ changes.port: 9800
 #ATTENTION: The websockets plugin needs be added security permissions, please look at set-websockets.sh
 
 es.logger.level: DEBUG
-
