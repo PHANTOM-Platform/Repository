@@ -38,7 +38,7 @@ LIGHT_GREEN="\033[1;32m";
 		cyan=$'\E[36m';
 		reset=$'\E[0m';
 	BC=$'\e[4m'; #underline
-	EC=$'\e[0m'; #not underline
+	EC=$'\e[0m'; #not underline 
 
 ################ Parse of the input parameters #################################
 src_file="";

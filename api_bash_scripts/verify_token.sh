@@ -85,6 +85,8 @@ fi;
 	resp=$(curl -s -H "Authorization: OAuth ${mytoken}" -XGET --write-out "\n%{http_code}" http://${server}:${repository_port}/verifytoken);
 	HTTP_STATUS="${resp##*$'\n'}";
 	content="${resp%$'\n'*}";
+	#We sync, because it may start the next command before this operation completes.
+# 	curl -s -XGET ${server}:${repository_port}/_flush > /dev/null;
 ######## Screen report of the Result #####################################################
 	if [[ ${HTTP_STATUS} == "200" ]]; then
 			echo "${content}";

@@ -30,9 +30,9 @@ report_usage(){
 	echo -e "\n${yellow} Example of use:\n     ${app} -e bob@example.com -pw 1234${reset}";
 }
 
-###################   Global Variables' Definition #############################
-server="localhost";
-repository_port="8000";
+################### Global Variables' Definition #############################
+server="localhost";     #as default value
+repository_port="8000"; #as default value
 app=`basename $0`;
 cd `dirname $0`;
 source colors.sh;
@@ -98,6 +98,8 @@ fi;
 	resp=$(curl -s -H "Content-Type: text/plain" -XGET  --write-out "\n%{http_code}" http://${server}:${repository_port}/login?email="${email}"\&pw="${password}");
 	HTTP_STATUS="${resp##*$'\n'}";
 	content="${resp%$'\n'*}";
+	#We sync, because it may start the next command before this operation completes.
+# 	curl -s -XGET ${server}:${repository_port}/_flush > /dev/null;
 ######## Screen report of the Result #####################################################
 	if [[ ${HTTP_STATUS} == "200" ]]; then
 		echo "${content}"; 			
