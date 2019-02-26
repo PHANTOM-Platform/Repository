@@ -27,9 +27,9 @@
 		<form ref='downloadFormFile' id='downloadFormFile'
 		method='get'>
 		<!-- 	encType="multipart/form-data"> this is only for post requests-->
-		Project (MANDATORY):  <input type="text" name="project_f" id="project_f" value="phantom_tools_on_HPC"/><br>
-		Source (optional):  <input type="text" name="source" id="source_f"  value="user"/><br>
-		Path (only if source provided, optional):  <input type="text" name="filepath" id="filepath_f" value="mypath"/> <br>
+		Project (MANDATORY): <input type="text" name="project_f" id="project_f" value="phantom_tools_on_HPC"/><br>
+		Source (optional): <input type="text" name="source" id="source_f" value="development"/><br>
+		Path (only if source provided, optional): <input type="text" name="filepath" id="filepath_f" value="mypath"/> <br>
 		<br><center>
 		<input type='submit' onclick="return submitform_file_list(document.getElementById('project_f').value,
 		document.getElementById('source_f').value,
@@ -44,7 +44,7 @@
 	<hr>
 	<b>Tested command line example with curl:</b>
 	<p style="color:DodgerBlue;">
-	curl -H "Authorization: OAuth ${mytoken}" -XGET 'http://localhost:8000/downloadlist?project=phantom_tools_on_HPC\&source=user\&filepath=mypath'
+	curl -H "Authorization: OAuth ${mytoken}" -XGET 'http://localhost:8000/downloadlist?project=phantom_tools_on_HPC\&source=development\&filepath=mypath'
 	</p>
 	</div>
 

@@ -10,7 +10,7 @@
 */
 
 // The defininition of server addresses may use for redirection cases, not define them if you don't know what are you doing.
-// var appserver = "141.58.0.8" or "localhost"; 
+// var appserver = "141.58.0.8" or "localhost";
 // var appport = 8500;
 // var resourceserver = "141.58.0.8" or "localhost";
 // var resourceport = 2780 or 8600;
@@ -18,12 +18,12 @@
 // var execport = 8700;
 // var reposerver = appserver;
 // var repoport = 8000;
+// var monitoringport = 3033
 
 //ABOUT XHR CROSS DOMAIN REQUESTS
 // Note that an XMLHttpRequest connection is subject to specific limits that are enforced for security reasons.
 // One of the most obvious is the enforcement of the same origin policy.
 // You cannot access resources on another server, unless the server explicitly supports this using CORS (Cross Origin Resource Sharing).
-
 
 // var s = 'a string', array for [], object for {}
 function getType(p) {
@@ -59,6 +59,19 @@ function build_resource_path(){
 			if(typeof resourceport!== 'undefined') {// Any scope
 				if ((resourceport) && resourceport.lenght>0){
 					url=url+":"+resourceport;
+	}	}}	}	}
+	return url;
+}
+
+function build_monitoring_path(){
+	var url="";
+	if(typeof (monitoringserver)!== 'undefined'){ // Any scope
+		if(monitoringserver){
+		if(monitoringserver.length>0){
+			url=url+"http://"+monitoringserver;
+			if(typeof monitoringport!== 'undefined') {// Any scope
+				if ((monitoringport) && monitoringport.lenght>0){
+					url=url+":"+monitoringport;
 	}	}}	}	}
 	return url;
 }
@@ -203,6 +216,14 @@ function start_page_new() {
 	return false;
 }
 
+function mf_logout() {
+	sessionStorage.setItem('token', '');
+	request_share_session_storage();
+// 	checktoken();
+	window.location = 'monitoringserver.html';
+	return false;
+}
+
 function rm_logout() {
 	sessionStorage.setItem('token', '');
 	request_share_session_storage();
@@ -231,7 +252,7 @@ function exec_logout() {
 	sessionStorage.setItem('token', '');
 	request_share_session_storage();
 // 	checktoken();
-	window.location = 'execmanager.html';
+	window.location = 'executionmanager.html';
 	return false;
 }
 
@@ -261,6 +282,29 @@ function rm_load_menu_login(){
 		return false;
 	}
 }
+
+// function mf_load_menu_login(){
+// 	var menu_login = document.getElementById("menu_login");
+// 	if(menu_login){
+// 		var menuhtml="<H1 id=\"title_login\" style=\"overflow-wrap:break-word; max-width:80%; word-break:break-all;\"><b>LOGIN into MONITORING-SERVER</b></H1>";
+// 		menuhtml+="<form";
+// 		menuhtml+="	id='requestToken'";
+// 		menuhtml+="	method='get'";
+// 		menuhtml+="	name=\"myForm\" autocomplete=\"on\">";
+// 	// <!-- 		encType="multipart/form-data"> //for post not for get-->
+// 		menuhtml+="	<div class=\"center\">";
+// 		menuhtml+="		User: <input type=\"text\" name=\"user\" id=\"user\" value=\"\"><br>";
+// 		menuhtml+="		Password: <input type=\"password\" name=\"password\" id=\"password\" value=\"\" autocomplete=\"off\"> <br>";
+// 		menuhtml+="		<input type=\"hidden\" name=\"pretty\" value=\"true\" />";
+// 		menuhtml+="		<input type=\"submit\" onclick=\" mf_login(document.getElementById('user').value, document.getElementById('password').value); return false;\" value=\"LOGIN\" />";
+// 		menuhtml+="	</div>";
+// 		menuhtml+="</form>";
+// 		menu_login.innerHTML = menuhtml;
+// 		return true;
+// 	}else{
+// 		return false;
+// 	}
+// }
 
 function repo_load_menu_login(){
 	var menu_login = document.getElementById("menu_login");
@@ -359,6 +403,28 @@ function rm_load_header(){
 	}
 }
 
+function mf_load_header(){
+	var menu_phantom = document.getElementById("menu_phantom");
+	if(menu_phantom){
+	var menuhtml="<ul class=\"menuphantom\">";
+	menuhtml+="	<li class=\"menuphantom\"><font color=\"white\">here go the options</font></li>";
+// 	menuhtml+="	<li class=\"menuphantom\"><a href=\"app_list.html\">List of registered APPs</a></li>";
+// 	menuhtml+="	<li class=\"menuphantom\"><a href=\"app_new.html\">Register new APP</a></li>";
+// 	menuhtml+="	<li class=\"menuphantom\"><a href=\"app_update.html\">Update an APP</a></li>";
+// 	menuhtml+="	<li class=\"menuphantom\"><a href=\"app_update1.json\">Download JSON example 1</a></li>";
+// 	menuhtml+="	<li class=\"menuphantom\"><a href=\"app_update2.json\">Download JSON example 2</a></li>";
+// 	menuhtml+="	<li class=\"menuphantom\"><a href=\"app_update3.json\">Download JSON example 3</a></li>";
+// <!--<li class="menuphantom"><a href="query_metadata.html">Query metadata</a></li> -->
+	menuhtml+="	<li class=\"phantomlogo\" style=\"float:right\">";
+	menuhtml+="	<img src=\"phantom.gif\" alt=\"PHANTOM\" height=\"32\" style=\"background-color:white;\">";
+	menuhtml+="	</li>";
+// 	menuhtml+="	<li class=\"menuphantomR\">";
+// 	menuhtml+="		<p><a onClick=\"mf_logout();return false;\" href=\"PleaseEnableJavascript.html\">LogOut</a></p></li>";
+	menuhtml+="</ul>";
+	menu_phantom.innerHTML = menuhtml;
+	}
+}
+
 function app_load_header(){
 	var menu_phantom = document.getElementById("menu_phantom");
 	if(menu_phantom){
@@ -410,7 +476,8 @@ function repo_load_header(){
 	menuhtml+="	<li class=\"menuphantom\"><a href=\"download_file.html\">Download a file</a></li>";
 	menuhtml+="	<li class=\"menuphantom\"><a href=\"download_zip.html\">Download a zip file</a></li>";
 	menuhtml+="	<li class=\"menuphantom\"><a href=\"examplec.json\">Download JSON example</a></li>";
-	
+	menuhtml+="	<li class=\"menuphantom\"><a href=\"log_list.html\">List of logs</a></li>";
+
 // 	class="active"
 	menuhtml+="	<li class=\"phantomlogo\" style=\"float:right\">";
 	menuhtml+="	<img src=\"phantom.gif\" alt=\"PHANTOM\" height=\"32\" style=\"background-color:white;\">";
@@ -427,16 +494,19 @@ function load_footer(){
 	if(foot_phantom){
 	var menuhtml ="";
 	menuhtml+="<hr/>Web Interfaces of the PHANTOM SERVERS and MANAGERS<br>";
-	menuhtml+="<a href=\"http://localhost:8000/repository.html\">Repository</a>&nbsp;&nbsp;";
-	menuhtml+="<a href=\"http://localhost:8500/appmanager.html\">Application Manager</a>&nbsp;&nbsp;";
-	menuhtml+="<a href=\"http://localhost:8600/resourcemanager.html\">Resource Manager</a>&nbsp;&nbsp;";
-	menuhtml+="<a href=\"http://localhost:8700/executionmanager.html\">Execution Manager</a>&nbsp;&nbsp;";
-	
-// 	menuhtml+="<a href=\"http://141.58.0.8:2777/repository.html\">Repository</a>&nbsp;&nbsp;";
-// 	menuhtml+="<a href=\"http://141.58.0.8:2778/appmanager.html\">Application Manager</a>&nbsp;&nbsp;";
-// 	menuhtml+="<a href=\"http://141.58.0.8:2780/resourcemanager.html\">Resource Manager</a>&nbsp;&nbsp;";
-// 	menuhtml+="<a href=\"http://141.58.0.8:2781/executionmanager.html\">Execution Manager</a>&nbsp;&nbsp;";
-	menuhtml+="<a href=\"http://localhost:3033/monitorinserver.html\">Monitoring Server</a>";
+	if(window.location.hostname=="141.58.0.8"){
+		menuhtml+="<a href=\"http://141.58.0.8:2777/repository.html\">Repository</a>&nbsp;&nbsp;";
+		menuhtml+="<a href=\"http://141.58.0.8:2778/appmanager.html\">Application Manager</a>&nbsp;&nbsp;";
+		menuhtml+="<a href=\"http://141.58.0.8:2780/resourcemanager.html\">Resource Manager</a>&nbsp;&nbsp;";
+		menuhtml+="<a href=\"http://141.58.0.8:2781/executionmanager.html\">Execution Manager</a>&nbsp;&nbsp;";
+		menuhtml+="<a href=\"http://141.58.0.8:2779/monitoringserver.html\">Monitoring Server</a>";
+	}else{
+		menuhtml+="<a href=\"http://localhost:8000/repository.html\">Repository</a>&nbsp;&nbsp;";
+		menuhtml+="<a href=\"http://localhost:8500/appmanager.html\">Application Manager</a>&nbsp;&nbsp;";
+		menuhtml+="<a href=\"http://localhost:8600/resourcemanager.html\">Resource Manager</a>&nbsp;&nbsp;";
+		menuhtml+="<a href=\"http://localhost:8700/executionmanager.html\">Execution Manager</a>&nbsp;&nbsp;";
+		menuhtml+="<a href=\"http://localhost:3033/monitoringserver.html\">Monitoring Server</a>";
+	}
 	menuhtml+="<hr/><div class=\"greyfont\">PHANTOM project: 2019<br />";
 	menuhtml+="	Licensed under the Apache License, Version 2.0<br />";
 	menuhtml+="	You may obtain a copy of the License at:<br />";
@@ -459,6 +529,14 @@ function rm_load_header_footer(){
 	rm_load_menu_login();
 	load_footer();
 	checktoken();
+}
+
+function mf_load_header_footer(){
+	mf_load_header();
+// 	mf_load_menu_login(); //not implemented login in the mf server
+	mf_login("dummy","dummy");
+	load_footer();
+// 	checktoken();
 }
 
 function app_load_header_footer(){
@@ -530,6 +608,41 @@ function rm_login(user,password){
 	return false;
 }
 
+
+function mf_login(user,password){
+	var demoreplaceb = document.getElementById("demoreplaceb");
+	var debug_phantom = document.getElementById("debug_phantom");
+	var menu_login = document.getElementById("menu_login");
+	var menu_phantom = document.getElementById("menu_phantom"); //top menu
+	
+//not implemented login in the MF_server
+	
+// 	var url=build_resource_path()+"/login?email="+user+"\&pw="+password+"";//?pretty='true'";
+// 	var xhr = new XMLHttpRequest();
+// 	xhr.open("GET", url, true);
+// 	xhr.onreadystatechange = function() {
+// 		if (xhr.status == 200) {
+// 			var serverResponse = xhr.responseText;
+// 			savetoken(serverResponse);
+// 			checktoken();
+			var menuhtml="<H1 style=\"overflow-wrap:break-word; max-width:80%; word-break:break-all;\"><b>Choose one option from the top menu</b></H1>";
+			if(menu_login) menu_login.innerHTML = menuhtml;
+			if(menu_login) menu_login.style.display = "block";
+// 		}else{
+// 			mf_logout();
+// // 			checktoken();
+// 			mf_load_menu_login();
+// 			if(menu_login) menu_login.style.display = "block";
+// 			var serverResponse = xhr.responseText;
+// 			if(menu_phantom) menu_phantom.style.display = "none";
+// 			if(demoreplaceb) demoreplaceb.innerHTML = "<pre>Error: "+ serverResponse+ "</pre>";
+// 			if(debug_phantom) debug_phantom.style.display = "block";
+// 		}
+// 	};
+// 	xhr.send(null);
+	return false;
+}
+
 function repo_login(user,password){
 	var demoreplaceb = document.getElementById("demoreplaceb");
 	var debug_phantom = document.getElementById("debug_phantom");
@@ -584,7 +697,482 @@ function exec_login(user,password){
 	return false;
 }
 
-//_filter_workflw_taskid_experimentid
+
+function jsontotable_repo_logs_brief(myjson,count,first,level,lastwascoma,mtitle,filtered_fields){
+	var html ="";
+	var i;
+// 	if(first==true){ html ="{"; }
+	var mainc=mtitle;
+	if(first==true){
+		html += "<div><table style='border:1px solid black'>\n";// style='width:100%'>";
+		html += "<th><strong> _id </strong> </th>\n";
+		html += "<td><strong> code </strong></td>\n";
+		html += "<td><strong> user </strong></td>\n";
+		html += "<td><strong> ip </strong></td>\n";
+		html += "<td><strong> message </strong></td>\n";
+		html += "<td><strong> date</strong></td>\n";
+		count++;
+	}
+	first=false;
+	var countseries=0;
+	myjson.forEach(function(val) {
+// 		if (count != 1 && lastwascoma==false) {
+// 			if(countseries==0) {
+// 				html += ",<br>";
+// 			}else{
+// 				html += "<br>},{<br>";
+// 			}
+// 		};//this is not the first element
+		lastwascoma=true;
+		var keys = Object.keys(val);
+		keys.forEach(function(key) {
+			if (getType(val[key]) == "string" || getType(val[key]) == "other" ){
+				var tobefiltered=false;
+				for (i=0;i< filtered_fields.length;i++){
+					if (key.endsWith(filtered_fields[i], key.length)== true) {
+						tobefiltered=true;
+					}
+				}
+				if (tobefiltered== false) {//it is stored the length of the strings, not need to show
+// 					if (count != 1 && lastwascoma==false) html += ',<br>';
+// 					for (i = 0; i < level; i++) {
+// 						if (count != 1) html += '&emsp;';
+// 					}
+					if(mtitle==true){
+						if(count>1){
+							html += "</tr>\n<tr>";
+// 							html += "</table></div></td><br>\n";
+// 							html += "<div><table style='border:1px solid black'>\n";// style='width:100%'>";
+						}
+						html += "<td> " + val['_id'] +" </td>\n";
+						//source
+						if(val['_source'] !=undefined){
+							if(val['_source']['code']==undefined){
+								html += "<td></td>\n";
+							}else if(val['_source']['code']!="200"){ //yellow
+								html += "<td bgcolor=\"#f3ff3a\"> " + val['_source']['code'] +" </td>\n";
+							}else if(val['_source']['code']=="200"){//green
+								html += "<td bgcolor=\"#00FF00\"> " + val['_source']['code'] +" </td>\n";
+	// 						}else if(val['_source']['code']=="cancelled"){//red
+	// 							html += "<td bgcolor=\"#ff3e29\"> " + val['_source']['code'] +" </td>\n";
+	// 						}else if(val['_source']['code']=="started"){//green
+	// 							html += "<td bgcolor=\"#00FF00/*\*/">" + val['_source']['code'] +"</td>\n";
+	// 						}else{
+	// // 							html += "<td> " + val['_source']['code'] +"</td>\n";
+							}
+						
+							if(val['_source']['user']==undefined){
+									html += "<td></td>\n"; 
+							}else{
+								html += "<td> " + val['_source']['user'] +" </td>\n";
+							}
+							if(val['_source']['ip']==undefined){
+									html += "<td></td>\n"; 
+							}else{
+								html += "<td> " + val['_source']['ip'] +" </td>\n";
+							}
+							if(val['_source']['message']==undefined){
+									html += "<td></td>\n"; 
+							}else{
+								html += "<td> " + val['_source']['message'] +" </td>\n";
+							}
+							if(val['_source']['date']==undefined){
+									html += "<td></td>\n"; 
+							}else{
+								html += "<td> " + val['_source']['date'] +" </td>\n";
+							}
+						}else{
+							html += "<td></td>\n";
+							html += "<td></td>\n";
+							html += "<td></td>\n";
+							html += "<td></td>\n";
+							html += "<td></td>\n";
+						}
+						mtitle=false;
+						count++;
+						lastwascoma=false;
+					}
+// 					if((key=="rejection_reason")){
+// 						if(val['req_status']=="rejected"){
+// 							html += "<td><strong>\"" + key +"\"</strong>: \"" + val[key] +"\"</td>\n";
+// 							count++;
+// 							lastwascoma=false;
+// 						}
+// 					}else if((key!="req_status")&&(key!="energy")&&(key!="execution_id")&&(key!="app")&&(key!="device")){
+// 						html += "<td><strong>\"" + key +"\"</strong>: \"" + val[key] +"\"</td>\n";
+// 						count++;
+// 						lastwascoma=false;
+				}
+			}else if (getType(val[key]) == "array" || getType(val[key]) == "object" ) {
+// 				if(key!= "component_stats"){
+// // 					if (count != 1) html += ',<br>';
+// // 					for (i = 0; i < level; i++) {
+// // 						if (count != 1) html += '&emsp;';
+// // 					}
+// 					if(mtitle==true){
+// 						if(count>1){
+// 							html += "</table></div></td><br>\n";
+// 							html += "<div><table style='border:1px solid black'>\n";// style='width:100%'>";
+// 						}
+// 						html += "<tr><th><strong>\"" + key + "\"</strong>: </th>\n";
+// 						
+// 						mtitle=false;
+// 					}else{
+// 						html += "<tr><td><strong>\"" + key + "\"</strong>: </td>\n";
+// 					}
+// 					count++;
+// 					lastwascoma=false;
+// 					html += "<td><div><table style='width:100%; border:0px solid black'>\n";// style='width:100%'>";
+					html += jsontotable_repo_logs_brief( ([ val[key] ]), count, first, level+1 ,lastwascoma,mtitle,filtered_fields);
+// 					html += "</table></div></td>\n";
+// 				}
+// // 			}else if (getType(val[key]) == "object" ) {
+// // 				html += jsontotable( ([ val[key] ]), count, false, level+1,lastwascoma,mtitle,filtered_fields);
+			};
+		});
+// 		mtitle=true;
+		countseries++;
+	});
+// 	if(first==true){ html += "<br>}"; }
+// 	if(mainc==true)
+// 		html += "</table></div>\n";
+	return html;
+}//jsontotable_repo_logs_brief
+
+
+//_filter_workflow_taskid_experimentid
+function jsontotable_exec_brief(myjson,count,first,level,lastwascoma,mtitle,filtered_fields){
+	var html ="";
+	var i;
+// 	if(first==true){ html ="{"; }
+	var mainc=mtitle;
+	if(mtitle==true){
+		html += "<div><table style='border:1px solid black'>\n";// style='width:100%'>";
+			html += "<th><strong> execution_id </strong> </th>\n";
+			html += "<td><strong> Req status </strong></td>\n";
+		html += "<td><strong> Project </strong></td>\n";
+		html += "<td><strong> Map </strong></td>\n";
+		html += "<td><strong> Requested-by</strong></td>\n";
+		html += "<td><strong> Input </strong></td>\n";
+		html += "<td><strong> Request date </strong></td>\n";
+		html += "<td><strong>Start timestamp</strong></td>\n";
+		html += "<td><strong>End timestamp</strong></td>\n";
+		count++;
+	}
+	var countseries=0;
+	myjson.forEach(function(val) {
+// 		if (count != 1 && lastwascoma==false) {
+// 			if(countseries==0) {
+// 				html += ",<br>";
+// 			}else{
+// 				html += "<br>},{<br>";
+// 			}
+// 		};//this is not the first element
+		lastwascoma=true;
+		var keys = Object.keys(val);
+		keys.forEach(function(key) {
+			if (getType(val[key]) == "string" || getType(val[key]) == "other" ){
+				var tobefiltered=false;
+				for (i=0;i< filtered_fields.length;i++){
+					if (key.endsWith(filtered_fields[i], key.length)== true) {
+						tobefiltered=true;
+					}
+				}
+				if (tobefiltered== false) {//it is stored the length of the strings, not need to show
+// 					if (count != 1 && lastwascoma==false) html += ',<br>';
+// 					for (i = 0; i < level; i++) {
+// 						if (count != 1) html += '&emsp;';
+// 					}
+					if(mtitle==true){
+						if(count>1){
+							html += "</tr>\n<tr>";
+// 							html += "</table></div></td><br>\n";
+// 							html += "<div><table style='border:1px solid black'>\n";// style='width:100%'>";
+						}
+						html += "<th> " + val['execution_id'] +" </th>\n";
+						if(val['req_status']=="pending"){ //yellow
+							html += "<td bgcolor=\"#f3ff3a\"> " + val['req_status'] +" </td>\n";
+						}else if(val['req_status']=="completed"){//green
+							html += "<td bgcolor=\"#00FF00\"> " + val['req_status'] +" </td>\n";
+						}else if(val['req_status']=="cancelled"){//red
+							html += "<td bgcolor=\"#ff3e29\"> " + val['req_status'] +" </td>\n";
+						}else if(val['req_status']=="started"){//green
+							html += "<td bgcolor=\"#00FF00\">" + val['req_status'] +"</td>\n";
+						}else{
+							html += "<td> " + val['req_status'] +"</td>\n";
+						}
+						html += "<td>" + val['project'] +" </td>\n";
+						html += "<td>" + val['map'] +" </td>\n";
+						html += "<td>" + val['requested-by'] +" </td>\n";
+						if (val['input']!=undefined){
+							html += "<td>" + val['input'] +" </td>\n";
+						}else{
+							html += "<td></td>\n";
+						}
+						html += "<td>" + val['req_date'] +" </td>\n";
+						if (val['start_timestamp']!=undefined){
+							html += "<td>" + val['start_timestamp'] +" </td>\n";
+						}else{
+							html += "<td></td>\n";
+						}
+						if (val['end_timestamp']!=undefined){
+							html += "<td>" + val['end_timestamp'] +" </td>\n";
+						}else{
+							html += "<td></td>\n";
+						}
+						mtitle=false;
+						count++;
+						lastwascoma=false;
+					}
+					if((key=="rejection_reason")){
+						if(val['req_status']=="rejected"){
+							html += "<td><strong>\"" + key +"\"</strong>: \"" + val[key] +"\"</td>\n";
+							count++;
+							lastwascoma=false;
+						}
+					}else if((key!="req_status")&&(key!="energy")
+						&&(key!="execution_id")&&(key!="app")&&(key!="device")
+						&&(key!="project")
+						&&(key!="map")
+						&&(key!="requested-by")
+						&&(key!="input")
+						&&(key!="req_date")
+						&&(key!="start_timestamp")
+						&&(key!="end_timestamp")){
+						html += "<td><strong>\"" + key +"\"</strong>: \"" + val[key] +"\"</td>\n";
+						count++;
+						lastwascoma=false;
+					}
+				}
+			}else if (getType(val[key]) == "array" || getType(val[key]) == "object" ) {
+				if(key!= "component_stats"){
+// 					if (count != 1) html += ',<br>';
+// 					for (i = 0; i < level; i++) {
+// 						if (count != 1) html += '&emsp;';
+// 					}
+					if(mtitle==true){
+						if(count>1){
+							html += "</table></div></td><br>\n";
+							html += "<div><table style='border:1px solid black'>\n";// style='width:100%'>";
+						}
+						html += "<tr><th><strong>\"" + key + "\"</strong>: </th>\n";
+						mtitle=false;
+					}else{
+						html += "<tr><td><strong>\"" + key + "\"</strong>: </td>\n";
+					}
+					count++;
+					lastwascoma=false;
+					html += "<td><div><table style='width:100%; border:0px solid black'>\n";// style='width:100%'>";
+					html += jsontotable( ([ val[key] ]), count, true, level+1 ,lastwascoma,mtitle,filtered_fields);
+					html += "</table></div></td>\n";
+				}
+// 			}else if (getType(val[key]) == "object" ) {
+// 				html += jsontotable( ([ val[key] ]), count, false, level+1,lastwascoma,mtitle,filtered_fields);
+			};
+		});
+		mtitle=true;
+		countseries++;
+	});
+// 	if(first==true){ html += "<br>}"; }
+	if(mainc==true)
+		html += "</table></div>\n";
+	return html;
+}//jsontotable_exec_brief
+
+
+
+//_filter_workflow_taskid_experimentid
+function jsontotable_app_brief(myjson,count,first,level,lastwascoma,mtitle,filtered_fields){
+	var html ="";
+	var i;
+// 	if(first==true){ html ="{"; }
+	var mainc=mtitle;
+	if(mtitle==true){
+		html += "<div><table style='border:1px solid black'>\n";// style='width:100%'>";
+		html += "<td><strong><center>id</center></strong></td><th><strong> project </strong> </th>\n";
+		html += "<td><strong> source </strong></td>\n";
+		html += "<td><strong> PT code analysis</strong></td>\n"; 
+		html += "<td><strong> MBT early validation </strong></td>\n"; 
+		html += "<td><strong> IP core generator</strong></td>\n";
+		html += "<td><strong> MOM </strong></td>\n"; 
+		count++;
+	}
+	var countseries=0;
+	myjson.forEach(function(val) {
+// 		if (count != 1 && lastwascoma==false) {
+// 			if(countseries==0) {
+// 				html += ",<br>";
+// 			}else{
+// 				html += "<br>},{<br>";
+// 			}
+// 		};//this is not the first element
+		lastwascoma=true;
+		var keys = Object.keys(val);
+		keys.forEach(function(key) {
+// 			if (getType(val[key]) == "string" || getType(val[key]) == "other" ){
+				var tobefiltered=false;
+				for (i=0;i< filtered_fields.length;i++){
+					if (key.endsWith(filtered_fields[i], key.length)== true) {
+						tobefiltered=true;
+					}
+				}
+				if (tobefiltered== false) {//it is stored the length of the strings, not need to show
+// 					if (count != 1 && lastwascoma==false) html += ',<br>';
+// 					for (i = 0; i < level; i++) {
+// 						if (count != 1) html += '&emsp;';
+// 					}
+					if(mtitle==true){
+						if(count>1){
+							html += "</tr>\n<tr>";
+// 							html += "</table></div></td><br>\n";
+// 							html += "<div><table style='border:1px solid black'>\n";// style='width:100%'>";
+						}
+						html += "<td> " + val['_id'] +" </td>\n";
+						html += "<th> " + val['project'] +" </th>\n";
+						//source
+						if(val['source']!=undefined){
+							if(val['source']['status']==undefined){
+								html += "<td></td>\n";
+							}else if(val['source']['status']=="waiting"){ //yellow
+								html += "<td bgcolor=\"#f3ff3a\">" + val['source']['status'] +" </td>\n";
+							}else if(val['source']['status']=="finished"){//green
+								html += "<td bgcolor=\"#00FF00\"> " + val['source']['status'] +" </td>\n";
+							}else if(val['source']['status']=="cancelled"){//red
+								html += "<td bgcolor=\"#ff3e29\">" + val['source']['status'] +" </td>\n";
+							}else if(val['source']['status']=="started"){//green
+								html += "<td bgcolor=\"#00FF00\">" + val['source']['status'] +" </td>\n";
+							}else{
+								html += "<td>" + val['source']['status'] +" </td>\n";
+							}
+						}else{
+							html += "<td></td>\n";
+						}
+						//pt
+						if(val['pt_code_analysis']!=undefined){
+							if(val['pt_code_analysis']['status']==undefined){
+									html += "<td></td>\n";
+							}else if(val['pt_code_analysis']['status']=="waiting"){ //yellow
+								html += "<td bgcolor=\"#f3ff3a\">" + val['pt_code_analysis']['status'] +" </td>\n";
+							}else if(val['pt_code_analysis']['status']=="finished"){//green
+								html += "<td bgcolor=\"#00FF00\"> " + val['pt_code_analysis']['status'] +" </td>\n";
+							}else if(val['pt_code_analysis']['status']=="cancelled"){//red
+								html += "<td bgcolor=\"#ff3e29\"> " + val['pt_code_analysis']['status'] +" </td>\n";
+							}else if(val['pt_code_analysis']['status']=="started"){//green
+								html += "<td bgcolor=\"#00FF00\"> " + val['pt_code_analysis']['status'] +" </td>\n";
+							}else{
+								html += "<td> " + val['pt']['status'] +" </td>\n";
+							}
+						}else{
+							html += "<td></td>\n";
+						}	
+						//mbt_early_validation
+						if(val['mbt_early_validation']!=undefined){
+							if(val['mbt_early_validation']['status']==undefined){
+									html += "<td></td>\n";
+							}else if(val['mbt_early_validation']['status']=="waiting"){ //yellow
+								html += "<td bgcolor=\"#f3ff3a\">" + val['mbt_early_validation']['status'] +" </td>\n";
+							}else if(val['mbt_early_validation']['status']=="finished"){//green
+								html += "<td bgcolor=\"#00FF00\">" + val['mbt_early_validation']['status'] +" </td>\n";
+							}else if(val['mbt_early_validation']['status']=="cancelled"){//red
+								html += "<td bgcolor=\"#ff3e29\"> " + val['mbt_early_validation']['status'] +" </td>\n";
+							}else if(val['mbt_early_validation']['status']=="started"){//green
+								html += "<td bgcolor=\"#00FF00\"> " + val['mbt_early_validation']['status'] +" </td>\n";
+							}else{
+								html += "<td> " + val['mbt_early_validation']['status'] +" </td>\n";
+							}
+						}else{
+							html += "<td></td>\n";
+						}	
+						//ip_core_generator
+						if(val['ip_core_generator']!=undefined){
+							if(val['ip_core_generator']['status']==undefined){
+									html += "<td></td>\n";
+							}else if(val['ip_core_generator']['status']=="waiting"){ //yellow
+								html += "<td bgcolor=\"#f3ff3a\"> " + val['ip_core_generator']['status'] +" </td>\n";
+							}else if(val['ip_core_generator']['status']=="finished"){//green
+								html += "<td bgcolor=\"#00FF00\"> " + val['ip_core_generator']['status'] +" </td>\n";
+							}else if(val['ip_core_generator']['status']=="cancelled"){//red
+								html += "<td bgcolor=\"#ff3e29\"> " + val['ip_core_generator']['status'] +" </td>\n";
+							}else if(val['ip_core_generator']['status']=="started"){//green
+								html += "<td bgcolor=\"#00FF00\"> " + val['ip_core_generator']['status'] +" </td>\n";
+							}else{
+								html += "<td>" + val['ip_core_generator']['status'] +" </td>\n";
+							}
+						}else{
+							html += "<td></td>\n";
+						}
+						//mom
+						if(val['mom'] !=undefined){
+							if(val['mom']['status']==undefined){
+									html += "<td></td>\n";
+							}else if(val['mom']['status']=="waiting"){ //yellow
+								html += "<td bgcolor=\"#f3ff3a\"> " + val['mom']['status'] +" </td>\n";
+							}else if(val['mom']['status']=="finished"){//green
+								html += "<td bgcolor=\"#00FF00\"> " + val['mom']['status'] +" </td>\n";
+							}else if(val['mom']['status']=="cancelled"){//red
+								html += "<td bgcolor=\"#ff3e29\"> " + val['mom']['status'] +" </td>\n";
+							}else if(val['mom']['status']=="started"){//green
+								html += "<td bgcolor=\"#00FF00\"> " + val['mom']['status'] +" </td>\n";
+							}else{
+								html += "<td> " + val['mom']['status'] +" </td>\n";
+							}
+						}else{
+							html += "<td></td>\n";
+						}
+						mtitle=false;
+						count++;
+						lastwascoma=false;
+					}
+// 					if((key=="rejection_reason")){
+// 						if(val['req_status']=="rejected"){
+// 							html += "<td><strong>\"" + key +"\"</strong>: \"" + val[key] +"\"</td>\n";
+// 							count++;
+// 							lastwascoma=false;
+// 						}
+// 					}else if((key!="req_status")&&(key!="energy")&&(key!="execution_id")&&(key!="app")&&(key!="device")){
+// 						html += "<td><strong>\"" + key +"\"</strong>: \"" + val[key] +"\"</td>\n";
+// 						count++;
+// 						lastwascoma=false;
+
+				}
+// 			}else if (getType(val[key]) == "array" || getType(val[key]) == "object" ) {
+// 				if(key!= "component_stats"){
+// // 					if (count != 1) html += ',<br>';
+// // 					for (i = 0; i < level; i++) {
+// // 						if (count != 1) html += '&emsp;';
+// // 					}
+// 					if(mtitle==true){
+// 						if(count>1){
+// 							html += "</table></div></td><br>\n";
+// 							html += "<div><table style='border:1px solid black'>\n";// style='width:100%'>";
+// 						}
+// 						html += "<tr><th><strong>\"" + key + "\"</strong>: </th>\n";
+// 						
+// 						mtitle=false;
+// 					}else{
+// 						html += "<tr><td><strong>\"" + key + "\"</strong>: </td>\n";
+// 					}
+// 					count++;
+// 					lastwascoma=false;
+// 					html += "<td><div><table style='width:100%; border:0px solid black'>\n";// style='width:100%'>";
+// 					html += jsontotable( ([ val[key] ]), count, true, level+1 ,lastwascoma,mtitle,filtered_fields);
+// 					html += "</table></div></td>\n";
+// 				}
+// // 			}else if (getType(val[key]) == "object" ) {
+// // 				html += jsontotable( ([ val[key] ]), count, false, level+1,lastwascoma,mtitle,filtered_fields);
+// 			};
+		});
+		mtitle=true;
+		countseries++;
+	});
+// 	if(first==true){ html += "<br>}"; }
+	if(mainc==true)
+		html += "</table></div>\n";
+	return html;
+}//jsontotable_app_brief
+
+
+//_filter_workflow_taskid_experimentid
 function jsontotable(myjson,count,first,level,lastwascoma,mtitle,filtered_fields){
 	var html ="";
 	var i;
@@ -687,7 +1275,7 @@ function jsontotable_only_device_names(myjson,count,first,level,lastwascoma,mtit
 		lastwascoma=true;
 		var keys = Object.keys(val);
 		keys.forEach(function(key) {
-			if (getType(val[key]) == "string" || getType(val[key]) == "other" ){
+			if (getType(val[key]) == "string" || getType(val[key]) == "other" ){//other can be a numeric value
 				var tobefiltered=true;
 				for (i=0;i< fields_toshow.length;i++){
 					if (key.endsWith(fields_toshow[i], key.length)== true) {
@@ -752,7 +1340,7 @@ function jsontohtml(myjson,count,first,level,lastwascoma,filtered_fields){
 	myjson.forEach(function(val) {
 		if (count != 1 && lastwascoma==false) {
 			if(countseries==0) {
-				html += ",<br>";
+			//exec_list removed: html += ",<br>";
 			}else{
 				html += "<br>},{<br>";
 			}
@@ -760,7 +1348,7 @@ function jsontohtml(myjson,count,first,level,lastwascoma,filtered_fields){
 		lastwascoma=true;
 		var keys = Object.keys(val);
 		keys.forEach(function(key) {
-			if (getType(val[key]) == "string" || getType(val[key]) == "other"){
+			if (getType(val[key]) == "string" || getType(val[key]) == "other"){//other can be a numeric value
 				var tobefiltered=false;
 				for (i=0;i< filtered_fields.length;i++){
 					if (key.endsWith(filtered_fields[i], key.length)== true) {
@@ -783,10 +1371,24 @@ function jsontohtml(myjson,count,first,level,lastwascoma,filtered_fields){
 					}
 					html += "<strong>\"" + key + "\"</strong>: ";lastwascoma=false;
 					count++;
-					html += jsontohtml( ([ val[key] ]), count, true, level+1 ,lastwascoma,filtered_fields) +"\n";
+					//exec_list replaced: html += jsontohtml( ([ val[key] ]), count, true, level+1 ,lastwascoma,filtered_fields) +"\n";
+					html += jsontohtml( ([ val[key] ]), 1, true, level+1 ,lastwascoma,filtered_fields) +"\n";
 			}else if (getType(val[key]) == "object" ) {
 // 				html += "<tr><td><strong> &emsp;" + key + "</strong>: \"" + JSON.stringify(val[key]) +"\"</td>\n";//this shows a key counter
-				html += jsontohtml( ([ val[key] ]), count, false, level+1,lastwascoma,filtered_fields) +"\n";
+				//starts exec_list added
+				if (count != 1) html += ',<br>';
+				for (i = 0; i < level; i++) {
+					if (count != 1) html += '&emsp;';
+				}
+				html += "<strong>\"" + key + "\"</strong>:{ ";lastwascoma=false;
+				if (count != 1) html += '<br>';
+				for (i = 0; i < level+1; i++) {
+					if (count != 1) html += '&emsp;';
+				}
+				count++;
+				//end exec_list added
+				//exec_list replaced: html += jsontohtml( ([ val[key] ]), count, false, level+1,lastwascoma,filtered_fields) +"\n";
+				html += jsontohtml( ([ val[key] ]), 1, false, level+1,lastwascoma,filtered_fields) +"\n";
 			};
 		});
 		countseries++;
@@ -826,7 +1428,6 @@ function upload_with_token( UploadJSON, url ) {
 	return false;
 }
 
-
 function str2bytes (str) {
 	var bytes = new Uint8Array(str.length);
 	for (var i=0; i<str.length; i++) {
@@ -838,6 +1439,7 @@ function str2bytes (str) {
 function ab2str(buf) {
 	return String.fromCharCode.apply(null, new Uint16Array(buf));
 }
+
 function str2ab(str) {
 	var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
 	var bufView = new Uint16Array(buf);
@@ -846,7 +1448,6 @@ function str2ab(str) {
 	}
 	return buf;
 }
-
 
 function download_file(content, fileName, contentType) {
 // 	var file = new Blob([str2bytes(content)], {type: contentType});
@@ -945,6 +1546,7 @@ function list_results(mytype,url,fields_toshow,filtered_fields){
 			// document.getElementById('demoreplacea').innerHTML = responseObject;//this will show the reponse of the server as txt;
 			var myjson = JSON.parse(responseObject || '{}');
 			if(myjson.hits!=undefined) {
+				console.log("myjsob "+JSON.stringify(myjson));
 				myjson = myjson.hits;
 			}else{
 				myjson = [ myjson ];
@@ -952,12 +1554,25 @@ function list_results(mytype,url,fields_toshow,filtered_fields){
 			if(myjson!=undefined) {
 				if (mytype== 1) {
 					html += jsontotable(myjson,1,true,1,false,true,filtered_fields);
+				}else if (mytype == 20){
+					html += jsontotable_repo_logs_brief(myjson,1,true,1,false,true,filtered_fields);
+					html += "</table></div>\n";
+				}else if (mytype == 21){
+					html += jsontotable_app_logs_brief(myjson,1,true,1,false,true,filtered_fields);
+					html += "</table></div>\n";
+				}else if (mytype == 22){
+					html += jsontotable_exec_logs_brief(myjson,1,true,1,false,true,filtered_fields);
+					html += "</table></div>\n";
+				}else if (mytype == 5){
+					html += jsontotable_exec_brief(myjson,1,true,1,false,true,filtered_fields);
+				}else if (mytype == 6){
+					html += jsontotable_app_brief(myjson,1,true,1,false,true,filtered_fields);
 				}else if (mytype == 4){
 					html += jsontotable_only_device_names(myjson,1,true,1,false,true,fields_toshow);
 				}else if (mytype == 2){
 					html += jsontohtml(myjson,1,true,1,false,filtered_fields);
 				}else{
-					html += "<pre>"+ JSON.stringify(myjson)+ "</pre>";
+					html += "<p align=\"justify\">"+ JSON.stringify(myjson)+ "</p>";
 				}
 			}
 			if (demoreplaceb) demoreplaceb.innerHTML = html; //+responseObject + " status: " +xhr.status;
@@ -1034,7 +1649,27 @@ function list_results_with_token( mytype ,url,fields_toshow, filtered_fields) {
 
 function list_apps(mytype,appname){
 	var url = build_appman_path() + "/get_app_list?project=\""+appname+"\"";//?pretty='true'";
-	list_results(mytype,url,["host"],["_length"]);
+	list_results(mytype,url,["_id"],["_length"]);
+	return false;
+}
+
+function list_repo_logs(mytype,user){
+	var url = build_repo_path() + "/get_log_list?pretty='true'";
+	list_results(mytype,url,["host"],["_length","_index","_type","_score","sort"]);
+	return false;
+}
+
+
+function list_app_logs(mytype,appname){
+	var url = build_appman_path() + "/get_log_list?pretty='true'";
+	list_results(mytype,url,["host"],["_length","_index","_type","_score","sort"]);
+	return false;
+}
+
+
+function list_exec_logs(mytype,execid){
+	var url = build_execman_path() + "/get_log_list?pretty='true'";
+	list_results(mytype,url,["host"],["_length","_index","_type","_score","sort"]);
 	return false;
 }
 
@@ -1046,6 +1681,12 @@ function list_execs(mytype,execname){
 
 function list_devices(mytype,devicename){
 	var url=build_resource_path()+"/get_device_list?device=\""+devicename+"\"";//?pretty='true'";
+	list_results(mytype,url,["device"],["_length"]);
+	return false;
+}
+
+function list_exps(mytype,devicename){
+	var url=build_monitoring_path()+"/get_device_list?device=\""+devicename+"\"";//?pretty='true'";
 	list_results(mytype,url,["device"],["_length"]);
 	return false;
 }
@@ -1116,7 +1757,6 @@ function submitform_qr_metatada_es(e, frm) {
 	submitform(url, 'GET', 'metadata.json');
 	return false;
 }
-
 
 function submitform_file_list(project, source,filepath){
 	if(project == undefined){

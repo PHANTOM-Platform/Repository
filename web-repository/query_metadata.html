@@ -28,7 +28,7 @@
 			<form ref='queryForm' id='queryForm'
 			method='get'>
 				Project (MANDATORY): <input type="text" name="project" id="project" value="phantom_tools_on_HPC"/><br>
-				Source: <input type="text" name="source" id="source" value="user"/><br>
+				Source: <input type="text" name="source" id="source" value="development"/><br>
 				Destination Path (optional): <input type="text" id="Path" name="Path" value="mypath"> leave empty if not wish to filter by path<br>
 				Destination Filename (optional):<input type="text" id="filename" name="filename" value="main.c"> leave empty if not wish to filter by file-name<br>
 				<input type="hidden" name="pretty" value="true">
@@ -42,7 +42,7 @@
 		<hr> <b>Tested command line example with curl:</b>
 		<p style="color:DodgerBlue;">
 			newtoken=`bash get_token.sh -e user_id -pw password -s localhost -port 8000`;<br><br>
-			curl -H "Authorization: OAuth ${mytoken}" -XGET 'http://localhost:8000/query_metadata?project=\"demo\"\&amp;source=\"user\"\&amp;filepath=\"mypath\"\&amp;filename=\"main.c\"';
+			curl -H "Authorization: OAuth ${mytoken}" -XGET 'http://localhost:8000/query_metadata?project=\"demo\"\&amp;source=\"development\"\&amp;filepath=\"mypath\"\&amp;filename=\"main.c\"';
 		</p><!-- single quote &#39; -->
 <!-- ****************************************** -->
 		<hr class="style-phantom-hr" /> <h2><b> Online formular: For running "ElasticSearch" queries on metadata stored on the repository </b></h2>
