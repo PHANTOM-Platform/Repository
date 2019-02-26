@@ -50,7 +50,7 @@ compose_query: function(project, source, filepath, filename){
 	mquery = add_query_term(mquery,"path",filepath );
 	mquery = add_query_term(mquery,"filename",filename );
 	if(mquery!=undefined ){
-		mquery= { query: { bool:  mquery } };
+		mquery= { query: { bool: mquery } };
 	}else{
 		mquery= { query: { "match_all": {} }};
 	}
@@ -66,6 +66,8 @@ register_json: function(es_server, my_index, body) {
 			host: es_server,
 			log: 'error'
 		});
+		
+		console.log("json is "+JSON.stringify(body));
 		var myres = { code: "", text: "" };
 		client.index({
 			index: my_index,
@@ -74,7 +76,7 @@ register_json: function(es_server, my_index, body) {
 		}, function(error, response) {
 			if(error){
 				myres.code="400";
-				myres.text="Could not register the json."+error;
+				myres.text="Could not register the json."+error+"\n json: "+JSON.stringify(body);
 				reject (myres);
 			} else if(!error){
 				myres.code="200";
