@@ -1467,23 +1467,30 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 // 	},(resultReject)=> {
 // 		console.log("error counting "+ resultReject);
 // 	});//end count_metadata
-
 	var result= MetadataModule.register_update_filename_path_json(es_servername+":"+es_port,SERVERDB, jsontext, source_proj.project, source_proj.source, DestFileName, DestPath);
 	result.then((resultResolve) => {
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,resultResolve.text,currentdate,res.user);
-		//after succeed on the upload of themetadata, we proceed to upload the file
-		var result_upload = upload_file(UploadFile, os.homedir(), File_Server_Path,
-			storage_path,DestFileName,
-			res.user,req.connection.remoteAddress,currentdate,"false");//debug=false
-		result_upload.then((resultResUp) => {
-			res.writeHead(resultResUp.code, {"Content-Type": contentType_text_plain});
-			res.end(resultResUp.text+"\n", 'utf-8');
-			return;
-		},(resultRejectUp)=> {
-			console.log("resultRejectUp.code" +resultRejectUp.code);
-			res.writeHead(resultRejectUp.code, {"Content-Type": contentType_text_plain});
-			res.end(resultRejectUp.text+"\n", 'utf-8');
-			return;
+		var verify_flush = CommonModule.synced_flush(req.connection.remoteAddress ,es_servername+':'+es_port, SERVERDB);
+		verify_flush.then((resolve_result) => {
+// 			res.writeHead(resolve_result.code, {"Content-Type": contentType_text_plain});
+// 			res.end(resolve_result.text+"\n", 'utf-8');
+			resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200,req.connection.remoteAddress,resultResolve.text,currentdate,res.user);
+			//after succeed on the upload of themetadata, we proceed to upload the file
+			var result_upload = upload_file(UploadFile, os.homedir(), File_Server_Path,
+				storage_path,DestFileName,
+				res.user,req.connection.remoteAddress,currentdate,"false");//debug=false
+			result_upload.then((resultResUp) => {
+				res.writeHead(resultResUp.code, {"Content-Type": contentType_text_plain});
+				res.end(resultResUp.text+"\n", 'utf-8');
+				return;
+			},(resultRejectUp)=> {
+				console.log("resultRejectUp.code" +resultRejectUp.code);
+				res.writeHead(resultRejectUp.code, {"Content-Type": contentType_text_plain});
+				res.end(resultRejectUp.text+"\n", 'utf-8');
+				return;
+			});
+		},(reject_result)=> {
+// 			res.writeHead(reject_result.code, {"Content-Type": contentType_text_plain});
+// 			res.end(reject_result.text+"\n", 'utf-8');
 		});
 	},(resultReject)=> {
 		res.writeHead(resultReject.code, {"Content-Type": contentType_text_plain});
@@ -1492,7 +1499,6 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 		return;
 	});//end
 });
-
 //**********************************************************
 app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 	var fs = require('fs');

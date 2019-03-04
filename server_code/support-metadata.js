@@ -222,9 +222,9 @@ register_update_filename_path_json: function(es_server, my_index, body, project,
 				});//end find id_metadata
 			}
 		},(resultReject)=> {
-				myres.code="409";
-				myres.text= "error counting "+ resultReject;
-				reject (myres);
+			myres.code="409";
+			myres.text= "error counting "+ resultReject;
+			reject (myres);
 		});//end count_metadata
 	});//end promise
 }, //end register_update_filename_path_json
