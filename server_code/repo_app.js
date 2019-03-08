@@ -1062,7 +1062,6 @@ app.post('/new_log', function(req, res) {
 	});
 });
 
-
 //TODO: falta confirmar que los archivos existen
 //si no existen en el curl parece que se queda esperando indefinidamente !!
 app.post('/upload', function(req, res) {
