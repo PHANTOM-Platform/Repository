@@ -23,6 +23,12 @@ cd `dirname $0`;
 	DIST_DIR=${SERVER_DIR}/dist;
 	elasticsearch_port="9400";
 # CHECK INSTALLATION
+	if [ ! -d ${SERVER_DIR}/backups ]; then
+			mkdir ${SERVER_DIR}/backups;
+	fi;
+	if [ ! -d backups/my_backup ]; then
+			mkdir ${SERVER_DIR}/backups/my_backup;
+	fi;
 	mkdir -p ${TMP_DIR};
 	echo "Checking ...";
 	ES_HOME=${DIST_DIR}/elasticsearch
@@ -75,4 +81,3 @@ cd `dirname $0`;
 		exit 1;
 	fi;
 	echo -e "Done. Elasticsearch started successfully on port ${elasticsearch_port}.\n";
-
