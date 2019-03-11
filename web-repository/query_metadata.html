@@ -17,7 +17,12 @@
 	<script src="phantom.js"></script>
 </head>
 
-<body onload="start_page_new()">
+<body onload="start_page_new()" id="body" ><!--class="light-mode"-->
+	<script>
+		var currentmode= localStorage.getItem('currentmode');
+		if(currentmode!=undefined)
+			body.className = currentmode;
+	</script>
 	<div id="menu_phantom"></div>
 
 	<div id="menu_login" style="display:none"></div>
