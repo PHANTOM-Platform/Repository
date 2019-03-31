@@ -789,7 +789,6 @@ app.post('/delete_metadata',middleware.ensureAuthenticated, function(req, res) {
 		res.writeHead(resultReject.code, {"Content-Type": contentType_text_plain});
 		res.end(resultReject.text+"\n", 'utf-8');
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"Delete Error",currentdate,res.user);
-
 		//we try to delete the file, in case the metadata is not existing
 		fs.unlink(os.homedir()+ pathfiletodelete, function(err) {
 // 			if (err) {
@@ -914,8 +913,8 @@ app.get('/query_metadata',middleware.ensureAuthenticated, function(req, res) {
 		filename=remove_quotation_marks(filename); 
 	//***************************************
 	var project =find_param(req.body.project,req.query.project);
-	if (project != undefined) 
-		project=remove_quotation_marks(project); 
+	if (project != undefined)
+		project=remove_quotation_marks(project);
 	//***************************************
 	var source =find_param(req.body.source,req.query.source);
 	if (source != undefined) 
@@ -925,7 +924,7 @@ app.get('/query_metadata',middleware.ensureAuthenticated, function(req, res) {
 
 	var searching = MetadataModule.query_metadata(es_servername+":"+es_port,SERVERDB,query, pretty);
 	var resultlog="";
-	searching.then((resultFind) => { 
+	searching.then((resultFind) => {
 		res.writeHead(200, {"Content-Type": "application/json"});
 		res.end(JSON.stringify(JSON.parse(resultFind).hits));
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB,200,req.connection.remoteAddress,"QUERY METADATA granted to query:"
@@ -959,7 +958,6 @@ app.get('/es_query_metadata', middleware.ensureAuthenticated, function(req, res)
 			+JSON.stringify(QueryBody),currentdate,res.user);
 	});
 });
-
 //**********************************************************
 /* GET home page. */
 const request = require('request');
@@ -968,15 +966,18 @@ function request_user_domain_permission(user, access, domain,j){
 	return new Promise( (resolve,reject) => {
 		var result = {body: "", j: "" };
 // 		NO USE !!! we are CASE-SENSITIVE domain=lowercase(domain);//domain=domain.toString().toLowerCase();
-// 		console.log('http://127.0.0.1:8001/pqapi/access?user='+user+'&ar='+access+'&object='+domain);
 		request.get('http://127.0.0.1:8001/pqapi/access?user='+user+'&ar='+access+'&object='+domain, function(err, response, body) {//expected possible responses are "permit\n" or "deny\n"
-			if(body.length>0){
-				if(body.charAt(body.length-1) === '\n') {
-					body = body.substring(0, body.length - 1);
+			if(body != undefined){
+				if(body.length>0){
+					if(body.charAt(body.length-1) === '\n') {
+						body = body.substring(0, body.length - 1);
+					}
 				}
+				result.body = lowercase(body);
+				resolve(result);
+			}else{
+				reject("body undefined");// this happens if the sec-server is down
 			}
-			result.body = lowercase(body);
-			resolve(result);
 		});
 	});
 }
@@ -1029,7 +1030,7 @@ function recursively_confirmation_of_permissions(totalkeys, user, domain,j){
 	return new Promise( (resolve,reject) => {
 		var myresultarray = new Array(totalkeys);
 // 		console.log("user" +user +" permisson zz" + " on j "+ j+ " totalkeys " +totalkeys);
-		if(j< totalkeys-1 ) {// totalkeys -1 ...
+		if(j< totalkeys-1) {// totalkeys -1 ...
 			callj= recursively_confirmation_of_permissions(totalkeys, user, domain,j+1);
 			callj.then((resiltgood) => {
 				myresultarray = resiltgood;
@@ -1037,11 +1038,9 @@ function recursively_confirmation_of_permissions(totalkeys, user, domain,j){
 				temppermission.then((resultFind) => {
 					console.log("permisson "+resultFind.body+ " on j "+ j+ " domain is " +domain[j]);
 					myresultarray [j]=resultFind.body;
-// 					if(j==0){
-// 						for (var kj = 0; kj < totalkeys; kj++) {
+// 					if(j==0)
+// 						for (var kj = 0; kj < totalkeys; kj++)
 // 							console.log("                on kj "+ kj+ " myresultarray is " +myresultarray[kj]);
-// 						}
-// 					}
 					resolve(myresultarray);
 				},(resultReject)=> {
 					reject("Unexpected error at request_permission");
@@ -1100,12 +1099,14 @@ function request_permission( user,pretty, project,source,filepath, filename){
 						result.label_domain[j] = result.domain[j];
 					}
 				}//anyway the next loop run after the first loop even if we join the loop. Then this coding stile looks more similar to the execution behaviour.
+				console.log(" user "+user+ " domain "+ result.domain +"\n");
 				if(totalkeys.length>0){
 					var kresults= recursively_confirmation_of_permissions(totalkeys.length, user, result.domain,0);
 					kresults.then((resultFind) => {
 						for (var kj = 0; kj <totalkeys.length; kj++) {
 							result.permission[kj]=resultFind[kj];
 						}
+// 						console.log("1 "+JSON.stringify(result));
 						resolve(result);
 					},(resultReject)=> {
 						reject("Unexpected error at recursively_confirmation_of_permissions:"+resultReject);
@@ -1136,10 +1137,10 @@ app.get('/permission', function(req, res, next) {
 		res.writeHead(400, {'Content-Type': contentType_text_plain });
 		res.end("400 Error, empty parameter");
 	}
-	
+
 	var permission = request_user_domain_permission(user, access, domain,0);
 	permission.then((resultFind) => {
-		if( resultFind.body == "permit"){
+		if(( resultFind.body == "permit")|| (resultFind.body == "grant")){
 			res.writeHead(200, {'Content-Type': contentType_text_plain });
 			res.end("200: Access granted");
 		}else if( resultFind.body == "deny"){
@@ -1224,7 +1225,7 @@ app.get('/test_download',middleware.ensureAuthenticated, function(req, res) {
 		for (var j = 0; j < result.totalkeys; j++) {
 			if(result.permission[j] == "deny"){
 				rescode= 403; //permision denied
-			}else if (result.permission[j] != "permit"){
+			}else if(( result.permission[j] != "permit") && (result.permission[j] != "grant")){
 				rescode=400; //error procesing the request
 			}
 		}
@@ -1620,15 +1621,15 @@ app.get('/download',middleware.ensureAuthenticated, function(req, res) {
 				}else{
 				for (var j = 0; j < 1; j++) {// 1 insted of result.totalkeys for considering only the first entry
 					if(result.permission[j] == "deny"){//permision denied
-						console.log("mypath " + myPath+"\n");
-						console.log(" result.totalkeys "+result.totalkeys);
-						console.log(" j " +j);
+// 						console.log("mypath " + myPath+"\n");
+// 						console.log(" result.totalkeys "+result.totalkeys);
+// 						console.log(" j " +j);
 						res.writeHead(403, {"Content-Type": contentType_text_plain});
-						res.end("Access DENY:: You may not have permission to download some file in the folder\n");
+						res.end("Access DENY:: You may not have permission to download some file in the folder\n"+res.user +" , "+ project+" , "+ source+" , "+ filepath+" , "+ filename);
 						return;
-					}else if (result.permission[j] != "permit"){//error procesing the request
+					}else if(( result.permission[j] != "permit") && (result.permission[j] != "grant")){//error procesing the request
 						res.writeHead(400, {"Content-Type": contentType_text_plain});
-						res.end("ERROR processing the permissions\n");
+						res.end("ERROR processing the permissions "+result.permission[j]+"\n");
 						return;
 					}
 				}}
@@ -1864,7 +1865,7 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 		return;}
 	var myPath = os.homedir()+ File_Server_Path + '/' + project +'/';
 	var newPath = project +'/';
-	var myDest = project ;
+	var myDest = project;
 	//******************************************* 
 	var source= find_param(req.body.source, req.query.source);
 	source= validate_parameter(source,"source",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
@@ -1872,7 +1873,7 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 	if (source.length != 0){
 		myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source+'/';
 		newPath = project +'/'+ source+'/';
-		myDest = project +'/' + source ;
+		myDest = project +'/' + source;
 		//*******************************************
 		filepath= find_param(req.body.filepath, req.query.filepath);
 		filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
@@ -1903,7 +1904,7 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 				res.writeHead(403, {"Content-Type": contentType_text_plain});
 				res.end("Access DENY: You may not have permission to download some file in the folder\n");
 				return;
-			}else if (result.permission[j] != "permit"){//error procesing the request
+			}else if(( result.permission[j] != "permit") && (result.permission[j] != "grant")){//error procesing the request
 				res.writeHead(400, {"Content-Type": contentType_text_plain});
 				res.end("ERROR processing the permissions\n");
 				return;
@@ -1986,7 +1987,18 @@ app.get('/downloadzip',middleware.ensureAuthenticated, function(req, res) {
 // app.post('/signup',ipfilter(ips, {mode: 'allow'}), function(req, res) {
 app.post('/signup', function(req, res) {
 	"use strict";
-	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
+	if( (req.body==undefined) && (req.query==undefined)){
+		res.writeHead(400, {"Content-Type": contentType_text_plain});
+		res.end("\n400: Missing parameters.\n");
+		return;
+	}
+	if(req.body==undefined) {
+		req.body={};
+	}
+	if(req.query==undefined){
+		req.query={};
+	}	
 	var name= find_param(req.body.userid, req.query.userid);
 	var email= find_param(req.body.email, req.query.email);
 	var pw=find_param(req.body.pw, req.query.pw);
@@ -2052,6 +2064,17 @@ app.post('/signup', function(req, res) {
 app.post('/update_user', function(req, res) {
 	"use strict";
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
+	if( (req.body==undefined) && (req.query==undefined)){
+		res.writeHead(400, {"Content-Type": contentType_text_plain});
+		res.end("\n400: Missing parameters.\n");
+		return;
+	}
+	if(req.body==undefined) {
+		req.body={};
+	}
+	if(req.query==undefined){
+		req.query={};
+	}
 	var name= find_param(req.body.userid, req.query.userid);
 	var email= find_param(req.body.email, req.query.email);
 	var pw=find_param(req.body.pw, req.query.pw);
@@ -2111,6 +2134,17 @@ app.get('/login', function(req, res) {
 	"use strict";
 	var resultlog;
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
+		if( (req.body==undefined) && (req.query==undefined)){
+		res.writeHead(400, {"Content-Type": contentType_text_plain});
+		res.end("\n400: Missing parameters.\n");
+		return;
+	}
+	if(req.body==undefined) {
+		req.body={};
+	}
+	if(req.query==undefined){
+		req.query={};
+	}
 	var email= find_param(req.body.email, req.query.email);
 	var pw=find_param(req.body.pw, req.query.pw);
 	if (pw == undefined){
@@ -2141,19 +2175,19 @@ app.get('/login', function(req, res) {
 			var mytoken= auth.emailLogin(email);
 			res.writeHead(200, {"Content-Type": contentType_text_plain});
 			res.end(mytoken);
-			resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200, req.connection.remoteAddress, "New token Generated",currentdate,"");
+			resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200, req.connection.remoteAddress, "New token Generated",currentdate,email);
 		}else{
 			res.writeHead(401, {"Content-Type": contentType_text_plain});
 			res.end("401 (Unauthorized) Autentication failed, incorrect user " +" or passwd " +"\n");
 // 			console.log("resultCount "+resultCount);
 			resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 401, req.connection.remoteAddress,
-				"401: Bad Request of Token, incorrect user or passwd "+email+"or passwd ",currentdate,"");
+				"401: Bad Request of Token, incorrect user \""+email+"\" or passwd or passwd ",currentdate,email);
 		}
 	},(resultReject)=> {
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("\n400: Bad Request "+resultReject+"\n");
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400, req.connection.remoteAddress, 
-				"400: Bad Token Request "+resultReject,currentdate,"");
+				"400: Bad Token Request "+resultReject,currentdate,email);
 	});
 }); // login
 function originIsAllowed(origin) {

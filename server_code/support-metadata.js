@@ -67,7 +67,7 @@ register_json: function(es_server, my_index, body) {
 			log: 'error'
 		});
 		
-		console.log("json is "+JSON.stringify(body));
+// 		console.log("json is "+JSON.stringify(body));
 		var myres = { code: "", text: "" };
 		client.index({
 			index: my_index,

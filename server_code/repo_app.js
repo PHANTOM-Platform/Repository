@@ -1689,7 +1689,18 @@ app.get('/downloadzip', function(req, res) {
 // app.post('/signup',ipfilter(ips, {mode: 'allow'}), function(req, res) {
 app.post('/signup', function(req, res) {
 	"use strict";
-	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
+	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
+	if( (req.body==undefined) && (req.query==undefined)){
+		res.writeHead(400, {"Content-Type": contentType_text_plain});
+		res.end("\n400: Missing parameters.\n");
+		return;
+	}
+	if(req.body==undefined) {
+		req.body={};
+	}
+	if(req.query==undefined){
+		req.query={};
+	}	
 	var name= find_param(req.body.userid, req.query.userid);
 	var email= find_param(req.body.email, req.query.email);
 	var pw=find_param(req.body.pw, req.query.pw);
@@ -1755,6 +1766,17 @@ app.post('/signup', function(req, res) {
 app.post('/update_user', function(req, res) {
 	"use strict";
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
+	if( (req.body==undefined) && (req.query==undefined)){
+		res.writeHead(400, {"Content-Type": contentType_text_plain});
+		res.end("\n400: Missing parameters.\n");
+		return;
+	}
+	if(req.body==undefined) {
+		req.body={};
+	}
+	if(req.query==undefined){
+		req.query={};
+	}
 	var name= find_param(req.body.userid, req.query.userid);
 	var email= find_param(req.body.email, req.query.email);
 	var pw=find_param(req.body.pw, req.query.pw);
@@ -1814,6 +1836,17 @@ app.get('/login', function(req, res) {
 	"use strict";
 	var resultlog;
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l"); 
+		if( (req.body==undefined) && (req.query==undefined)){
+		res.writeHead(400, {"Content-Type": contentType_text_plain});
+		res.end("\n400: Missing parameters.\n");
+		return;
+	}
+	if(req.body==undefined) {
+		req.body={};
+	}
+	if(req.query==undefined){
+		req.query={};
+	}
 	var email= find_param(req.body.email, req.query.email);
 	var pw=find_param(req.body.pw, req.query.pw);
 	if (pw == undefined){
@@ -1844,19 +1877,19 @@ app.get('/login', function(req, res) {
 			var mytoken= auth.emailLogin(email);
 			res.writeHead(200, {"Content-Type": contentType_text_plain});
 			res.end(mytoken);
-			resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200, req.connection.remoteAddress, "New token Generated",currentdate,"");
+			resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 200, req.connection.remoteAddress, "New token Generated",currentdate,email);
 		}else{
 			res.writeHead(401, {"Content-Type": contentType_text_plain});
 			res.end("401 (Unauthorized) Autentication failed, incorrect user " +" or passwd " +"\n");
 // 			console.log("resultCount "+resultCount);
 			resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 401, req.connection.remoteAddress,
-				"401: Bad Request of Token, incorrect user or passwd "+email+"or passwd ",currentdate,"");
+				"401: Bad Request of Token, incorrect user \""+email+"\" or passwd or passwd ",currentdate,email);
 		}
 	},(resultReject)=> {
 		res.writeHead(400, {"Content-Type": contentType_text_plain});
 		res.end("\n400: Bad Request "+resultReject+"\n");
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400, req.connection.remoteAddress, 
-				"400: Bad Token Request "+resultReject,currentdate,"");
+				"400: Bad Token Request "+resultReject,currentdate,email);
 	});
 }); // login
 function originIsAllowed(origin) {
