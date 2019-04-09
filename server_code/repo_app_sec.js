@@ -819,14 +819,14 @@ app.get('/drop_db', function(req, res) {
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
 	console.log("\n[LOG]: Deleting Database"); 
 	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset);
-	if(( req.connection.remoteAddress!= ips[0] ) &&( req.connection.remoteAddress!=ips[1])&&( req.connection.remoteAddress!=ips[2])){
-		console.log(" ACCESS DENIED from IP address: "+req.connection.remoteAddress);
-		res.writeHead(403, {"Content-Type": contentType_text_plain});
-		res.end("\n403: FORBIDDEN access from external IP.\n");		
-		var messagea = "Deleting Database FORBIDDEN access from external IP.";
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 403,req.connection.remoteAddress,messagea,currentdate,""); 
-		return ;
-	}
+// 	if(( req.connection.remoteAddress!= ips[0] ) &&( req.connection.remoteAddress!=ips[1])&&( req.connection.remoteAddress!=ips[2])){
+// 		console.log(" ACCESS DENIED from IP address: "+req.connection.remoteAddress);
+// 		res.writeHead(403, {"Content-Type": contentType_text_plain});
+// 		res.end("\n403: FORBIDDEN access from external IP.\n");		
+// 		var messagea = "Deleting Database FORBIDDEN access from external IP.";
+// 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 403,req.connection.remoteAddress,messagea,currentdate,""); 
+// 		return ;
+// 	}
 	var searching = MetadataModule.drop_db(es_servername+":"+es_port,SERVERDB );
 	searching.then((resultFind) => { 
 		deleteFolderRecursive (os.homedir()+File_Server_Path) ;
@@ -2028,14 +2028,14 @@ app.post('/signup', function(req, res) {
 	console.log("[LOG]: REGISTER USER+PW ");
 	console.log("   " +colours.FgYellow + colours.Bright + " user: " + colours.Reset + email );
 	console.log("   " +colours.FgYellow + colours.Bright + " request from IP: " + req.connection.remoteAddress + colours.Reset+"\n");
-	if(( req.connection.remoteAddress!= ips[0] ) &&( req.connection.remoteAddress!=ips[1])&&( req.connection.remoteAddress!=ips[2])){
-		console.log(" ACCESS DENIED from IP address: "+req.connection.remoteAddress);
-		var messagea = "REGISTER USER '"+ email + "' FORBIDDEN access from external IP";
-		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,403,req.connection.remoteAddress,messagea,currentdate,"");
-		res.writeHead(403, {"Content-Type": contentType_text_plain});
-		res.end("\n403: FORBIDDEN access from external IP.\n");
-		return;
-	}
+// 	if(( req.connection.remoteAddress!= ips[0] ) &&( req.connection.remoteAddress!=ips[1])&&( req.connection.remoteAddress!=ips[2])){
+// 		console.log(" ACCESS DENIED from IP address: "+req.connection.remoteAddress);
+// 		var messagea = "REGISTER USER '"+ email + "' FORBIDDEN access from external IP";
+// 		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,403,req.connection.remoteAddress,messagea,currentdate,"");
+// 		res.writeHead(403, {"Content-Type": contentType_text_plain});
+// 		res.end("\n403: FORBIDDEN access from external IP.\n");
+// 		return;
+// 	}
 	var result = UsersModule.register_new_user(es_servername+":"+es_port,SERVERDB, name, email, pw);
 	result.then((resultreg) => {
 		var messageb = "REGISTER USER '"+ email + "' GRANTED";
@@ -2100,13 +2100,13 @@ app.post('/update_user', function(req, res) {
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"SIGNUP Bad Request, Empty Email",currentdate,"");
 		return;
 	}
-	if(( req.connection.remoteAddress!= ips[0] ) &&( req.connection.remoteAddress!=ips[1])&&( req.connection.remoteAddress!=ips[2])){
-		var messagea = "REGISTER USER '"+ email + "' FORBIDDEN access from external IP";
-		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 403,req.connection.remoteAddress,messagea,currentdate,"");
-		res.writeHead(403, {"Content-Type": contentType_text_plain});
-		res.end("\n403: FORBIDDEN access from external IP.\n");
-		return;
-	}
+// 	if(( req.connection.remoteAddress!= ips[0] ) &&( req.connection.remoteAddress!=ips[1])&&( req.connection.remoteAddress!=ips[2])){
+// 		var messagea = "REGISTER USER '"+ email + "' FORBIDDEN access from external IP";
+// 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 403,req.connection.remoteAddress,messagea,currentdate,"");
+// 		res.writeHead(403, {"Content-Type": contentType_text_plain});
+// 		res.end("\n403: FORBIDDEN access from external IP.\n");
+// 		return;
+// 	}
 	var result = UsersModule.update_user(es_servername+":"+es_port,SERVERDB, name, email, pw);
 	result.then((resultreg) => {
 		var messageb = "UPDATE USER '"+ email + "' GRANTED";
