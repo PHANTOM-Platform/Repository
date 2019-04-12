@@ -28,11 +28,11 @@
 
 	<div id="phantom_operation" style="display:block">
 		<h1><b>QUERY LIST OF FILES FROM THE REPOSITORY</b></h1>
-		<hr class="style-phantom-hr" /> <h2><b> Online formular: For list files in a project stored on the repository </b></h2>
+		<hr class="style-phantom-hr" /> <h2><b> Online formular: For listing files in a project stored on the repository </b></h2>
 		<form ref='downloadFormFile' id='downloadFormFile'
 		method='get'>
-		<!-- 	encType="multipart/form-data"> this is only for post requests-->
-		Project (MANDATORY): <input type="text" name="project_f" id="project_f" value="phantom_tools_on_HPC"/><br>
+		<!-- encType="multipart/form-data"> this is only for post requests-->
+		Project (optional): <input type="text" name="project_f" id="project_f" value="phantom_tools_on_HPC"/><br>
 		Source (optional): <input type="text" name="source" id="source_f" value="development"/><br>
 		Path (only if source provided, optional): <input type="text" name="filepath" id="filepath_f" value="mypath"/> <br>
 		<br><center>
@@ -56,6 +56,16 @@
 	<div id="debug_phantom"> <p id="demoreplaceb"></p></div>
 
 	<div id="foot_phantom"></div>
-	<script> repo_load_header_footer(); </script>
+	<script> repo_load_header_footer();
+	var currentmode= localStorage.getItem('currentmode');
+	if(currentmode!=undefined){
+		var c = document.getElementById("foot_phantom").querySelectorAll("a");
+		for (i in c) {
+			c[i].className = currentmode;
+		}
+		//update it at last
+		document.getElementById("foot_phantom").className = currentmode;
+	}	
+	</script>
 </body>
 </html>

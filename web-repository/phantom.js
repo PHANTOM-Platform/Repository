@@ -211,10 +211,17 @@ function switchnightmode(){
 	var table_results = document.getElementById("table_results");
 	var currentClass = body.className;
 	body.className = currentClass == "dark-mode" ? "light-mode" : "dark-mode";
+		if(table_results!=null)
 	table_results.className = body.className ;
-	localStorage.setItem('currentmode',  body.className);
+	localStorage.setItem('currentmode', body.className);
+	
+	var c = document.getElementById("foot_phantom").querySelectorAll("a");
+	for (i in c) {
+		c[i].className = body.className;
+	}
+	//update it at last
+	document.getElementById("foot_phantom").className = body.className;
 }
-
 
 function start_page_login() {
 	var currentmode= localStorage.getItem('currentmode');
@@ -791,26 +798,26 @@ function jsontotable_repo_logs_brief(myjson,count,first,level,lastwascoma,mtitle
 	// 						}else if(val['_source']['code']=="started"){//green
 	// 							html += "<td bgcolor=\"#00FF00/*\*/">" + val['_source']['code'] +"</td>\n";
 	// 						}else{
-	// // 							html += "<td> " + val['_source']['code'] +"</td>\n";
+	// // 						html += "<td> " + val['_source']['code'] +"</td>\n";
 							}
 						
 							if(val['_source']['user']==undefined){
-									html += "<td></td>\n"; 
+								html += "<td></td>\n"; 
 							}else{
 								html += "<td> " + val['_source']['user'] +" </td>\n";
 							}
 							if(val['_source']['ip']==undefined){
-									html += "<td></td>\n"; 
+								html += "<td></td>\n"; 
 							}else{
 								html += "<td> " + val['_source']['ip'] +" </td>\n";
 							}
 							if(val['_source']['message']==undefined){
-									html += "<td></td>\n"; 
+								html += "<td></td>\n"; 
 							}else{
 								html += "<td> " + val['_source']['message'] +" </td>\n";
 							}
 							if(val['_source']['date']==undefined){
-									html += "<td></td>\n"; 
+								html += "<td></td>\n"; 
 							}else{
 								html += "<td> " + val['_source']['date'] +" </td>\n";
 							}
@@ -882,15 +889,19 @@ function jsontotable_exec_brief(myjson,count,first,level,lastwascoma,mtitle,filt
 	if(mtitle==true){
 		html += "<div><table style='border:1px solid black'>\n";// style='width:100%'>";
 			html += "<th><strong> execution_id </strong> </th>\n";
-			html += "<td><strong> Req status </strong></td>\n";
-		html += "<td><strong> Project </strong></td>\n";
-		html += "<td><strong> Map </strong></td>\n";
-		html += "<td><strong> Requested-by</strong></td>\n";
-		html += "<td><strong> Input </strong></td>\n";
-		html += "<td><strong> Request date </strong></td>\n";
-		html += "<td><strong>Start timestamp</strong></td>\n";
-		html += "<td><strong>End timestamp</strong></td>\n";
-		count++;
+			html += "<td align=\"center\"><strong>&nbsp;Req status&nbsp;</strong></td>\n";
+		html += "<td align=\"center\"><strong> Project </strong></td>\n";
+		html += "<td align=\"center\"><strong> Map </strong></td>\n";
+		html += "<td align=\"center\"><strong>&nbsp;Requested-by&nbsp;</strong></td>\n";
+		html += "<td align=\"center\"><strong> Input </strong></td>\n";
+		html += "<td align=\"center\"><strong>&nbsp;Request date </strong></td>\n";
+		html += "<td align=\"center\"><strong>&nbsp;Start timestamp&nbsp;</strong></td>\n";
+		html += "<td align=\"center\"><strong>&nbsp;End timestamp&nbsp;</strong></td>\n";
+		html += "<td align=\"center\"><strong>&nbsptotal time ns&nbsp;</strong></td>\n";
+		html += "<td align=\"center\"><strong>&nbspCPU power consumption&nbsp;</strong></td>\n";
+		html += "<td align=\"center\"><strong>&nbspMEM power consumption&nbsp;</strong></td>\n";
+// 		io_power_consumption
+		count++; 
 	}
 	var countseries=0;
 	myjson.forEach(function(val) {
@@ -924,35 +935,60 @@ function jsontotable_exec_brief(myjson,count,first,level,lastwascoma,mtitle,filt
 						}
 						html += "<th> " + val['execution_id'] +" </th>\n";
 						if(val['req_status']=="pending"){ //yellow
-							html += "<td bgcolor=\"#f3ff3a\"> " + val['req_status'] +" </td>\n";
+							html += "<td bgcolor=\"#f3ff3a\"><font color=\"black\">";
 						}else if(val['req_status']=="completed"){//green
-							html += "<td bgcolor=\"#00FF00\"> " + val['req_status'] +" </td>\n";
+							html += "<td bgcolor=\"#00FF00\"><font color=\"black\">";
 						}else if(val['req_status']=="cancelled"){//red
-							html += "<td bgcolor=\"#ff3e29\"> " + val['req_status'] +" </td>\n";
+							html += "<td bgcolor=\"#ff3e29\"><font color=\"black\">";
 						}else if(val['req_status']=="started"){//green
-							html += "<td bgcolor=\"#00FF00\">" + val['req_status'] +"</td>\n";
+							html += "<td bgcolor=\"#00FF00\"><font color=\"black\">" ;
 						}else{
-							html += "<td> " + val['req_status'] +"</td>\n";
+							html += "<td bgcolor=\"#f3ff3a\"><font color=\"black\">" ;
 						}
-						html += "<td>" + val['project'] +" </td>\n";
-						html += "<td>" + val['map'] +" </td>\n";
-						html += "<td>" + val['requested-by'] +" </td>\n";
+						if (val['req_status']!=undefined){
+							html += ""+val['req_status'] +"</td>\n";
+						}else{
+							html += "</td>\n";
+						}
+						
+						html += "<td>&nbsp;" + val['project'] +"&nbsp;</td>\n";
+						html += "<td>&nbsp;" + val['map'] +"&nbsp;</td>\n";
+						html += "<td>&nbsp;" + val['requested-by'] +"&nbsp;</td>\n";
 						if (val['input']!=undefined){
-							html += "<td>" + val['input'] +" </td>\n";
+							html += "<td>" + val['input'] +"&nbsp;";
 						}else{
-							html += "<td></td>\n";
+							html += "<td>";
 						}
-						html += "<td>" + val['req_date'] +" </td>\n";
+						html += "</td>\n<td>" + val['req_date'] +" </td>\n";
 						if (val['start_timestamp']!=undefined){
-							html += "<td>" + val['start_timestamp'] +" </td>\n";
+							html += "<td>" + val['start_timestamp'] +"&nbsp;</td>\n";
 						}else{
 							html += "<td></td>\n";
 						}
 						if (val['end_timestamp']!=undefined){
-							html += "<td>" + val['end_timestamp'] +" </td>\n";
+							html += "<td>" + val['end_timestamp'] +"&nbsp;</td>\n";
 						}else{
 							html += "<td></td>\n";
 						}
+						
+						
+						if (val['total_time_ns']!=undefined){
+							html += "<td>" + val['total_time_ns'] +"&nbsp;</td>\n";
+						}else{
+							html += "<td></td>\n";
+						}
+						if (val['cpu_power_consumption']!=undefined){
+							html += "<td align=\"right\">" + val['cpu_power_consumption'] +"&nbsp;</td>\n";
+						}else{
+							html += "<td></td>\n";
+						}
+						if (val['mem_power_consumption']!=undefined){
+							html += "<td align=\"right\">" + val['mem_power_consumption'] +"&nbsp;</td>\n";
+						}else{
+							html += "<td></td>\n";
+						}						
+						
+						
 						mtitle=false;
 						count++;
 						lastwascoma=false;
@@ -971,6 +1007,14 @@ function jsontotable_exec_brief(myjson,count,first,level,lastwascoma,mtitle,filt
 						&&(key!="input")
 						&&(key!="req_date")
 						&&(key!="start_timestamp")
+						&&(key!="total_time_ns")
+						&&(key!="cpu_power_consumption")
+						&&(key!="io_power_consumption")
+						&&(key!="mem_power_consumption")
+						&&(key!="net_power_consumption")
+						&&(key!="num_of_processes")
+						&&(key!="totaltid")
+						&&(key!="num_of_threads")
 						&&(key!="end_timestamp")){
 						html += "<td><strong>\"" + key +"\"</strong>: \"" + val[key] +"\"</td>\n";
 						count++;
@@ -1064,99 +1108,129 @@ function jsontotable_app_brief(myjson,count,first,level,lastwascoma,mtitle,filte
 						html += "<th> &nbsp;" + val['project'] +"&nbsp; </th>\n";
 						//source
 						if(val['source']!=undefined){
+							if(val['source']['completed']!=undefined){
+							if(val['source']['completed']=="true"){	
+								val['source']['status']="finished";
+							}}
 							if(val['source']['status']==undefined){
-								html += "<td bgcolor=\"#f3ff3a\">&nbsp;waiting";
+								html += "<td bgcolor=\"#f3ff3a\">";
+								val['source']['status']="waiting";
 							}else if(val['source']['status']=="waiting"){ //yellow
-								html += "<td bgcolor=\"#f3ff3a\">&nbsp;" + val['source']['status'];
+								html += "<td bgcolor=\"#f3ff3a\">";
 							}else if(val['source']['status']=="finished"){//green
-								html += "<td bgcolor=\"#00FF00\">&nbsp;" + val['source']['status'];
+								html += "<td bgcolor=\"#00FF00\">";
 							}else if(val['source']['status']=="cancelled"){//red
-								html += "<td bgcolor=\"#ff3e29\">&nbsp;" + val['source']['status'];
+								html += "<td bgcolor=\"#ff3e29\">";
 							}else if(val['source']['status']=="started"){//green
-								html += "<td bgcolor=\"#00FF00\">&nbsp;" + val['source']['status'];
+								html += "<td bgcolor=\"#00FF00\">";
 							}else{
-								html += "<td>&nbsp;" + val['source']['status'];
+								html += "<td>";
 							}
+							html += "<font color=\"black\">&nbsp;" + val['source']['status'];
 						}else{
-							html += "<td bgcolor=\"#f3ff3a\">&nbsp;waiting";
+							html += "<td bgcolor=\"#f3ff3a\"><font color=\"black\">&nbsp;waiting";
 						}
-						html += "&nbsp;</td>\n";
+						html += "&nbsp;</font></td>\n";
 						//pt
 						if(val['pt_ca']!=undefined){
+							if(val['pt_ca']['completed']!=undefined){
+							if(val['pt_ca']['completed']=="true"){	
+								val['pt_ca']['status']="finished";
+							}}
 							if(val['pt_ca']['status']==undefined){
-									html += "<td bgcolor=\"#f3ff3a\">&nbsp;waiting";
+								html += "<td bgcolor=\"#f3ff3a\">";
+								val['pt_ca']['status']="waiting";
 							}else if(val['pt_ca']['status']=="waiting"){ //yellow
-								html += "<td bgcolor=\"#f3ff3a\">&nbsp;" + val['pt_code_analysis']['status'];
+								html += "<td bgcolor=\"#f3ff3a\">";
 							}else if(val['pt_ca']['status']=="finished"){//green
-								html += "<td bgcolor=\"#00FF00\">&nbsp;" + val['pt_code_analysis']['status'];
+								html += "<td bgcolor=\"#00FF00\">";
 							}else if(val['pt_ca']['status']=="cancelled"){//red
-								html += "<td bgcolor=\"#ff3e29\">&nbsp;" + val['pt_code_analysis']['status'];
+								html += "<td bgcolor=\"#ff3e29\">";
 							}else if(val['pt_ca']['status']=="started"){//green
-								html += "<td bgcolor=\"#00FF00\">&nbsp;" + val['pt_code_analysis']['status'];
+								html += "<td bgcolor=\"#00FF00\">";
 							}else{
-								html += "<td>&nbsp;" + val['pt']['status'];
+								html += "<td>";
 							}
+							html += "<font color=\"black\">&nbsp;" + val['pt_ca']['status'];
 						}else{
-							html += "<td bgcolor=\"#f3ff3a\">&nbsp;waiting";
+							html += "<td bgcolor=\"#f3ff3a\"><font color=\"black\">&nbsp;waiting";
 						}
-						html += "&nbsp;</td>\n";
+						html += "&nbsp;</font></td>\n";
 						//mbt_early_validation
 						if(val['mbt_early_validation']!=undefined){
+							if(val['mbt_early_validation']['completed']!=undefined){
+							if(val['mbt_early_validation']['completed']=="true"){	
+								val['mbt_early_validation']['status']="finished";
+							}}
 							if(val['mbt_early_validation']['status']==undefined){
-									html += "<td bgcolor=\"#f3ff3a\">&nbsp;waiting";
+								html += "<td bgcolor=\"#f3ff3a\">";
+								val['mbt_early_validation']['status']="waiting";
 							}else if(val['mbt_early_validation']['status']=="waiting"){ //yellow
-								html += "<td bgcolor=\"#f3ff3a\">&nbsp;" + val['mbt_early_validation']['status'];
+								html += "<td bgcolor=\"#f3ff3a\">";
 							}else if(val['mbt_early_validation']['status']=="finished"){//green
-								html += "<td bgcolor=\"#00FF00\">&nbsp;" + val['mbt_early_validation']['status'];
+								html += "<td bgcolor=\"#00FF00\">";
 							}else if(val['mbt_early_validation']['status']=="cancelled"){//red
-								html += "<td bgcolor=\"#ff3e29\">&nbsp;" + val['mbt_early_validation']['status'];
+								html += "<td bgcolor=\"#ff3e29\">";
 							}else if(val['mbt_early_validation']['status']=="started"){//green
-								html += "<td bgcolor=\"#00FF00\">&nbsp;" + val['mbt_early_validation']['status'];
+								html += "<td bgcolor=\"#00FF00\">";
 							}else{
-								html += "<td>&nbsp;" + val['mbt_early_validation']['status'];
+								html += "<td>";
 							}
+							html += "<font color=\"black\">&nbsp;"+val['mbt_early_validation']['status'];
 						}else{
-							html += "<td bgcolor=\"#f3ff3a\">&nbsp;waiting";
+							html += "<td bgcolor=\"#f3ff3a\"><font color=\"black\">&nbsp;waiting";
 						}
-						html += "&nbsp;</td>\n";
+						html += "&nbsp;</font></td>\n";
 						//ip_core_generator
 						if(val['ip_core_generator']!=undefined){
+							if(val['ip_core_generator']['completed']!=undefined){
+							if(val['ip_core_generator']['completed']=="true"){	
+								val['ip_core_generator']['status']="finished";
+							}}
 							if(val['ip_core_generator']['status']==undefined){
-									html += "<td bgcolor=\"#f3ff3a\">&nbsp;waiting";
+								html += "<td bgcolor=\"#f3ff3a\">";
+								val['ip_core_generator']['status']="waiting";
 							}else if(val['ip_core_generator']['status']=="waiting"){ //yellow
-								html += "<td bgcolor=\"#f3ff3a\">&nbsp;" + val['ip_core_generator']['status'];
+								html += "<td bgcolor=\"#f3ff3a\">";
 							}else if(val['ip_core_generator']['status']=="finished"){//green
-								html += "<td bgcolor=\"#00FF00\">&nbsp;" + val['ip_core_generator']['status'];
+								html += "<td bgcolor=\"#00FF00\">" ;
 							}else if(val['ip_core_generator']['status']=="cancelled"){//red
-								html += "<td bgcolor=\"#ff3e29\">&nbsp;" + val['ip_core_generator']['status'];
+								html += "<td bgcolor=\"#ff3e29\">" ;
 							}else if(val['ip_core_generator']['status']=="started"){//green
-								html += "<td bgcolor=\"#00FF00\">&nbsp;" + val['ip_core_generator']['status'];
+								html += "<td bgcolor=\"#00FF00\">";
 							}else{
-								html += "<td>&nbsp;" + val['ip_core_generator']['status'];
+								html += "<td>";
 							}
+							html += "<font color=\"black\">" +val['ip_core_generator']['status'];
 						}else{
-							html += "<td bgcolor=\"#f3ff3a\">&nbsp;waiting";
+							html += "<td bgcolor=\"#f3ff3a\"><font color=\"black\">&nbsp;waiting";
 						}
-						html += "&nbsp;</td>\n";
+						html += "&nbsp;</font></td>\n";
 						//mom
 						if(val['mom'] !=undefined){
+							if(val['mom']['completed']!=undefined){
+							if(val['mom']['completed']=="true"){	
+								val['mom']['status']="finished";
+							}}
 							if(val['mom']['status']==undefined){
-									html += "<td bgcolor=\"#f3ff3a\">&nbsp;waiting";
+								html += "<td bgcolor=\"#f3ff3a\">";
+								val['mom']['status']="waiting";
 							}else if(val['mom']['status']=="waiting"){ //yellow
-								html += "<td bgcolor=\"#f3ff3a\">&nbsp;" + val['mom']['status'];
+								html += "<td bgcolor=\"#f3ff3a\">";
 							}else if(val['mom']['status']=="finished"){//green
-								html += "<td bgcolor=\"#00FF00\">&nbsp;" + val['mom']['status'];
+								html += "<td bgcolor=\"#00FF00\">";
 							}else if(val['mom']['status']=="cancelled"){//red
-								html += "<td bgcolor=\"#ff3e29\">&nbsp;" + val['mom']['status'];
+								html += "<td bgcolor=\"#ff3e29\">";
 							}else if(val['mom']['status']=="started"){//green
-								html += "<td bgcolor=\"#00FF00\">&nbsp;" + val['mom']['status'];
+								html += "<td bgcolor=\"#00FF00\">";
 							}else{
-								html += "<td>&nbsp;" + val['mom']['status'];
+								html += "<td>";
 							}
+							html += "<font color=\"black\">&nbsp;" + val['mom']['status'];
 						}else{
-							html += "<td bgcolor=\"#f3ff3a\">&nbsp;waiting";
+							html += "<td bgcolor=\"#f3ff3a\"><font color=\"black\">&nbsp;waiting";
 						}
-						html += "&nbsp;</td>\n";
+						html += "&nbsp;</font></td>\n";
 						mtitle=false;
 						count++;
 						lastwascoma=false;
@@ -1209,6 +1283,248 @@ function jsontotable_app_brief(myjson,count,first,level,lastwascoma,mtitle,filte
 	return html;
 }//jsontotable_app_brief
 
+
+function pad(num, size) {
+    var s = num+"";
+    while (s.length < size) s = "0" + s;
+    return s;
+}
+
+
+function calculate_date( input) {
+	var current = input;
+	current = Math.floor(current /1000000);
+	var tempstr="";
+	var months=[31, 28, 31, 30, 31, 30, 31, 31, 30 ,31 ,30 ,31 ];
+	var exampledate_msec =Math.floor(current % 1000);
+	current= Math.floor(current /1000);
+	var exampledate_sec = Math.floor(current %60);
+	current =Math.floor(current / 60);
+	var exampledate_min = Math.floor(current % 60);
+	current = Math.floor(current /60);
+	var exampledate_hour = Math.floor(current %24);
+	current = Math.floor(current /24);
+	var exampledate_year=0;
+// 	var exampledate_name_day = current % 7;
+	if(current > 365+365+366){
+		exampledate_year=3;
+		current -= (365+365+366);
+	}
+	if(current > 1461){
+		exampledate_year+=(4*Math.floor(current / 1461));
+		current = Math.floor(current % 1461);
+	}
+	exampledate_year+=Math.floor(current / 365);
+	current = Math.floor(current % 365);
+	var leap_year;
+	if (exampledate_year %4==2){
+		leap_year=1;
+	}else{
+		leap_year=0;
+	}
+	if (leap_year==1) months[1]=29;
+	var exampledate_month=0;
+	while(current> months[exampledate_month]){
+		current -= months[exampledate_month];
+		exampledate_month++;
+	}
+	exampledate_year= 1970+ Math.floor(exampledate_year);
+	var exampledate_day= 1+ current;
+	exampledate_month=1+exampledate_month;
+	tempstr=exampledate_year+"-"+pad(exampledate_month,2)+"-"+pad(exampledate_day,2)+"T"+pad(exampledate_hour,2)+":"+pad(exampledate_min,2)+":"+pad(exampledate_sec,2)+"."+pad(exampledate_msec,2);
+	return tempstr;
+}
+
+function jsontotable_rm_brief(myjson,count,first,level,lastwascoma,mtitle,filtered_fields){
+//ponemos en columnas: [host] [type] [local_timestamp] [cpu_usage_rate] [ram_usage_rate] [swap_usage_rate] [net_throughput] [io_throughput] + others
+	
+	var html ="";
+	var i;
+// 	if(first==true){ html ="{"; }
+	var mainc=mtitle;
+	if(mtitle==true){
+		html += "<div><table style='border:1px solid black'>\n";// style='width:100%'>";
+		html += "<th align=\"center\"><strong>&nbsp; Host &nbsp;</strong> </th>\n";
+// 		html += "<td><strong>&nbsp; Type &nbsp;</strong></td>\n";
+		html += "<td colspan=\"2\" align=\"center\"><strong>&nbsp; TimeStamp&nbsp;</strong></td>\n";
+		html += "<td><strong>&nbsp; cpu_usage_rate &nbsp;</strong></td>\n";
+		html += "<td><strong>&nbsp; ram_usage_rate&nbsp;</strong></td>\n";
+		html += "<td><strong>&nbsp; swap_usage_rate &nbsp;</strong></td>\n";
+		html += "<td><strong>&nbsp; net_throughput &nbsp;</strong></td>\n";
+		html += "<td><strong>&nbsp; io_throughput &nbsp;</strong></td>\n";
+		count++;
+	}
+	var countseries=0;
+	myjson.forEach(function(val) {
+// 		if (count != 1 && lastwascoma==false) {
+// 			if(countseries==0) {
+// 				html += ",<br>";
+// 			}else{
+// 				html += "<br>},{<br>";
+// 			}
+// 		};//this is not the first element
+		lastwascoma=true;
+		var keys = Object.keys(val);
+		keys.forEach(function(key) {
+// 			if (getType(val[key]) == "string" || getType(val[key]) == "other" ){
+				var tobefiltered=false;
+				for (i=0;i< filtered_fields.length;i++){
+					if (key.endsWith(filtered_fields[i], key.length)== true) {
+						tobefiltered=true;
+					}
+				}
+				if (tobefiltered== false) {//it is stored the length of the strings, not need to show
+// 					if (count != 1 && lastwascoma==false) html += ',<br>';
+// 					for (i = 0; i < level; i++) {
+// 						if (count != 1) html += '&emsp;';
+// 					}
+					if(mtitle==true){
+						if(val['type']!=undefined){ 
+						if(val['type']== "Linux_resources"){
+						if(count>1){
+							html += "</tr>\n<tr>";
+// 							html += "</table></div></td><br>\n";
+// 							html += "<div><table style='border:1px solid black'>\n";// style='width:100%'>";
+						}
+// 						html += "<td> " + val['_id'] +" </td>\n";
+// 						html += "<th> &nbsp;" + val['project'] +"&nbsp; </th>\n";
+						//source
+						if(val['host']!=undefined){
+// 							if(val['source']['host']==undefined){
+// 								html += "<td bgcolor=\"#f3ff3a\">";
+// 								val['source']['host']="waiting";
+// 							}else if(val['source']['host']=="waiting"){ //yellow
+// 								html += "<td bgcolor=\"#f3ff3a\">";
+// 							}else if(val['source']['host']=="finished"){//green
+// 								html += "<td bgcolor=\"#00FF00\">";
+// 							}else if(val['source']['host']=="cancelled"){//red
+// 								html += "<td bgcolor=\"#ff3e29\">";
+// 							}else if(val['source']['host']=="started"){//green
+// 								html += "<td bgcolor=\"#00FF00\">";
+// 							}else{
+// 								html += "<td>";
+// 							}
+							html += "<th><font color=\"white\">&nbsp;" + val['host'];
+						}else{
+							html += "<th bgcolor=\"#f3ff3a\"><font >&nbsp;...";
+						}
+						html += "&nbsp;</font></th>\n";
+						//type
+// 						if(val['type']!=undefined){ 
+// 							html += "<td><font >&nbsp;" + val['type'];
+// 						}else{
+// 							html += "<td bgcolor=\"#f3ff3a\"><font >&nbsp;...";
+// 						}
+						//local_timestamp
+						if(val['local_timestamp']!=undefined){ 
+							html += "<td align=\"right\"><font>&nbsp;" + val['local_timestamp'];
+						}else{
+							html += "<td bgcolor=\"#f3ff3a\" align=\"right\"><font >&nbsp;...";
+						}
+						html += "&nbsp;</font></td>\n";
+
+						if(val['local_timestamp']!=undefined){ 
+							html += "<td align=\"right\"><font>&nbsp;" + calculate_date(1000000*val['local_timestamp']);
+						}else{
+							html += "<td bgcolor=\"#f3ff3a\" align=\"right\"><font >&nbsp;...";
+						}
+						html += "&nbsp;</font></td>\n";
+						//CPU_usage_rate
+						if(val['cpu_usage_rate']!=undefined){ 
+							html += "<td align=\"right\"><font>&nbsp;"+val['cpu_usage_rate'];
+						}else if(val['CPU_usage_rate']!=undefined){
+							html += "<td align=\"right\"><font>&nbsp;"+val['CPU_usage_rate'];
+						}else{
+							html += "<td bgcolor=\"#f3ff3a\" align=\"right\"><font >&nbsp;...";
+						}
+						html += "&nbsp;%&nbsp;</font></td>\n";
+
+						//ram_usage_rate
+						if(val['ram_usage_rate']!=undefined){ 
+							html += "<td align=\"right\"><font>&nbsp;"+val['ram_usage_rate'];
+						}else if(val['RAM_usage_rate']!=undefined){
+							html += "<td align=\"right\"><font >&nbsp;"+val['RAM_usage_rate'];
+						}else{
+							html += "<td bgcolor=\"#f3ff3a\" align=\"right\"><font >&nbsp;...";
+						}
+						html += "&nbsp;%&nbsp;</font></td>\n";
+
+						//swap_usage_rate
+						if(val['swap_usage_rate']!=undefined){
+							html += "<td align=\"right\"><font>&nbsp;"+val['swap_usage_rate'];
+						}else{
+							html += "<td bgcolor=\"#f3ff3a\"><font >&nbsp;...";
+						}
+						html += "&nbsp;</font></td>\n";
+
+						//net_throughput
+						if(val['net_throughput']!=undefined){ 
+							html += "<td align=\"right\"><font>&nbsp;"+val['net_throughput'];
+						}else{
+							html += "<td bgcolor=\"#f3ff3a\" align=\"right\"><font >&nbsp;...";
+						}
+						html += "&nbsp;</font></td>\n";
+
+						//io_throughput
+						if(val['io_throughput']!=undefined){ 
+							html += "<td align=\"right\"><font>&nbsp;"+val['io_throughput'];
+						}else{
+							html += "<td bgcolor=\"#f3ff3a\" align=\"right\"><font >&nbsp;...";
+						}
+						html += "&nbsp;</font></td>\n";
+
+						mtitle=false;
+						count++;
+						lastwascoma=false;
+					}
+				}}//if type=Linux_resources
+// 					if((key=="rejection_reason")){
+// 						if(val['req_status']=="rejected"){
+// 							html += "<td><strong>\"" + key +"\"</strong>: \"" + val[key] +"\"</td>\n";
+// 							count++;
+// 							lastwascoma=false;
+// 						}
+// 					}else if((key!="req_status")&&(key!="energy")&&(key!="execution_id")&&(key!="app")&&(key!="device")){
+// 						html += "<td><strong>\"" + key +"\"</strong>: \"" + val[key] +"\"</td>\n";
+// 						count++;
+// 						lastwascoma=false;
+
+				}
+// 			}else if (getType(val[key]) == "array" || getType(val[key]) == "object" ) {
+// 				if(key!= "component_stats"){
+// // 					if (count != 1) html += ',<br>';
+// // 					for (i = 0; i < level; i++) {
+// // 						if (count != 1) html += '&emsp;';
+// // 					}
+// 					if(mtitle==true){
+// 						if(count>1){
+// 							html += "</table></div></td><br>\n";
+// 							html += "<div><table style='border:1px solid black'>\n";// style='width:100%'>";
+// 						}
+// 						html += "<tr><th><strong>\"" + key + "\"</strong>: </th>\n";
+// 						
+// 						mtitle=false;
+// 					}else{
+// 						html += "<tr><td><strong>\"" + key + "\"</strong>: </td>\n";
+// 					}
+// 					count++;
+// 					lastwascoma=false;
+// 					html += "<td><div><table style='width:100%; border:0px solid black'>\n";// style='width:100%'>";
+// 					html += jsontotable( ([ val[key] ]), count, true, level+1 ,lastwascoma,mtitle,filtered_fields);
+// 					html += "</table></div></td>\n";
+// 				}
+// // 			}else if (getType(val[key]) == "object" ) {
+// // 				html += jsontotable( ([ val[key] ]), count, false, level+1,lastwascoma,mtitle,filtered_fields);
+// 			};
+		});
+		mtitle=true;
+		countseries++;
+	});
+// 	if(first==true){ html += "<br>}"; }
+	if(mainc==true)
+		html += "</table></div>\n";
+	return html;
+}//jsontotable_rm_brief
 
 //_filter_workflow_taskid_experimentid
 function jsontotable(myjson,count,first,level,lastwascoma,mtitle,filtered_fields){
@@ -1566,6 +1882,10 @@ function request_download(url, outputfile, type){
 	return false;
 }
 
+// const sleep = (milliseconds) => {
+// return new Promise(resolve => setTimeout(resolve, milliseconds))
+// }
+
 function list_results(mytype,url,fields_toshow,filtered_fields){
 	var demoreplaceb = document.getElementById("demoreplaceb");
 	var debug_phantom = document.getElementById("debug_phantom");
@@ -1584,7 +1904,7 @@ function list_results(mytype,url,fields_toshow,filtered_fields){
 			// document.getElementById('demoreplacea').innerHTML = responseObject;//this will show the reponse of the server as txt;
 			var myjson = JSON.parse(responseObject || '{}');
 			if(myjson.hits!=undefined) {
-				console.log("myjsob "+JSON.stringify(myjson));
+// 				console.log("myjsob "+JSON.stringify(myjson));
 				myjson = myjson.hits;
 			}else{
 				myjson = [ myjson ];
@@ -1603,12 +1923,16 @@ function list_results(mytype,url,fields_toshow,filtered_fields){
 					html += "</table></div>\n";
 				}else if (mytype == 23){//monitoring server
 					html += jsontotable_repo_logs_brief(myjson,1,true,1,false,true,filtered_fields);
-					html += "</table></div>\n";					
+					html += "</table></div>\n";
 
-				}else if (mytype == 24){//resource manager
+				}else if (mytype == 24){//resource manager -logs
 					html += jsontotable_repo_logs_brief(myjson,1,true,1,false,true,filtered_fields);
-					html += "</table></div>\n";								
+					html += "</table></div>\n";
+
 					
+				}else if (mytype == 25){//resource manager -logs
+					html += jsontotable_rm_brief(myjson,1,true,1,false,true,filtered_fields);
+					html += "</table></div>\n";
 					
 					
 				}else if (mytype == 5){
@@ -1723,7 +2047,7 @@ function list_exec_logs(mytype,execid){
 
 function list_execs(mytype,execname){
 	var url = build_execman_path() +"/get_exec_list?app=\""+execname+"\"";//?pretty='true'";
-	list_results(mytype,url,["host"],["_length"]);
+	list_results(mytype,url,["host"],["_length","start_timestamp_ns","end_timestamp_ns"]);
 	return false;
 }
 
@@ -1807,18 +2131,24 @@ function submitform_qr_metatada_es(e, frm) {
 }
 
 function submitform_file_list(project, source,filepath){
-	if(project == undefined){
-		return false;
-	}else if(project.length==0){
-		return false;
-	}
-	var url = build_repo_path() + "/downloadlist?project=\""+project+"\"";
-	if(source !== undefined){
-		if(source.length>0) {
-			url +="\&source=\""+source+"\"";
-			if(filepath !== undefined){
-				if(filepath.length>0) {
-					url +="\&filepath=\""+filepath+"\"";
+// 	if(project == undefined){
+// 		return false;
+// 	}else if(project.length==0){
+// 		return false;
+// 	}
+	var url = build_repo_path() + "/downloadlist";
+	
+	if(project !== undefined){
+		if(project.length>0) {
+			url += "?project=\""+project+"\"";
+			if(source !== undefined){
+				if(source.length>0) {
+					url +="\&source=\""+source+"\"";
+					if(filepath !== undefined){
+						if(filepath.length>0) {
+							url +="\&filepath=\""+filepath+"\"";
+						}
+					}
 				}
 			}
 		}
