@@ -819,14 +819,14 @@ app.get('/drop_db', function(req, res) {
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
 	console.log("\n[LOG]: Deleting Database"); 
 	console.log("   " +colours.FgYellow + colours.Bright + " request from IP:" + req.connection.remoteAddress + colours.Reset);
-// 	if(( req.connection.remoteAddress!= ips[0] ) &&( req.connection.remoteAddress!=ips[1])&&( req.connection.remoteAddress!=ips[2])){
-// 		console.log(" ACCESS DENIED from IP address: "+req.connection.remoteAddress);
-// 		res.writeHead(403, {"Content-Type": contentType_text_plain});
-// 		res.end("\n403: FORBIDDEN access from external IP.\n");		
-// 		var messagea = "Deleting Database FORBIDDEN access from external IP.";
-// 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 403,req.connection.remoteAddress,messagea,currentdate,""); 
-// 		return ;
-// 	}
+	if(( req.connection.remoteAddress!= ips[0] ) &&( req.connection.remoteAddress!=ips[1])&&( req.connection.remoteAddress!=ips[2])){
+		console.log(" ACCESS DENIED from IP address: "+req.connection.remoteAddress);
+		res.writeHead(403, {"Content-Type": contentType_text_plain});
+		res.end("\n403: FORBIDDEN access from external IP.\n");		
+		var messagea = "Deleting Database FORBIDDEN access from external IP.";
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 403,req.connection.remoteAddress,messagea,currentdate,""); 
+		return ;
+	}
 	var searching = MetadataModule.drop_db(es_servername+":"+es_port,SERVERDB );
 	searching.then((resultFind) => { 
 		deleteFolderRecursive (os.homedir()+File_Server_Path) ;
@@ -1437,6 +1437,7 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 	//		jsontext = JSON.stringify(jsontext);
 	}
 // 	var source_proj= get_source_project_json(jsontext);
+// console.log(".."+jsontext+"..");
 	jsontext=update_filename_path_on_json(jsontext, source_proj.project, source_proj.source, DestFileName, DestPath); //this adds the field
 // 	console.log("send_repo_update_to_suscribers("+source_proj.project + " "+ source_proj.source+")"+jsontext);
 	send_repo_update_to_suscribers(source_proj.project, source_proj.source, jsontext);
@@ -1791,35 +1792,40 @@ app.get('/downloadlist',middleware.ensureAuthenticated, function(req, res) {
 	//******************************************* 
 	var project= find_param(req.body.project, req.query.project);
 	project= validate_parameter(project,"project",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
+// 	if (project != undefined)
+// 	if (project.length == 0){
+// 		res.writeHead(400, {'Content-Type': contentType_text_plain });
+// 		res.end("\n400: Bad Request, missing "+"project"+".\n");
+// 		return;}
+	
+	
+	var myPath = os.homedir()+ File_Server_Path;
 	if (project != undefined)
-	if (project.length == 0){
-		res.writeHead(400, {'Content-Type': contentType_text_plain });
-		res.end("\n400: Bad Request, missing "+"project"+".\n");
-		return;}
-	var myPath = os.homedir()+ File_Server_Path + '/' + project;
-	//******************************************* 
-	var source= find_param(req.body.source, req.query.source);
-	source= validate_parameter(source,"source",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-	if (source != undefined)
-	if (source.length != 0){
-		myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source;
-		//*******************************************
-		filepath= find_param(req.body.filepath, req.query.filepath);
-		filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-		if (filepath != undefined){
-		if(filepath.length>=2){
-		while((filepath.charAt(filepath.length-1) == "/") &&(filepath.length >=2)) {
-			//remove the last character
-			var filepath = filepath.slice(0, -1);
-		}}
-		if (filepath.length != 0){
-			myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath;
+	if (project.length != 0){	
+		var myPath = os.homedir()+ File_Server_Path + '/' + project;
+		//******************************************* 
+		var source= find_param(req.body.source, req.query.source);
+		source= validate_parameter(source,"source",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
+		if (source != undefined)
+		if (source.length != 0){
+			myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source;
 			//*******************************************
-			filename= find_param(req.body.filename, req.query.filename);
-			filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
-		}}
+			filepath= find_param(req.body.filepath, req.query.filepath);
+			filepath= validate_parameter(filepath,"filepath",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
+			if (filepath != undefined){
+			if(filepath.length>=2){
+			while((filepath.charAt(filepath.length-1) == "/") &&(filepath.length >=2)) {
+				//remove the last character
+				var filepath = filepath.slice(0, -1);
+			}}
+			if (filepath.length != 0){
+				myPath = os.homedir()+ File_Server_Path + '/' + project +'/' + source +'/' + filepath;
+				//*******************************************
+				filename= find_param(req.body.filename, req.query.filename);
+				filename= validate_parameter(filename,"filename",currentdate,res.user, req.connection.remoteAddress);//generates the error log if not defined
+			}}
+		}
 	}
-
 //Maybe look for NGAC policy here, then decide if continue or not !!
 	// Check if file specified by the filePath exists
 	fs.stat(myPath, function(err, stat) {
@@ -2028,14 +2034,14 @@ app.post('/signup', function(req, res) {
 	console.log("[LOG]: REGISTER USER+PW ");
 	console.log("   " +colours.FgYellow + colours.Bright + " user: " + colours.Reset + email );
 	console.log("   " +colours.FgYellow + colours.Bright + " request from IP: " + req.connection.remoteAddress + colours.Reset+"\n");
-// 	if(( req.connection.remoteAddress!= ips[0] ) &&( req.connection.remoteAddress!=ips[1])&&( req.connection.remoteAddress!=ips[2])){
-// 		console.log(" ACCESS DENIED from IP address: "+req.connection.remoteAddress);
-// 		var messagea = "REGISTER USER '"+ email + "' FORBIDDEN access from external IP";
-// 		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,403,req.connection.remoteAddress,messagea,currentdate,"");
-// 		res.writeHead(403, {"Content-Type": contentType_text_plain});
-// 		res.end("\n403: FORBIDDEN access from external IP.\n");
-// 		return;
-// 	}
+	if(( req.connection.remoteAddress!= ips[0] ) &&( req.connection.remoteAddress!=ips[1])&&( req.connection.remoteAddress!=ips[2])){
+		console.log(" ACCESS DENIED from IP address: "+req.connection.remoteAddress);
+		var messagea = "REGISTER USER '"+ email + "' FORBIDDEN access from external IP";
+		resultlog = LogsModule.register_log( es_servername+":"+es_port,SERVERDB,403,req.connection.remoteAddress,messagea,currentdate,"");
+		res.writeHead(403, {"Content-Type": contentType_text_plain});
+		res.end("\n403: FORBIDDEN access from external IP.\n");
+		return;
+	}
 	var result = UsersModule.register_new_user(es_servername+":"+es_port,SERVERDB, name, email, pw);
 	result.then((resultreg) => {
 		var messageb = "REGISTER USER '"+ email + "' GRANTED";
@@ -2100,13 +2106,13 @@ app.post('/update_user', function(req, res) {
 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 400,req.connection.remoteAddress,"SIGNUP Bad Request, Empty Email",currentdate,"");
 		return;
 	}
-// 	if(( req.connection.remoteAddress!= ips[0] ) &&( req.connection.remoteAddress!=ips[1])&&( req.connection.remoteAddress!=ips[2])){
-// 		var messagea = "REGISTER USER '"+ email + "' FORBIDDEN access from external IP";
-// 		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 403,req.connection.remoteAddress,messagea,currentdate,"");
-// 		res.writeHead(403, {"Content-Type": contentType_text_plain});
-// 		res.end("\n403: FORBIDDEN access from external IP.\n");
-// 		return;
-// 	}
+	if(( req.connection.remoteAddress!= ips[0] ) &&( req.connection.remoteAddress!=ips[1])&&( req.connection.remoteAddress!=ips[2])){
+		var messagea = "REGISTER USER '"+ email + "' FORBIDDEN access from external IP";
+		resultlog = LogsModule.register_log(es_servername+":"+es_port,SERVERDB, 403,req.connection.remoteAddress,messagea,currentdate,"");
+		res.writeHead(403, {"Content-Type": contentType_text_plain});
+		res.end("\n403: FORBIDDEN access from external IP.\n");
+		return;
+	}
 	var result = UsersModule.update_user(es_servername+":"+es_port,SERVERDB, name, email, pw);
 	result.then((resultreg) => {
 		var messageb = "UPDATE USER '"+ email + "' GRANTED";
