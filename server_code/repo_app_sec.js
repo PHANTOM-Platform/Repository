@@ -668,6 +668,11 @@ app.get('/phantom.js', function(req, res) {
 	retrieve_file(filePath,res);
 });
 
+app.get('/repository.js', function(req, res) {
+	var filePath = '../web-repository/repository.js';
+	retrieve_file(filePath,res);
+});
+
 app.get('/upload_file.html', function(req, res) {
 	var filePath = '../web-repository/upload_file.html';
 	retrieve_file(filePath,res);
@@ -1437,7 +1442,6 @@ app.post('/upload',middleware.ensureAuthenticated, function(req, res) {
 	//		jsontext = JSON.stringify(jsontext);
 	}
 // 	var source_proj= get_source_project_json(jsontext);
-// console.log(".."+jsontext+"..");
 	jsontext=update_filename_path_on_json(jsontext, source_proj.project, source_proj.source, DestFileName, DestPath); //this adds the field
 // 	console.log("send_repo_update_to_suscribers("+source_proj.project + " "+ source_proj.source+")"+jsontext);
 	send_repo_update_to_suscribers(source_proj.project, source_proj.source, jsontext);

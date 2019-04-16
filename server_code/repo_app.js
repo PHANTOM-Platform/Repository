@@ -668,6 +668,11 @@ app.get('/phantom.js', function(req, res) {
 	retrieve_file(filePath,res);
 });
 
+app.get('/repository.js', function(req, res) {
+	var filePath = '../web-repository/repository.js';
+	retrieve_file(filePath,res);
+});
+
 app.get('/upload_file.html', function(req, res) {
 	var filePath = '../web-repository/upload_file.html';
 	retrieve_file(filePath,res);
