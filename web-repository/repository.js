@@ -1,4 +1,3 @@
-
 var imported = document.createElement("script");
 imported.src = "phantom.js";
 document.getElementsByTagName("head")[0].appendChild(imported);
@@ -50,8 +49,6 @@ function repo_load_menu_login(){
 		return false;
 	}
 }
-
-
 
 
 function repo_load_header(){
@@ -139,11 +136,7 @@ function jsontotable_repo_logs_brief(myjson,count,first,level,lastwascoma,mtitle
 	var countseries=0;
 	myjson.forEach(function(val) {
 // 		if (count != 1 && lastwascoma==false) {
-// 			if(countseries==0) {
-// 				html += ",<br>";
-// 			}else{
-// 				html += "<br>},{<br>";
-// 			}
+// 			html += (countseries==0) ? ",<br>" : "<br>},{<br>";
 // 		};//this is not the first element
 		lastwascoma=true;
 		var keys = Object.keys(val);
@@ -185,27 +178,14 @@ function jsontotable_repo_logs_brief(myjson,count,first,level,lastwascoma,mtitle
 	// 						}else{
 	// // 						html += "<td> " + val['_source']['code'] +"</td>\n";
 							}
-						
-							if(val['_source']['user']==undefined){
-								html += "<td></td>\n"; 
-							}else{
-								html += "<td> " + val['_source']['user'] +" </td>\n";
-							}
-							if(val['_source']['ip']==undefined){
-								html += "<td></td>\n"; 
-							}else{
-								html += "<td> " + val['_source']['ip'] +" </td>\n";
-							}
-							if(val['_source']['message']==undefined){
-								html += "<td></td>\n"; 
-							}else{
-								html += "<td> " + val['_source']['message'] +" </td>\n";
-							}
-							if(val['_source']['date']==undefined){
-								html += "<td></td>\n"; 
-							}else{
-								html += "<td> " + val['_source']['date'] +" </td>\n";
-							}
+							html += (val['_source']['user']==undefined)? "<td></td>\n" : 
+								"<td> " + val['_source']['user'] +" </td>\n";
+							html += (val['_source']['ip']==undefined)? "<td></td>\n" : 
+								"<td> " + val['_source']['ip'] +" </td>\n";
+							html += (val['_source']['message']==undefined)? "<td></td>\n" :
+								"<td> " + val['_source']['message'] +" </td>\n";
+							html += (val['_source']['date']==undefined)? "<td></td>\n" :
+								"<td> " + val['_source']['date'] +" </td>\n";
 						}else{
 							html += "<td></td>\n";
 							html += "<td></td>\n";
@@ -381,8 +361,6 @@ function submitform_qr_metatada_es(e, frm) {
 	return false;
 }
 
-
-
 function request_download(url, outputfile, type){
 	var demoreplaceb = document.getElementById("demoreplaceb");
 	var debug_phantom = document.getElementById("debug_phantom");
@@ -413,4 +391,3 @@ function request_download(url, outputfile, type){
 	xhr.send(null);
 	return false;
 }
-

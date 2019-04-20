@@ -135,8 +135,6 @@ function savetoken(mytoken) {
 	}
 }
 
-// var currentbody = "light-mode";
-
 function switchnightmode(){
 	var body = document.getElementById("body");
 	var table_results = document.getElementById("table_results");
@@ -193,7 +191,6 @@ function load_footer(){
 		menuhtml+="<a href=\"http://localhost:8700/executionmanager.html\">Execution Manager</a>&nbsp;&nbsp;";
 		menuhtml+="<a href=\"http://localhost:3033/monitoringserver.html\">Monitoring Server</a>&nbsp;&nbsp;";
 		menuhtml+="<a href=\"http://localhost:3000\">Grafana Visualization Interface</a>&nbsp;&nbsp;";
-		
 	}
 	menuhtml+="<hr/><div class=\"greyfont\">PHANTOM project: 2019<br />";
 	menuhtml+="	Licensed under the Apache License, Version 2.0<br />";
@@ -401,11 +398,7 @@ function jsontotable(myjson,count,first,level,lastwascoma,mtitle,filtered_fields
 	var countseries=0;
 	myjson.forEach(function(val) {
 // 		if (count != 1 && lastwascoma==false) {
-// 			if(countseries==0) {
-// 				html += ",<br>";
-// 			}else{
-// 				html += "<br>},{<br>";
-// 			}
+// 			html += (countseries==0) ? ",<br>" : "<br>},{<br>";
 // 		};//this is not the first element
 		lastwascoma=true;
 		var keys = Object.keys(val);
@@ -428,10 +421,10 @@ function jsontotable(myjson,count,first,level,lastwascoma,mtitle,filtered_fields
 							html += "<div><table style='border:1px solid black'>\n";// style='width:100%'>";
 						}
 						html += "<tr><th><strong>\""+ key +"\"</strong>: \"" + val[key] +"\"</th></tr>\n";
-						mtitle=false;
 					}else{
 						html += "<tr><td><strong>\"" + key +"\"</strong>: \"" + val[key] +"\"</td></tr>\n";
 					}
+					mtitle=false;
 					count++;
 					lastwascoma=false;
 				}
@@ -446,11 +439,10 @@ function jsontotable(myjson,count,first,level,lastwascoma,mtitle,filtered_fields
 							html += "<div><table style='border:1px solid black'>\n";// style='width:100%'>";
 						}
 						html += "<tr><th><strong>\"" + key + "\"</strong>: </th>\n";
-						
-						mtitle=false;
 					}else{
 						html += "<tr><td><strong>\"" + key + "\"</strong>: </td>\n";
 					}
+					mtitle=false;
 					count++;
 					lastwascoma=false;
 					html += "<td><div><table style='width:100%; border:0px solid black'>\n";// style='width:100%'>";
@@ -517,9 +509,9 @@ function list_results(mytype,url,fields_toshow,filtered_fields){
 					html += jsontotable_rm_brief(myjson,1,true,1,false,true,filtered_fields);
 					html += "</table></div>\n";
 					
-				}else if (mytype == 5){
+				}else if ((mytype == 5) ||  ((mytype > 800) &&  (mytype < 812 ))){
 					html += jsontotable_exec_brief(myjson,1,true,1,false,true,filtered_fields);
-				}else if (mytype == 6){
+				}else if ((mytype == 6) ||  ((mytype > 900) &&  (mytype < 907 ))){
 					html += jsontotable_app_brief(myjson,1,true,1,false,true,filtered_fields);
 				}else if (mytype == 4){
 					html += jsontotable_only_device_names(myjson,1,true,1,false,true,fields_toshow);
@@ -595,5 +587,3 @@ function submitform(url, operation, outputfile) {
 	}
 	return false;
 }
-
-
