@@ -242,7 +242,7 @@ function consolelogjson(JSONstring ){
 //the purpose is to remove the fields/properties path,path_length, filename,filename_length, if present.
 //and generate thos fields/properties from the input parameters
 function update_filename_path_on_json(JSONstring, project,source, filename, path){
-	var new_json = {  }
+	var new_json = { }
 	var jsonobj = JSON.parse(JSONstring);
 	var keys = Object.keys(jsonobj);
 	if (project == undefined) project="";
@@ -272,7 +272,7 @@ function update_filename_path_on_json(JSONstring, project,source, filename, path
 
 
 function update_request_time(JSONstring, req_date){
-	var new_json = {  }
+	var new_json = { }
 	var jsonobj = JSON.parse(JSONstring);
 	var keys = Object.keys(jsonobj);
 	if (req_date == undefined) req_date="";
@@ -292,7 +292,7 @@ function update_request_time(JSONstring, req_date){
 }
 
 function update_exec_status(JSONstring, status){
-	var new_json = {  }
+	var new_json = { }
 	var jsonobj = JSON.parse(JSONstring);
 	var keys = Object.keys(jsonobj);
 	if (status == undefined) status="";
@@ -312,7 +312,7 @@ function update_exec_status(JSONstring, status){
 }
 
 function update_reject_reason(JSONstring, reason){
-	var new_json = {  }
+	var new_json = { }
 	var jsonobj = JSON.parse(JSONstring);
 	var keys = Object.keys(jsonobj);
 	if (reason == undefined) reason="";
@@ -346,7 +346,7 @@ function find_id(JSONstring){
 }
 
 function update_device_length_on_json(JSONstring, device){
-	var new_json = {  }
+	var new_json = { }
 	var jsonobj = JSON.parse(JSONstring);
 	var keys = Object.keys(jsonobj);
 	if (device == undefined) device="";
@@ -366,7 +366,7 @@ function update_device_length_on_json(JSONstring, device){
 }
 
 function update_app_length_on_json(JSONstring, appname){
-	var new_json = {  }
+	var new_json = { }
 	var jsonobj = JSON.parse(JSONstring);
 	var keys = Object.keys(jsonobj);
 	if (appname== undefined) appname="";
@@ -386,7 +386,7 @@ function update_app_length_on_json(JSONstring, appname){
 }
 
 function update_execution_id_length_on_json(JSONstring, exec_id){
-	var new_json = {  }
+	var new_json = { }
 	var jsonobj = JSON.parse(JSONstring);
 	var keys = Object.keys(jsonobj);
 	if (exec_id== undefined) exec_id="";
@@ -450,7 +450,7 @@ function get_value_json(JSONstring,label){
 }
 
 function update_projectname_length_on_json(JSONstring, projectname){
-	var new_json = {  }
+	var new_json = { }
 	var jsonobj = JSON.parse(JSONstring);
 	var keys = Object.keys(jsonobj);
 	if(projectname==undefined) projectname="";
@@ -1451,13 +1451,14 @@ app.get('/get_log_list', function(req, res) {
 	"use strict";
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
 	var pretty		= find_param(req.body.pretty, req.query.pretty);
+	var mysorttype	= find_param(req.body.sorttype, req.query.sorttype);
 // 	var projectname	= CommonModule.remove_quotation_marks(find_param(req.body.project, req.query.project));
 // 	if (projectname==undefined) projectname="";
 
 	var result_count = LogsModule.query_count_logs(es_servername + ":" + es_port,SERVERDB, res.user);
 	result_count.then((resultResolve) => {
 		if(resultResolve!=0){//new entry (2) we resister new entry
-			var result_id = LogsModule.find_logs(es_servername + ":" + es_port,SERVERDB, res.user,pretty);
+			var result_id = LogsModule.find_logs(es_servername + ":" + es_port,SERVERDB, res.user,pretty, mysorttype);
 			result_id.then((result_json) => {
 				res.writeHead(200, {"Content-Type": contentType_text_plain});
 				res.end(result_json);

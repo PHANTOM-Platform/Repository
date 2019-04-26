@@ -56,7 +56,24 @@ query_count_logs: function(es_server, my_index, user){
 //****************************************************
 //This function is used to confirm that a project exists or not in the DataBase.
 //We first counted if existence is >0
-find_logs: function(es_server, my_index, user){
+find_logs: function(es_server, my_index, user, pretty, mysorttype){
+	var filter = [ { "date": { "order": "desc" }}];
+
+	if (mysorttype!=undefined){
+	mysorttype=mysorttype %10;
+	if (mysorttype== "2"){//Code
+		filter = [ {"code":{ "order":"asc"}}, { "date": { "order": "desc" }} ];
+	} else if (mysorttype== "3"){//User
+		filter = [ {"user":{ "order":"asc"}}, { "date": { "order": "desc" }} ];
+	} else if (mysorttype== "4"){//Ip
+		filter = [ {"ip":{ "order":"asc"}}, { "date": { "order": "desc" }} ];
+	} else if (mysorttype== "5"){//Message
+		filter = [ {"message":{ "order":"asc"}}, { "date": { "order": "desc" }} ];
+	}
+}else{
+	mysorttype=6;
+}
+
 	return new Promise( (resolve,reject) => {
 		var elasticsearch = require('elasticsearch');
 		var client = new elasticsearch.Client({
@@ -65,11 +82,15 @@ find_logs: function(es_server, my_index, user){
 		});
 		user="";
 		if(user.length==0){
+			var myquery =  {"query":{"match_all": {} }, "sort": filter };
+			if (mysorttype== "1"){//_id
+				myquery =  { "query": { "match_all": {} }, "sort": { "_uid": "desc" }, "size": 1 };
+			}
 			client.search({
 				index: my_index,
 				type: my_type,
 				size: 1000,
-				body:{"query":{"match_all": {} }, "sort": { "date": { "order": "desc" }}}
+				body:myquery
 			}, function(error, response) {
 				if (error) {
 					reject("error: "+error);
