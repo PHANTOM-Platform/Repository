@@ -117,133 +117,6 @@ function repo_login(user,password){
 }
 
 
-function jsontotable_repo_logs_brief(myjson,count,first,level,lastwascoma,mtitle,filtered_fields){
-	var html ="";
-	var i;
-// 	if(first==true){ html ="{"; }
-	var mainc=mtitle;
-	if(first==true){
-		html += "<div><table style='border:1px solid black' id=\"table_results\">\n";// style='width:100%'>";
-		html += "<th><strong> _id </strong> </th>\n";
-		html += "<td><strong> &nbsp;Code&nbsp; </strong></td>\n";
-		html += "<td><strong> &nbsp;User&nbsp; </strong></td>\n";
-		html += "<td><strong> &nbsp;Ip&nbsp; </strong></td>\n";
-		html += "<td><strong> &nbsp;Message&nbsp; </strong></td>\n";
-		html += "<td><strong> &nbsp;Date&nbsp;</strong></td>\n";
-		count++;
-	}
-	first=false;
-	var countseries=0;
-	myjson.forEach(function(val) {
-// 		if (count != 1 && lastwascoma==false) {
-// 			html += (countseries==0) ? ",<br>" : "<br>},{<br>";
-// 		};//this is not the first element
-		lastwascoma=true;
-		var keys = Object.keys(val);
-		keys.forEach(function(key) {
-			if (getType(val[key]) == "string" || getType(val[key]) == "other" ){
-				var tobefiltered=false;
-				for (i=0;i< filtered_fields.length;i++){
-					if (key.endsWith(filtered_fields[i], key.length)== true) {
-						tobefiltered=true;
-					}
-				}
-				if (tobefiltered== false) {//it is stored the length of the strings, not need to show
-// 					if (count != 1 && lastwascoma==false) html += ',<br>';
-// 					for (i = 0; i < level; i++) {
-// 						if (count != 1) html += '&emsp;';
-// 					}
-					if(mtitle==true){
-						if(count>1){
-							html += "</tr>\n<tr>";
-// 							html += "</table></div></td><br>\n";
-// 							html += "<div><table style='border:1px solid black'>\n";// style='width:100%'>";
-						}
-						html += "<td> " + val['_id'] +" </td>\n";
-						//source
-						if(val['_source'] !=undefined){
-							if(val['_source']['code']==undefined){
-								html += "<td></td>\n";
-							}else if((val['_source']['code']>="200")&&(val['_source']['code']<"300")){//green 2xx-correct,3xx-redirections
-								html += "<td bgcolor=\"#00ff00\"> <font color=\"black\">" + val['_source']['code'] +"</font> </td>\n";
-							}else if((val['_source']['code']>="400") && (val['_source']['code']<"600")) {//red 4xx-client-error 5xx-server-error
-								html += "<td bgcolor=\"#ff3e29\"> <font color=\"black\">" + val['_source']['code'] +"</font> </td>\n";
-							}else if((val['_source']['code']>="100")&&(val['_source']['code']<"200")){ //yellow-information
-								html += "<td bgcolor=\"#f3ff3a\"> <font color=\"black\">" + val['_source']['code'] +"</font></td>\n";
-								
-	// 						}else if(val['_source']['code']=="cancelled"){//red
-	// 							html += "<td bgcolor=\"#ff3e29\"> " + val['_source']['code'] +" </td>\n";
-	// 						}else if(val['_source']['code']=="started"){//green
-	// 							html += "<td bgcolor=\"#00FF00/*\*/">" + val['_source']['code'] +"</td>\n";
-	// 						}else{
-	// // 						html += "<td> " + val['_source']['code'] +"</td>\n";
-							}
-							html += (val['_source']['user']==undefined)? "<td></td>\n" : 
-								"<td> " + val['_source']['user'] +" </td>\n";
-							html += (val['_source']['ip']==undefined)? "<td></td>\n" : 
-								"<td> " + val['_source']['ip'] +" </td>\n";
-							html += (val['_source']['message']==undefined)? "<td></td>\n" :
-								"<td> " + val['_source']['message'] +" </td>\n";
-							html += (val['_source']['date']==undefined)? "<td></td>\n" :
-								"<td> " + val['_source']['date'] +" </td>\n";
-						}else{
-							html += "<td></td>\n";
-							html += "<td></td>\n";
-							html += "<td></td>\n";
-							html += "<td></td>\n";
-							html += "<td></td>\n";
-						}
-						mtitle=false;
-						count++;
-						lastwascoma=false;
-					}
-// 					if((key=="rejection_reason")){
-// 						if(val['req_status']=="rejected"){
-// 							html += "<td><strong>\"" + key +"\"</strong>: \"" + val[key] +"\"</td>\n";
-// 							count++;
-// 							lastwascoma=false;
-// 						}
-// 					}else if((key!="req_status")&&(key!="energy")&&(key!="execution_id")&&(key!="app")&&(key!="device")){
-// 						html += "<td><strong>\"" + key +"\"</strong>: \"" + val[key] +"\"</td>\n";
-// 						count++;
-// 						lastwascoma=false;
-				}
-			}else if (getType(val[key]) == "array" || getType(val[key]) == "object" ) {
-// 				if(key!= "component_stats"){
-// // 					if (count != 1) html += ',<br>';
-// // 					for (i = 0; i < level; i++) {
-// // 						if (count != 1) html += '&emsp;';
-// // 					}
-// 					if(mtitle==true){
-// 						if(count>1){
-// 							html += "</table></div></td><br>\n";
-// 							html += "<div><table style='border:1px solid black'>\n";// style='width:100%'>";
-// 						}
-// 						html += "<tr><th><strong>\"" + key + "\"</strong>: </th>\n";
-// 						
-// 						mtitle=false;
-// 					}else{
-// 						html += "<tr><td><strong>\"" + key + "\"</strong>: </td>\n";
-// 					}
-// 					count++;
-// 					lastwascoma=false;
-// 					html += "<td><div><table style='width:100%; border:0px solid black'>\n";// style='width:100%'>";
-					html += jsontotable_repo_logs_brief( ([ val[key] ]), count, first, level+1 ,lastwascoma,mtitle,filtered_fields);
-// 					html += "</table></div></td>\n";
-// 				}
-// // 			}else if (getType(val[key]) == "object" ) {
-// // 				html += jsontotable( ([ val[key] ]), count, false, level+1,lastwascoma,mtitle,filtered_fields);
-			};
-		});
-// 		mtitle=true;
-		countseries++;
-	});
-// 	if(first==true){ html += "<br>}"; }
-// 	if(mainc==true)
-// 		html += "</table></div>\n";
-	return html;
-}//jsontotable_repo_logs_brief
-
 function download_file_repo(project, source,filepath, filename){
 	var url = build_repo_path() + "/download?project=\""+project+"\"\&source=\""+source+"\"\&filepath=\""+filepath+"\"\&filename=\""+filename+"\"";//?pretty='true'";
 	request_download(url, "", 'text/plain');
@@ -284,7 +157,7 @@ function downloadzip_file_repo(project, source, filepath, filename){
 
 
 function list_repo_logs(mytype,user){
-	var url = build_repo_path() + "/get_log_list?pretty='true'";
+	var url = build_repo_path() + "/get_log_list?sorttype="+mytype+"&pretty='true'";
 	list_results(mytype,url,["host"],["_length","_index","_type","_score","sort"]);
 	return false;
 }
@@ -324,7 +197,7 @@ function submitform_file_list(project, source,filepath){
 // 		return false;
 // 	}
 	var url = build_repo_path() + "/downloadlist";
-	
+
 	if(project !== undefined){
 		if(project.length>0) {
 			url += "?project=\""+project+"\"";
