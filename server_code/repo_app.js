@@ -1046,14 +1046,13 @@ function json_list_of_files(myPath,filelist){
 app.post('/new_log', function(req, res) {
 	"use strict";
 	var currentdate = dateFormat(new Date(), "yyyy-mm-dd'T'HH:MM:ss.l");
-	var pretty		= find_param(req.body.pretty, req.query.pretty);
 	var log_code	= find_param(req.body.code, req.query.code);
 	var log_user	= find_param(req.body.user, req.query.user);
 	var log_ip		= find_param(req.body.ip, req.query.ip);
 	var log_message	= find_param(req.body.message, req.query.message);
 	if(log_code==undefined) log_code="";
 	if(log_user==undefined) log_user="";
-	if(log_ip==undefined) log_ip="";
+	if(log_ip==undefined) log_ip=req.connection.remoteAddress;
 	if(log_message==undefined) log_message="";
 	var resultlog = LogsModule.register_log(es_servername + ":" + es_port, SERVERDB, log_code, log_ip, log_message, currentdate, log_user);
 	resultlog.then((resolve_result) => {

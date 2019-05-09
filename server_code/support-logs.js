@@ -121,7 +121,7 @@ find_logs: function(es_server, my_index, user, pretty, mysorttype){
 	//**********************************************************
 	//This function is used to register log in the DB
 	//example of use: 
-	register_log: function(es_server,my_index,code,ip,message,date,user) { //date
+	register_log: function(es_server,my_index,code,ip,message,date, user) {
 		return new Promise( (resolve,reject) => {
 			var myres = { code: "", text: "" };
 			var elasticsearch = require('elasticsearch');
@@ -132,7 +132,6 @@ find_logs: function(es_server, my_index, user, pretty, mysorttype){
 			var error="";
 			var response="";
 			var myres = { code: "", text:  "" };
-// 			console.log(" registering log: "+user+" code : " +code+" ip: "+ip+" message: "+message+"\n");
 			clientlog.index({
 				index: my_index,
 				type: my_type,
