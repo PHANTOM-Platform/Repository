@@ -161,9 +161,13 @@ bash setup-new-server.sh
 
 NOTICE: For securoity reasons, users' accounts can be ONLY registered on the server. Requests from different IPs will be rejected.
         
+## 5.- RESTful API Queries
+ 
+Please refer to the [Reference Manual of the RESTful API][apimanual] to get more details.
+The Manual contains a description of each of the implemented methods, with examples of use, and type of possible responses. 
 
 
-## 5.- Example of use
+## 6.- Example of use
 
 Notice that the files uploaded require to define their metadata, and their domain of use in case of wish to take advantage/use of the PHANTOM security server. Next figure shows an example of metadata.
 
@@ -206,9 +210,10 @@ Please [create](https://github.com/jmmontanana/phantom_repository/issues) an iss
 
 
 ## Release History
-| Date        | Version | Comment          |
-| ----------- | ------- | ---------------- |
-| 2018-03-22  | 1.0     | First prototype  |
+| Date        | Version   | Comment          |
+| ----------- | --------- | ---------------- |
+| 2018-03-22  | 0.9.0     | First prototype             |
+| 2019-05-15  | 1.0.0     | Tested with Real Use Cases  |
 
 ## License
 Copyright (C) 2018 University of Stuttgart
@@ -230,4 +235,4 @@ Copyright (C) 2018 University of Stuttgart
 [server]: https://github.com/PHANTOM-Platform/Monitoring/tree/master/Monitoring_server
 [excess]: http://www.excess-project.eu
 [phantom]: http://www.phantom-project.org
-
+[apimanual]: https://phantom-platform.github.io/Repository
